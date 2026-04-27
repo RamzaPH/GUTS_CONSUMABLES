@@ -61,7 +61,7 @@ const LoginPage = () => {
               <img 
                 src="/guts-logo.png" 
                 alt="GUTS Logo" 
-                className="h-10 w-10 object-contain sm:h-12 sm:w-12"
+                className="h-20 w-20 object-contain sm:h-40 sm:w-40"
               />
             </div>
             <h1 className="text-2xl font-bold text-white sm:text-4xl">

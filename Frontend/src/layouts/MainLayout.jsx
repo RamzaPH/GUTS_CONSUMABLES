@@ -52,8 +52,13 @@ const MainLayout = () => {
 
           <div className="flex-1 flex flex-col bg-slate-50 transition-all duration-300">
             {/* Print-only header — hidden on screen, visible when printing */}
-            <div className="hidden print:flex print:items-center print:gap-4 print:border-b print:border-slate-300 print:pb-4 print:mb-4 print:px-6 print:pt-6">
-              <img src="/guts-logo.png" alt="GUTS Logo" className="h-16 w-16 object-contain" />
+            <div className="hidden print:flex print:items-center print:gap-5 print:border-b print:border-slate-300 print:pb-4 print:mb-4 print:px-6 print:pt-6">
+              <img
+                src="/guts-logo.png"
+                alt="GUTS Logo"
+                className="h-20 w-20 object-contain print:h-24 print:w-24"
+                style={{ printColorAdjust: 'exact', WebkitPrintColorAdjust: 'exact' }}
+              />
               <div>
                 <p className="text-xl font-bold" style={{ color: '#800000' }}>Guardians Technical School Inc.</p>
                 <p className="text-sm text-slate-600">TESDA Consumables Status Report</p>
