@@ -9,11 +9,7 @@ const ConsumableRequest = sequelize.define('ConsumableRequest', {
   },
   consumableId: {
     type: DataTypes.INTEGER.UNSIGNED,
-    allowNull: false,
-    references: {
-      model: 'consumables',
-      key: 'id',
-    },
+    allowNull: true,
   },
   requestedById: {
     type: DataTypes.INTEGER.UNSIGNED,
@@ -24,7 +20,7 @@ const ConsumableRequest = sequelize.define('ConsumableRequest', {
     },
   },
   requestType: {
-    type: DataTypes.ENUM('Stock In', 'Stock Out'),
+    type: DataTypes.ENUM('Stock In', 'Stock Out', 'New Consumable'),
     allowNull: false,
   },
   quantity: {
@@ -79,6 +75,27 @@ const ConsumableRequest = sequelize.define('ConsumableRequest', {
     type: DataTypes.DATE,
     allowNull: true,
   },
+  requestedItemName: {
+    type: DataTypes.STRING(200),
+    allowNull: true,
+  },
+  requestedCategory: {
+    type: DataTypes.STRING(50),
+    allowNull: true,
+  },
+  requestedUnit: {
+    type: DataTypes.STRING(50),
+    allowNull: true,
+  },
+  requestedReorderLevel: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+  },
+  requestedLocation: {
+    type: DataTypes.ENUM('main', 'annex'),
+    allowNull: true,
+    defaultValue: 'main',
+  },
 }, {
   tableName: 'consumable_requests',
   timestamps: true,
@@ -87,18 +104,27 @@ const ConsumableRequest = sequelize.define('ConsumableRequest', {
 
 // Define associations
 ConsumableRequest.associate = (models) => {
-  ConsumableRequest.belongsTo(models.Consumable, {
-    foreignKey: 'consumableId',
-    as: 'consumable',
-  });
-  ConsumableRequest.belongsTo(models.User, {
-    foreignKey: 'requestedById',
-    as: 'requestedBy',
-  });
-  ConsumableRequest.belongsTo(models.User, {
-    foreignKey: 'approvedById',
-    as: 'approvedBy',
-  });
+  if (!ConsumableRequest.associations?.consumable) {
+    ConsumableRequest.belongsTo(models.Consumable, {
+      foreignKey: 'consumableId',
+      as: 'consumable',
+      constraints: false,
+    });
+  }
+
+  if (!ConsumableRequest.associations?.requestedBy) {
+    ConsumableRequest.belongsTo(models.User, {
+      foreignKey: 'requestedById',
+      as: 'requestedBy',
+    });
+  }
+
+  if (!ConsumableRequest.associations?.approvedBy) {
+    ConsumableRequest.belongsTo(models.User, {
+      foreignKey: 'approvedById',
+      as: 'approvedBy',
+    });
+  }
 };
 
 module.exports = ConsumableRequest;

@@ -83,10 +83,14 @@ const InventoryHistory = sequelize.define('InventoryHistory', {
 
 // Define association with User for performer
 InventoryHistory.associate = (models) => {
-  InventoryHistory.belongsTo(models.User, {
-    foreignKey: 'performedById',
-    as: 'performer',
-  });
+  const hasPerformerAssociation = Boolean(InventoryHistory.associations?.performer);
+
+  if (!hasPerformerAssociation) {
+    InventoryHistory.belongsTo(models.User, {
+      foreignKey: 'performedById',
+      as: 'performer',
+    });
+  }
 };
 
 module.exports = InventoryHistory;

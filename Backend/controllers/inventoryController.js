@@ -56,6 +56,7 @@ const checkoutConsumable = async (req, res) => {
   }
 };
 const Consumable = require('../models/Consumable');
+const ConsumableRequest = require('../models/ConsumableRequest');
 const InventoryHistory = require('../models/InventoryHistory');
 const Notification = require('../models/Notification');
 const User = require('../models/User');
@@ -224,9 +225,73 @@ const addConsumable = async (req, res) => {
   }
 
   const upperCategory = String(category).toUpperCase();
+  const requestedLocation = location === 'annex' ? 'annex' : 'main';
 
   try {
-    console.log(`[addConsumable] Creating new item: ${itemName}, category: ${upperCategory}, location: ${location || 'main'}`);
+    const requesterRole = req.user?.role;
+    const requesterName = req.user?.username || 'Staff';
+    const parsedQty = Number.parseInt(quantity, 10);
+    const parsedReorderLevel = reorderLevel !== undefined ? Number.parseInt(reorderLevel, 10) : 10;
+
+    // Staff cannot directly create consumables. Their submission becomes an admin-reviewed request.
+    if (requesterRole === 'staff') {
+      if (Number.isNaN(parsedQty) || parsedQty <= 0) {
+        return res.status(400).json({ error: 'quantity must be a positive integer for new consumable requests.' });
+      }
+
+      const request = await ConsumableRequest.create({
+        consumableId: null,
+        requestedById: req.user.id,
+        requestType: 'New Consumable',
+        quantity: parsedQty,
+        reason: req.body.reason || 'Request to add a new consumable item.',
+        purpose: req.body.purpose || 'Replenishment',
+        course: req.body.course || upperCategory,
+        trainer: req.body.trainer || null,
+        startDate: req.body.startDate || new Date(),
+        endDate: req.body.endDate || new Date(),
+        status: 'pending',
+        requestedItemName: String(itemName).trim(),
+        requestedCategory: upperCategory,
+        requestedUnit: String(unit).trim(),
+        requestedReorderLevel: Number.isNaN(parsedReorderLevel) ? 10 : parsedReorderLevel,
+        requestedLocation,
+      });
+
+      const trackName = upperCategory.toLowerCase();
+      const notificationMetadata = {
+        requestId: request.id,
+        requestType: 'New Consumable',
+        requesterId: req.user.id,
+        requesterName,
+        itemName: String(itemName).trim(),
+        category: upperCategory,
+        quantity: parsedQty,
+        unit: String(unit).trim(),
+        reorderLevel: Number.isNaN(parsedReorderLevel) ? 10 : parsedReorderLevel,
+        location: requestedLocation,
+        track: trackName,
+        target: 'pending-requests',
+      };
+
+      await sendNotificationToAdmins(
+        req,
+        'stock_requested',
+        `${requesterName} requested a new consumable: ${String(itemName).trim()} (${parsedQty} ${String(unit).trim()})`,
+        requesterName,
+        String(itemName).trim(),
+        parsedQty,
+        notificationMetadata
+      );
+
+      return res.status(202).json({
+        message: 'New consumable request submitted for admin approval.',
+        createdAsRequest: true,
+        request,
+      });
+    }
+
+    console.log(`[addConsumable] Creating new item: ${itemName}, category: ${upperCategory}, location: ${requestedLocation}`);
     
     const item = await Consumable.create(parsePayload({
       itemName,
@@ -243,15 +308,15 @@ const addConsumable = async (req, res) => {
       actionType: 'Stock In',
       quantityChanged: item.quantity,
       description: 'Initial stock from new consumable creation.',
-      performedBy: req.body.performedBy,
+      performedBy: req.body.performedBy || requesterName,
       performedById: req.user?.id || null,
-      location: location || 'main',
+      location: requestedLocation,
       startDate: null,
       endDate: null,
     });
 
     // Send notification to admins
-    const staffName = req.body.performedBy || req.user?.username || 'Staff';
+    const staffName = req.body.performedBy || requesterName;
     const trackName = upperCategory.toLowerCase();
     await sendNotificationToAdmins(
       req,

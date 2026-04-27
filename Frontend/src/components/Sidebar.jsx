@@ -44,12 +44,10 @@ const Sidebar = ({ isCollapsed = false, onToggleCollapse, isMobile = false, onNa
   }
 
   const handleAddUserSuccess = (fullName, role) => {
-    // Show success toast/message
     success(`User "${fullName}" created successfully as ${role}!`)
   }
 
   const handleCoursesUpdated = () => {
-    // Refresh courses when a new course is added/updated/deleted
     fetchCourses()
   }
 
@@ -82,7 +80,7 @@ const Sidebar = ({ isCollapsed = false, onToggleCollapse, isMobile = false, onNa
   }, [location.pathname, location.search, navigate, user?.role])
 
   return (
-    <div className="flex h-full flex-col">
+    <div className={`flex h-full flex-col overflow-y-auto overscroll-contain ${isMobile ? "pb-4" : ""}`}>
       <div className={`border-b border-slate-600/80 pb-4 pt-5 transition-all duration-300 ${isCollapsed ? "px-3" : "px-6"}`}>
         {!isMobile ? (
           <button
@@ -99,7 +97,7 @@ const Sidebar = ({ isCollapsed = false, onToggleCollapse, isMobile = false, onNa
           <img
             src="/guts-logo.png"
             alt="GUTS TESDA logo"
-            className={`object-contain transition-all duration-300 ${isCollapsed ? "h-10 w-10" : "h-28 w-full"}`}
+            className={`object-contain transition-all duration-300 ${isCollapsed ? "h-10 w-10" : "h-24 w-full"}`}
           />
         </div>
         <p className={`mt-4 text-center text-xs font-semibold uppercase tracking-[0.24em] text-slate-300 transition-all duration-300 ${isCollapsed ? "max-h-0 opacity-0" : "max-h-10 opacity-100"}`}>
@@ -111,7 +109,6 @@ const Sidebar = ({ isCollapsed = false, onToggleCollapse, isMobile = false, onNa
         {/* Dashboard */}
         {navItems.map((item) => {
           const Icon = item.icon
-
           return (
             <NavLink
               key={item.to}
@@ -119,7 +116,7 @@ const Sidebar = ({ isCollapsed = false, onToggleCollapse, isMobile = false, onNa
               title={isCollapsed ? item.label : undefined}
               onClick={onNavigate}
               className={({ isActive }) =>
-                `group flex items-center rounded-r-xl border-l-4 py-3 text-sm font-semibold transition-all duration-300 ${
+                `group flex min-h-11 items-center rounded-r-xl border-l-4 py-3 text-sm font-semibold transition-all duration-300 ${
                   isActive
                     ? "border-[var(--brand-primary)] bg-slate-100 text-[var(--brand-primary)]"
                     : "border-transparent text-slate-200 hover:bg-slate-700/70 hover:text-white"
@@ -137,12 +134,15 @@ const Sidebar = ({ isCollapsed = false, onToggleCollapse, isMobile = false, onNa
         })}
 
         {/* Courses Dropdown */}
-        <div>
+        <div className="relative">
           <button
             type="button"
-            onClick={() => setIsCoursesOpen(!isCoursesOpen)}
+            onClick={(e) => {
+              e.stopPropagation() // FIX: Prevents sidebar from auto-expanding
+              setIsCoursesOpen(!isCoursesOpen)
+            }}
             title={isCollapsed ? "Courses" : undefined}
-            className={`w-full group flex items-center rounded-r-xl border-l-4 py-3 text-sm font-semibold transition-all duration-300 border-transparent text-slate-200 hover:bg-slate-700/70 hover:text-white ${isCollapsed ? "justify-center px-2" : "gap-3 px-5"}`}
+            className={`w-full group flex min-h-11 items-center rounded-r-xl border-l-4 py-3 text-sm font-semibold transition-all duration-300 border-transparent text-slate-200 hover:bg-slate-700/70 hover:text-white ${isCollapsed ? "justify-center px-2" : "gap-3 px-5"}`}
           >
             <BookOpen className="h-4 w-4 shrink-0" />
             <span
@@ -157,23 +157,29 @@ const Sidebar = ({ isCollapsed = false, onToggleCollapse, isMobile = false, onNa
             )}
           </button>
 
-          {/* Course Items - Dropdown */}
+          {/* Course Items - Dropdown (Floating when collapsed) */}
           {isCoursesOpen && (
-            <div className={`space-y-2 ${isCollapsed ? "px-1 py-2" : "mt-2 pl-2"}`}>
+            <div 
+              className={`space-y-2 transition-all duration-300 ${
+                isCollapsed 
+                  ? "absolute left-full top-0 ml-3 w-48 rounded-xl bg-slate-800 p-2 shadow-xl border border-slate-600/80 z-50" 
+                  : "mt-2 pl-2"
+              }`}
+            >
               {courseItems.length > 0 ? (
                 courseItems.map((item) => {
                   const Icon = item.icon
-
                   return (
                     <NavLink
                       key={item.to}
                       to={item.to}
-                      onClick={() => {
-                        onNavigate()
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onNavigate && onNavigate()
                         if (isCollapsed) setIsCoursesOpen(false)
                       }}
                       className={({ isActive }) =>
-                        `group flex items-center rounded-lg border-l-4 py-2 px-3 text-xs font-semibold transition-all duration-300 ${
+                        `group flex min-h-10 items-center rounded-lg border-l-4 py-2 px-3 text-xs font-semibold transition-all duration-300 ${
                           isActive
                             ? "border-[var(--brand-primary)] bg-slate-100 text-[var(--brand-primary)]"
                             : "border-transparent text-slate-300 hover:bg-slate-700/50 hover:text-white"
@@ -182,7 +188,9 @@ const Sidebar = ({ isCollapsed = false, onToggleCollapse, isMobile = false, onNa
                       title={isCollapsed ? item.label : undefined}
                     >
                       <Icon className="h-4 w-4 shrink-0" />
-                      <span className={`whitespace-nowrap ml-3 transition-all duration-300 ${isCollapsed ? "max-w-0 opacity-0" : "max-w-[100px] opacity-100"}`}>{item.label}</span>
+                      <span className={`whitespace-nowrap ml-3 transition-all duration-300 ${isCollapsed ? "max-w-full opacity-100" : "max-w-[100px] opacity-100"}`}>
+                        {item.label}
+                      </span>
                     </NavLink>
                   )
                 })
@@ -198,12 +206,15 @@ const Sidebar = ({ isCollapsed = false, onToggleCollapse, isMobile = false, onNa
 
       <div className={`mt-8 border-t border-slate-600/80 py-4 transition-all duration-300 ${isCollapsed ? "px-2" : "px-4"}`}>
         {/* Settings Dropdown */}
-        <div>
+        <div className="relative">
           <button
             type="button"
-            onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+            onClick={(e) => {
+              e.stopPropagation() // FIX: Prevents sidebar from auto-expanding
+              setIsSettingsOpen(!isSettingsOpen)
+            }}
             title={isCollapsed ? "Settings" : undefined}
-            className={`w-full group flex items-center rounded-r-xl border-l-4 py-3 text-sm font-semibold transition-all duration-300 border-transparent text-slate-200 hover:bg-slate-700/70 hover:text-white ${isCollapsed ? "justify-center px-2" : "gap-3 px-5"}`}
+            className={`w-full group flex min-h-11 items-center rounded-r-xl border-l-4 py-3 text-sm font-semibold transition-all duration-300 border-transparent text-slate-200 hover:bg-slate-700/70 hover:text-white ${isCollapsed ? "justify-center px-2" : "gap-3 px-5"}`}
           >
             <Settings className="h-4 w-4 shrink-0" />
             <span
@@ -218,30 +229,33 @@ const Sidebar = ({ isCollapsed = false, onToggleCollapse, isMobile = false, onNa
             )}
           </button>
 
-          {/* Settings Items - Dropdown */}
+          {/* Settings Items - Dropdown (Floating when collapsed) */}
           {isSettingsOpen && (
-            <div className={`space-y-2 ${isCollapsed ? "px-1 py-2" : "mt-2 pl-2"}`}>
+            <div 
+              className={`space-y-2 transition-all duration-300 ${
+                isCollapsed 
+                  ? "absolute left-full top-0 ml-3 w-48 rounded-xl bg-slate-800 p-2 shadow-xl border border-slate-600/80 z-50" 
+                  : "mt-2 pl-2"
+              }`}
+            >
               {settingsItems
                 .filter(item => {
-                  // Only show Archive Vault to admins
-                  if (item.label === "Archive Vault" && user?.role !== "admin") {
-                    return false
-                  }
+                  if (item.label === "Archive Vault" && user?.role !== "admin") return false
                   return true
                 })
                 .map((item) => {
                 const Icon = item.icon
-
                 return (
                   <NavLink
                     key={item.to}
                     to={item.to}
-                    onClick={() => {
-                      onNavigate()
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onNavigate && onNavigate()
                       if (isCollapsed) setIsSettingsOpen(false)
                     }}
                     className={({ isActive }) =>
-                      `group flex items-center rounded-lg border-l-4 py-2 px-3 text-xs font-semibold transition-all duration-300 ${
+                      `group flex min-h-10 items-center rounded-lg border-l-4 py-2 px-3 text-xs font-semibold transition-all duration-300 ${
                         isActive
                           ? "border-[var(--brand-primary)] bg-slate-100 text-[var(--brand-primary)]"
                           : "border-transparent text-slate-300 hover:bg-slate-700/50 hover:text-white"
@@ -250,7 +264,9 @@ const Sidebar = ({ isCollapsed = false, onToggleCollapse, isMobile = false, onNa
                     title={isCollapsed ? item.label : undefined}
                   >
                     <Icon className="h-4 w-4 shrink-0" />
-                    <span className={`whitespace-nowrap ml-3 transition-all duration-300 ${isCollapsed ? "max-w-0 opacity-0" : "max-w-[100px] opacity-100"}`}>{item.label}</span>
+                    <span className={`whitespace-nowrap ml-3 transition-all duration-300 ${isCollapsed ? "max-w-full opacity-100" : "max-w-[100px] opacity-100"}`}>
+                      {item.label}
+                    </span>
                   </NavLink>
                 )
               })}
@@ -349,7 +365,7 @@ const Sidebar = ({ isCollapsed = false, onToggleCollapse, isMobile = false, onNa
         </div>
       </div>
 
-      {/* Modals - Only for admins */}
+      {/* Modals */}
       {user?.role === "admin" && (
         <>
           <AddUserModal

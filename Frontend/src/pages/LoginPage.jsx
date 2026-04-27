@@ -48,37 +48,33 @@ const LoginPage = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-t from-[#800000] to-white px-4">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-t from-[#800000] to-white px-3 py-6 sm:px-4 sm:py-8">
       <div className="w-full max-w-md">
         {/* Card with gradient background */}
-        <div className="rounded-3xl bg-gradient-to-b from-maroon-900 via-maroon-700 to-maroon-600 shadow-2xl overflow-hidden">
+        <div className="relative isolate rounded-3xl overflow-hidden">
+          <div className="absolute -top-8 left-8 right-8 h-24 rounded-full bg-white/35 blur-3xl opacity-90 pointer-events-none" />
+          <div className="absolute inset-0 rounded-3xl bg-gradient-to-b from-white/10 via-white/5 to-transparent ring-1 ring-white/20 pointer-events-none" />
+          <div className="relative -translate-y-1 rounded-3xl bg-gradient-to-b from-maroon-900 via-maroon-700 to-maroon-600 shadow-2xl shadow-[#5a0000]/55 overflow-hidden border border-white/10 backdrop-blur-sm">
           {/* Header Section */}
-          <div className="px-6 py-12 text-center">
+          <div className="px-5 py-8 text-center sm:px-6 sm:py-12">
             <div className="flex justify-center mb-4">
               <img 
                 src="/guts-logo.png" 
                 alt="GUTS Logo" 
-                className="h-12 w-12 object-contain"
+                className="h-10 w-10 object-contain sm:h-12 sm:w-12"
               />
             </div>
-            <h1 className="text-4xl font-bold text-white">
+            <h1 className="text-2xl font-bold text-white sm:text-4xl">
               GUTS Consumables
             </h1>
-            <p className="text-white/90 text-sm mt-2 font-medium">
+            <p className="mt-2 text-xs font-medium text-white/90 sm:text-sm">
               Guardians Technical School - TESDA Training Center
             </p>
           </div>
 
           {/* Form Section */}
-          <div className="px-6 py-8">
-            <form onSubmit={handleSubmit} className="space-y-5">
-              {/* Error Message */}
-              {error && (
-                <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3">
-                  <p className="text-sm text-red-700 font-medium">{error}</p>
-                </div>
-              )}
-
+          <div className="px-5 py-6 sm:px-6 sm:py-8">
+            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
               {/* Username Field */}
               <div>
                 <label className="block text-sm font-semibold text-white mb-2">
@@ -91,7 +87,7 @@ const LoginPage = () => {
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     placeholder="Enter your username"
-                    className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-200 focus:border-white focus:outline-none focus:ring-2 focus:ring-white/30 transition bg-white"
+                    className="w-full rounded-lg border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm focus:border-white focus:outline-none focus:ring-2 focus:ring-white/30 sm:text-base"
                     required
                     disabled={isLoading}
                   />
@@ -110,14 +106,14 @@ const LoginPage = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Enter your password"
-                    className="w-full pl-10 pr-11 py-2.5 rounded-lg border border-slate-200 focus:border-white focus:outline-none focus:ring-2 focus:ring-white/30 transition bg-white"
+                    className="w-full rounded-lg border border-slate-200 bg-white py-2.5 pl-10 pr-11 text-sm focus:border-white focus:outline-none focus:ring-2 focus:ring-white/30 sm:text-base"
                     required
                     disabled={isLoading}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-3 text-slate-400 hover:text-slate-600 transition"
+                    className="absolute right-2.5 top-2.5 flex min-h-9 min-w-9 items-center justify-center rounded text-slate-400 transition hover:text-slate-600"
                     disabled={isLoading}
                   >
                     {showPassword ? (
@@ -129,22 +125,29 @@ const LoginPage = () => {
                 </div>
               </div>
 
+              {error && (
+                <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                  {error}
+                </div>
+              )}
+
               {/* Login Button */}
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-red-950 hover:bg-black text-white font-bold py-3 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed mt-6"
+                className="mt-5 w-full rounded-lg bg-red-950 py-3 font-bold text-white transition hover:bg-black disabled:cursor-not-allowed disabled:opacity-50 sm:mt-6"
               >
                 {isLoading ? "Signing in..." : "Sign In"}
               </button>
             </form>
 
             {/* Support Text */}
-            <div className="mt-6 text-center">
-              <p className="text-xs text-white/90">
+            <div className="mt-5 text-center sm:mt-6">
+              <p className="text-[11px] text-white/90 sm:text-xs">
                 For login support, contact your administrator.
               </p>
             </div>
+          </div>
           </div>
         </div>
       </div>

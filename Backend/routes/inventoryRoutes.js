@@ -29,7 +29,7 @@ router.get('/', getInventory);
 router.get('/:category', getInventoryByCategory);
 
 // Create a new consumable
-router.post('/', addConsumable);
+router.post('/', verifyToken, addConsumable);
 
 // Update an existing consumable
 router.put('/:id', updateConsumable);

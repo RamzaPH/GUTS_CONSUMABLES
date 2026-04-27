@@ -22,10 +22,13 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Clear auth data and redirect to login
-      localStorage.removeItem("token")
-      localStorage.removeItem("user")
-      window.location.href = "/login"
+      // Skip auto-redirect for login endpoint (let LoginPage handle the error)
+      if (error.config?.url !== '/auth/login') {
+        // Clear auth data and redirect to login for other endpoints
+        localStorage.removeItem("token")
+        localStorage.removeItem("user")
+        window.location.href = "/login"
+      }
     }
     return Promise.reject(error)
   }

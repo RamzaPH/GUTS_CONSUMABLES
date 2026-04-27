@@ -65,9 +65,9 @@ const ConsumableModal = ({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4">
-      <div className="w-full max-w-xl rounded-2xl border border-[var(--brand-secondary-soft)] bg-white shadow-xl">
-        <div className="flex items-center justify-between border-b border-[var(--brand-secondary-soft)] px-5 py-4">
+    <div className="fixed inset-0 z-50 flex items-start justify-center bg-slate-900/50 p-3 sm:items-center sm:p-4">
+      <div className="max-h-[92vh] w-full max-w-xl overflow-y-auto rounded-2xl border border-[var(--brand-secondary-soft)] bg-white shadow-xl">
+        <div className="flex items-center justify-between border-b border-[var(--brand-secondary-soft)] px-4 py-4 sm:px-5">
           <h3 className="font-title text-lg font-bold text-[var(--brand-primary)]">{title}</h3>
           <button
             type="button"
@@ -79,7 +79,7 @@ const ConsumableModal = ({
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4 p-5">
+        <form onSubmit={handleSubmit} className="space-y-4 p-4 sm:p-5">
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="space-y-1 sm:col-span-2">
               <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">Item Name</span>
@@ -152,7 +152,7 @@ const ConsumableModal = ({
             </label>
           </div>
 
-          <div className="flex justify-end gap-2 border-t border-[var(--brand-secondary-soft)] pt-4">
+          <div className="flex flex-col-reverse gap-2 border-t border-[var(--brand-secondary-soft)] pt-4 sm:flex-row sm:justify-end">
             <Button type="button" variant="secondary" onClick={onClose}>
               Cancel
             </Button>

@@ -31,7 +31,7 @@ const MainLayout = () => {
             onClick={() => setIsSidebarOpen(false)}
           >
             <aside
-              className={`h-full w-72 bg-[var(--brand-accent)] transition-transform duration-300 ${
+              className={`h-full w-[86vw] max-w-xs bg-[var(--brand-accent)] shadow-2xl transition-transform duration-300 ${
                 isSidebarOpen ? "translate-x-0" : "-translate-x-full"
               }`}
               onClick={(event) => event.stopPropagation()}
@@ -40,12 +40,12 @@ const MainLayout = () => {
             </aside>
           </div>
 
-          <div className="sticky top-0 z-20 flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 md:hidden print:hidden">
-            <div>
+          <div className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-slate-200 bg-white px-3 py-3 sm:px-4 md:hidden print:hidden">
+            <div className="min-w-0">
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">TESDA</p>
-              <p className="font-title text-base font-semibold text-slate-800">GUTS Inventory</p>
+              <p className="font-title text-sm font-semibold text-slate-800 sm:text-base">GUTS Inventory</p>
             </div>
-            <Button className="px-2 py-2" onClick={() => setIsSidebarOpen(true)}>
+            <Button className="px-2 py-2 min-h-11 min-w-11" onClick={() => setIsSidebarOpen(true)} aria-label="Open sidebar">
               <Menu className="h-4 w-4" />
             </Button>
           </div>
@@ -63,7 +63,7 @@ const MainLayout = () => {
             <div className="sticky top-0 z-30">
               <Navbar />
             </div>
-            <main className="flex-1 p-5 transition-all duration-300 md:p-8">
+            <main className="flex-1 p-3 transition-all duration-300 sm:p-4 md:p-6 lg:p-8">
               <Outlet />
             </main>
           </div>

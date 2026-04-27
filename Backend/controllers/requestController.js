@@ -11,6 +11,13 @@ const emitUserNotification = (userId, notification) => {
   }
 };
 
+const getRequestActionText = (requestType) => {
+  if (requestType === 'Stock In') return 'add';
+  if (requestType === 'Stock Out') return 'transfer';
+  if (requestType === 'New Consumable') return 'create';
+  return 'process';
+};
+
 // Create a new stock modification request (staff only)
 exports.createRequest = async (req, res) => {
   try {
@@ -80,7 +87,7 @@ exports.createRequest = async (req, res) => {
           adminIds.map((adminId) => ({
             userId: adminId,
             type: 'stock_requested',
-            message: `${requesterName} requested ${requestType === 'Stock In' ? 'to add' : 'to remove'} ${quantity} units of ${consumable.itemName}`,
+            message: `${requesterName} requested ${requestType === 'Stock In' ? 'to add' : 'to transfer'} ${quantity} units of ${consumable.itemName}`,
             metadata: JSON.stringify(metadata),
             isRead: false,
           })),
@@ -198,49 +205,106 @@ exports.approveRequest = async (req, res) => {
       return res.status(400).json({ error: `Cannot approve a ${request.status} request.` });
     }
 
-    // Get the consumable
-    const consumable = await Consumable.findByPk(request.consumableId);
-    if (!consumable) {
-      return res.status(404).json({ error: 'Consumable not found.' });
-    }
+    let consumable = null;
+    let actionType = request.requestType === 'Stock Out' ? 'Stock Out' : 'Stock In';
+    let quantityChanged = request.requestType === 'Stock Out' ? -request.quantity : request.quantity;
+    let beginningInventory = 0;
+    let endingInventory = request.quantity;
+    let historyLocation = 'main';
+    let mainBeginningInventory = 0;
+    let mainEndingInventory = 0;
+    let annexBeginningInventory = 0;
+    let annexEndingInventory = 0;
 
-    // Validate stock availability for Stock Out requests
-    if (request.requestType === 'Stock Out' && request.quantity > consumable.quantityMain) {
-      return res.status(400).json({ 
-        error: `Insufficient stock. Only ${consumable.quantityMain} units available.` 
+    if (request.requestType === 'New Consumable') {
+      if (!request.requestedItemName || !request.requestedCategory || !request.requestedUnit) {
+        return res.status(400).json({ error: 'Request is missing new consumable details.' });
+      }
+
+      const normalizedLocation = request.requestedLocation === 'annex' ? 'annex' : 'main';
+      historyLocation = normalizedLocation;
+      consumable = await Consumable.create({
+        itemName: request.requestedItemName,
+        category: request.requestedCategory,
+        unit: request.requestedUnit,
+        reorderLevel: request.requestedReorderLevel ?? 10,
+        quantity: request.quantity,
+        quantityMain: normalizedLocation === 'main' ? request.quantity : 0,
+        quantityAnnex: normalizedLocation === 'annex' ? request.quantity : 0,
       });
-    }
-
-    // Update consumable quantities
-    if (request.requestType === 'Stock In') {
-      consumable.quantityMain += request.quantity;
-      consumable.quantity += request.quantity;
     } else {
-      consumable.quantityMain -= request.quantity;
-      consumable.quantity -= request.quantity;
-    }
-    await consumable.save();
+      consumable = await Consumable.findByPk(request.consumableId);
+      if (!consumable) {
+        return res.status(404).json({ error: 'Consumable not found.' });
+      }
 
-    // Create inventory history entry
-    const actionType = request.requestType === 'Stock In' ? 'Stock In' : 'Stock Out';
+      if (request.requestType === 'Stock Out' && request.quantity > consumable.quantityMain) {
+        return res.status(400).json({
+          error: `Insufficient stock. Only ${consumable.quantityMain} units available.`,
+        });
+      }
+
+      if (request.requestType === 'Stock In') {
+        beginningInventory = consumable.quantityMain;
+        consumable.quantityMain += request.quantity;
+        consumable.quantity += request.quantity;
+        endingInventory = consumable.quantityMain;
+        mainBeginningInventory = beginningInventory;
+        mainEndingInventory = endingInventory;
+      } else {
+        // Transfer from main inventory to annex inventory.
+        beginningInventory = consumable.quantityMain;
+        mainBeginningInventory = consumable.quantityMain;
+        annexBeginningInventory = consumable.quantityAnnex;
+
+        consumable.quantityMain -= request.quantity;
+        consumable.quantityAnnex += request.quantity;
+
+        mainEndingInventory = consumable.quantityMain;
+        annexEndingInventory = consumable.quantityAnnex;
+        endingInventory = mainEndingInventory;
+      }
+
+      await consumable.save();
+    }
+
     await InventoryHistory.create({
-      consumableId: request.consumableId,
+      consumableId: consumable.id,
       actionType,
-      quantityChanged: request.quantity,
-      beginningInventory: request.requestType === 'Stock In' 
-        ? consumable.quantityMain - request.quantity
-        : consumable.quantityMain + request.quantity,
-      endingInventory: consumable.quantityMain,
-      description: `Approved request from ${request.requestedBy.username}${request.reason ? ': ' + request.reason : ''}`,
+      quantityChanged,
+      beginningInventory,
+      endingInventory,
+      description: request.requestType === 'Stock Out'
+        ? `Approved transfer request from ${request.requestedBy.username}${request.reason ? ': ' + request.reason : ''}`
+        : `Approved request from ${request.requestedBy.username}${request.reason ? ': ' + request.reason : ''}`,
       course: request.course,
       trainer: request.trainer,
       purpose: request.purpose,
-      location: 'main',
+      location: historyLocation,
       performedBy: adminName,
       performedById: adminId,
       startDate: request.startDate,
       endDate: request.endDate,
     });
+
+    if (request.requestType === 'Stock Out') {
+      await InventoryHistory.create({
+        consumableId: consumable.id,
+        actionType: 'Stock In',
+        quantityChanged: request.quantity,
+        beginningInventory: annexBeginningInventory,
+        endingInventory: annexEndingInventory,
+        description: `Transfer from main approved for ${request.requestedBy.username}${request.reason ? ': ' + request.reason : ''}`,
+        course: request.course,
+        trainer: request.trainer,
+        purpose: request.purpose,
+        location: 'annex',
+        performedBy: adminName,
+        performedById: adminId,
+        startDate: request.startDate,
+        endDate: request.endDate,
+      });
+    }
 
     // Update request status
     request.status = 'approved';
@@ -254,12 +318,17 @@ exports.approveRequest = async (req, res) => {
       await Notification.create({
         userId: request.requestedById,
         type: 'request_approved',
-        message: `Your request to ${request.requestType === 'Stock In' ? 'add' : 'remove'} ${request.quantity} units of ${consumable.itemName} has been approved.`,
+        message: request.requestType === 'New Consumable'
+          ? `Your request to create new consumable ${consumable.itemName} (${request.quantity} ${consumable.unit}) has been approved.`
+          : request.requestType === 'Stock Out'
+            ? `Your request to transfer ${request.quantity} units of ${consumable.itemName} from main inventory to annex has been approved.`
+            : `Your request to add ${request.quantity} units of ${consumable.itemName} has been approved.`,
         metadata: JSON.stringify({
           requestId: request.id,
-          consumableId: request.consumableId,
+          consumableId: consumable.id,
           itemName: consumable.itemName,
           quantity: request.quantity,
+          requestType: request.requestType,
           approvalNotes: notes,
         }),
         isRead: false,
@@ -268,12 +337,17 @@ exports.approveRequest = async (req, res) => {
       emitUserNotification(request.requestedById, {
         userId: request.requestedById,
         type: 'request_approved',
-        message: `Your request to ${request.requestType === 'Stock In' ? 'add' : 'remove'} ${request.quantity} units of ${consumable.itemName} has been approved.`,
+        message: request.requestType === 'New Consumable'
+          ? `Your request to create new consumable ${consumable.itemName} (${request.quantity} ${consumable.unit}) has been approved.`
+          : request.requestType === 'Stock Out'
+            ? `Your request to transfer ${request.quantity} units of ${consumable.itemName} from main inventory to annex has been approved.`
+            : `Your request to add ${request.quantity} units of ${consumable.itemName} has been approved.`,
         metadata: {
           requestId: request.id,
-          consumableId: request.consumableId,
+          consumableId: consumable.id,
           itemName: consumable.itemName,
           quantity: request.quantity,
+          requestType: request.requestType,
           approvalNotes: notes,
         },
         isRead: false,
@@ -285,7 +359,11 @@ exports.approveRequest = async (req, res) => {
         requestId: request.id,
         userId: request.requestedById,
         itemName: consumable.itemName,
-        message: `Your request to ${request.requestType === 'Stock In' ? 'add' : 'remove'} ${request.quantity} units has been approved.`,
+        message: request.requestType === 'New Consumable'
+          ? `Your request to create new consumable ${consumable.itemName} has been approved.`
+          : request.requestType === 'Stock Out'
+            ? `Your request to transfer ${request.quantity} units from main inventory to annex has been approved.`
+            : `Your request to add ${request.quantity} units has been approved.`,
       });
     } catch (notifyError) {
       console.error('Request approved but notification failed:', notifyError);
@@ -307,7 +385,6 @@ exports.rejectRequest = async (req, res) => {
     const { id } = req.params;
     const { reason } = req.body;
     const adminId = req.user.id;
-    const adminName = req.user.username;
 
     if (!reason) {
       return res.status(400).json({ error: 'Rejection reason is required.' });
@@ -336,20 +413,24 @@ exports.rejectRequest = async (req, res) => {
     request.approvedAt = new Date();
     await request.save();
 
-    // Get consumable for notification
-    const consumable = await Consumable.findByPk(request.consumableId);
+    // Get consumable for notification (new-consumable requests may not have consumableId yet)
+    const consumable = request.consumableId ? await Consumable.findByPk(request.consumableId) : null;
+    const requestedItemName = request.requestedItemName || consumable?.itemName || 'item';
 
     // Keep rejection successful even if notification side-effects fail.
     try {
       await Notification.create({
         userId: request.requestedById,
         type: 'request_rejected',
-        message: `Your request to ${request.requestType === 'Stock In' ? 'add' : 'remove'} ${request.quantity} units of ${consumable?.itemName || 'item'} has been rejected.`,
+        message: request.requestType === 'New Consumable'
+          ? `Your request to create new consumable ${requestedItemName} has been rejected.`
+          : `Your request to ${getRequestActionText(request.requestType)} ${request.quantity} units of ${requestedItemName} has been rejected.`,
         metadata: JSON.stringify({
           requestId: request.id,
           consumableId: request.consumableId,
-          itemName: consumable?.itemName,
+          itemName: requestedItemName,
           quantity: request.quantity,
+          requestType: request.requestType,
           rejectionReason: reason,
         }),
         isRead: false,
@@ -358,12 +439,15 @@ exports.rejectRequest = async (req, res) => {
       emitUserNotification(request.requestedById, {
         userId: request.requestedById,
         type: 'request_rejected',
-        message: `Your request to ${request.requestType === 'Stock In' ? 'add' : 'remove'} ${request.quantity} units of ${consumable?.itemName || 'item'} has been rejected.`,
+        message: request.requestType === 'New Consumable'
+          ? `Your request to create new consumable ${requestedItemName} has been rejected.`
+          : `Your request to ${getRequestActionText(request.requestType)} ${request.quantity} units of ${requestedItemName} has been rejected.`,
         metadata: {
           requestId: request.id,
           consumableId: request.consumableId,
-          itemName: consumable?.itemName,
+          itemName: requestedItemName,
           quantity: request.quantity,
+          requestType: request.requestType,
           rejectionReason: reason,
         },
         isRead: false,
@@ -374,9 +458,11 @@ exports.rejectRequest = async (req, res) => {
       global.io?.emit('request_rejected', {
         requestId: request.id,
         userId: request.requestedById,
-        itemName: consumable?.itemName,
+        itemName: requestedItemName,
         reason,
-        message: `Your request to ${request.requestType === 'Stock In' ? 'add' : 'remove'} ${request.quantity} units has been rejected: ${reason}`,
+        message: request.requestType === 'New Consumable'
+          ? `Your request to create new consumable ${requestedItemName} has been rejected: ${reason}`
+          : `Your request to ${getRequestActionText(request.requestType)} ${request.quantity} units has been rejected: ${reason}`,
       });
     } catch (notifyError) {
       console.error('Request rejected but notification failed:', notifyError);

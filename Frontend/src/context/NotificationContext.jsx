@@ -11,9 +11,20 @@ export const NotificationProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
   const onStockUpdateRef = useRef(null);
 
+  const getApiBaseUrl = () => {
+    return import.meta.env.VITE_API_URL || '/api';
+  };
+
   const getSocketUrl = () => {
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-    return apiUrl.replace(/\/api$/, '');
+    if (import.meta.env.VITE_SOCKET_URL) {
+      return import.meta.env.VITE_SOCKET_URL;
+    }
+
+    if (typeof window !== 'undefined' && window.location?.origin) {
+      return window.location.origin;
+    }
+
+    return 'http://localhost:80';
   };
 
   useEffect(() => {
@@ -21,8 +32,7 @@ export const NotificationProvider = ({ children }) => {
 
     const fetchNotifications = async () => {
       try {
-        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-        const response = await fetch(`${apiUrl}/notifications`, {
+        const response = await fetch(`${getApiBaseUrl()}/notifications`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -96,7 +106,7 @@ export const NotificationProvider = ({ children }) => {
   }, [user, token]);
 
   const getApiUrl = () => {
-    return import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+    return getApiBaseUrl();
   };
 
   const markAsRead = useCallback(async (notificationId) => {

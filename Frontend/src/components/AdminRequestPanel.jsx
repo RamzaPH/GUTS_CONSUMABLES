@@ -87,15 +87,15 @@ const AdminRequestPanel = ({ isOpen, onClose }) => {
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 overflow-y-auto p-4">
-      <div className="w-full max-w-4xl rounded-2xl border border-slate-200 bg-white shadow-lg my-8">
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-3 sm:items-center sm:p-4">
+      <div className="flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg my-8">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-200 p-6">
+        <div className="flex items-start justify-between gap-3 border-b border-slate-200 p-4 sm:p-6">
           <div>
-            <h2 className="font-title text-2xl font-bold text-[#800000]">
+            <h2 className="font-title text-xl font-bold text-[#800000] sm:text-2xl">
               Pending Stock Requests
             </h2>
-            <p className="text-sm text-slate-500 mt-1">
+            <p className="mt-1 text-sm text-slate-500">
               {requests.length} pending request{requests.length !== 1 ? 's' : ''}
             </p>
           </div>
@@ -108,7 +108,7 @@ const AdminRequestPanel = ({ isOpen, onClose }) => {
         </div>
 
         {/* Content */}
-        <div className="p-6">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6">
           {loading ? (
             <div className="flex items-center justify-center py-12">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#800000]"></div>
@@ -122,15 +122,15 @@ const AdminRequestPanel = ({ isOpen, onClose }) => {
             <>
               {/* Requests Table */}
               <div className="overflow-x-auto">
-                <table className="w-full text-sm">
+                <table className="min-w-[680px] w-full text-sm sm:min-w-[760px]">
                   <thead className="bg-slate-50">
                     <tr>
                       <th className="px-4 py-3 text-left font-semibold text-slate-700">Item</th>
                       <th className="px-4 py-3 text-left font-semibold text-slate-700">Staff Member</th>
                       <th className="px-4 py-3 text-left font-semibold text-slate-700">Type</th>
                       <th className="px-4 py-3 text-center font-semibold text-slate-700">Quantity</th>
-                      <th className="px-4 py-3 text-left font-semibold text-slate-700">Purpose</th>
-                      <th className="px-4 py-3 text-left font-semibold text-slate-700">Date</th>
+                      <th className="hidden px-4 py-3 text-left font-semibold text-slate-700 md:table-cell">Purpose</th>
+                      <th className="hidden px-4 py-3 text-left font-semibold text-slate-700 sm:table-cell">Date</th>
                       <th className="px-4 py-3 text-center font-semibold text-slate-700">Action</th>
                     </tr>
                   </thead>
@@ -138,7 +138,14 @@ const AdminRequestPanel = ({ isOpen, onClose }) => {
                     {requests.map((request) => (
                       <tr key={request.id} className="border-t border-slate-200 hover:bg-slate-50">
                         <td className="px-4 py-3">
-                          <div className="font-semibold text-slate-800">{request.consumable?.itemName}</div>
+                          <div className="font-semibold text-slate-800">
+                            {request.consumable?.itemName || request.requestedItemName || 'Unknown Item'}
+                          </div>
+                          {request.requestType === 'New Consumable' && (
+                            <p className="text-xs text-slate-500">
+                              {request.requestedCategory || 'N/A'} • {request.requestedUnit || 'unit'}
+                            </p>
+                          )}
                         </td>
                         <td className="px-4 py-3 text-slate-700">
                           {request.requestedBy?.fullName || request.requestedBy?.username}
@@ -147,7 +154,9 @@ const AdminRequestPanel = ({ isOpen, onClose }) => {
                           <span className={`inline-block px-2 py-1 rounded text-xs font-semibold ${
                             request.requestType === 'Stock In'
                               ? 'bg-emerald-100 text-emerald-700'
-                              : 'bg-red-100 text-red-700'
+                              : request.requestType === 'Stock Out'
+                              ? 'bg-red-100 text-red-700'
+                              : 'bg-blue-100 text-blue-700'
                           }`}>
                             {request.requestType}
                           </span>
@@ -155,10 +164,12 @@ const AdminRequestPanel = ({ isOpen, onClose }) => {
                         <td className="px-4 py-3 text-center font-semibold text-[#800000]">
                           {request.quantity}
                         </td>
-                        <td className="px-4 py-3 text-slate-600">
-                          {request.purpose || '—'}
+                        <td className="hidden px-4 py-3 text-slate-600 md:table-cell">
+                          {request.requestType === 'New Consumable'
+                            ? (request.requestedLocation === 'annex' ? 'Training Inventory' : 'Main Inventory')
+                            : (request.purpose || '—')}
                         </td>
-                        <td className="px-4 py-3 text-xs text-slate-500">
+                        <td className="hidden px-4 py-3 text-xs text-slate-500 sm:table-cell">
                           {new Date(request.createdAt).toLocaleDateString()}
                         </td>
                         <td className="px-4 py-3 text-center">
@@ -221,23 +232,25 @@ const AdminRequestPanel = ({ isOpen, onClose }) => {
 
         {/* Review Modal (when selectedRequest is set) */}
         {selectedRequest && (
-          <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/50 p-4">
-            <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white shadow-lg">
+          <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/50 p-3 sm:p-4">
+            <div className="w-full max-w-md max-h-[90vh] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg">
               {/* Header */}
-              <div className="border-b border-slate-200 p-6">
-                <h3 className="font-title text-xl font-bold text-[#800000]">
+              <div className="border-b border-slate-200 p-4 sm:p-6">
+                <h3 className="font-title text-lg font-bold text-[#800000] sm:text-xl">
                   Review Request
                 </h3>
               </div>
 
               {/* Content */}
-              <div className="p-6 space-y-4">
+              <div className="max-h-[calc(90vh-88px)] overflow-y-auto p-4 space-y-4 sm:p-6">
                 <div className="rounded-lg bg-slate-50 p-4 space-y-3">
                   <div>
                     <p className="text-xs font-semibold text-slate-500 uppercase">Item</p>
-                    <p className="font-semibold text-slate-800">{selectedRequest.consumable?.itemName}</p>
+                    <p className="font-semibold text-slate-800">
+                      {selectedRequest.consumable?.itemName || selectedRequest.requestedItemName || 'Unknown Item'}
+                    </p>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
                       <p className="text-xs font-semibold text-slate-500 uppercase">Staff Member</p>
                       <p className="font-semibold text-slate-800">{selectedRequest.requestedBy?.username}</p>
@@ -247,16 +260,34 @@ const AdminRequestPanel = ({ isOpen, onClose }) => {
                       <p className="font-semibold text-slate-800">{selectedRequest.requestType}</p>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                     <div>
                       <p className="text-xs font-semibold text-slate-500 uppercase">Quantity</p>
                       <p className="text-lg font-bold text-[#800000]">{selectedRequest.quantity}</p>
                     </div>
                     <div>
                       <p className="text-xs font-semibold text-slate-500 uppercase">Purpose</p>
-                      <p className="font-semibold text-slate-800">{selectedRequest.purpose}</p>
+                      <p className="font-semibold text-slate-800">
+                        {selectedRequest.requestType === 'New Consumable'
+                          ? (selectedRequest.requestedLocation === 'annex' ? 'Training Inventory' : 'Main Inventory')
+                          : (selectedRequest.purpose || '—')}
+                      </p>
                     </div>
                   </div>
+                  {selectedRequest.requestType === 'New Consumable' && (
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                      <div>
+                        <p className="text-xs font-semibold text-slate-500 uppercase">Category</p>
+                        <p className="font-semibold text-slate-800">{selectedRequest.requestedCategory || '—'}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold text-slate-500 uppercase">Unit / Reorder Level</p>
+                        <p className="font-semibold text-slate-800">
+                          {selectedRequest.requestedUnit || '—'} / {selectedRequest.requestedReorderLevel ?? '—'}
+                        </p>
+                      </div>
+                    </div>
+                  )}
                   {selectedRequest.reason && (
                     <div>
                       <p className="text-xs font-semibold text-slate-500 uppercase">Reason</p>
@@ -266,7 +297,7 @@ const AdminRequestPanel = ({ isOpen, onClose }) => {
                 </div>
 
                 {!actionType && (
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 sm:gap-3">
                     <button
                       onClick={() => setActionType('approve')}
                       className="flex items-center justify-center gap-2 rounded-lg bg-emerald-50 px-4 py-2 font-semibold text-emerald-700 hover:bg-emerald-100 border border-emerald-200 transition"
@@ -300,20 +331,20 @@ const AdminRequestPanel = ({ isOpen, onClose }) => {
                       />
                     </div>
 
-                    <div className="flex gap-3">
+                    <div className="flex flex-col-reverse gap-2 sm:flex-row sm:gap-3">
                       <button
                         onClick={() => {
                           setActionType(null)
                           setActionNotes("")
                         }}
-                        className="flex-1 rounded-lg border border-slate-300 px-4 py-2 font-semibold text-slate-700 hover:bg-slate-50 transition"
+                        className="w-full rounded-lg border border-slate-300 px-4 py-2 font-semibold text-slate-700 transition hover:bg-slate-50 sm:flex-1"
                       >
                         Cancel
                       </button>
                       <button
                         onClick={actionType === 'approve' ? handleApprove : handleReject}
                         disabled={isSubmittingAction || (actionType === 'reject' && !actionNotes.trim())}
-                        className={`flex-1 rounded-lg px-4 py-2 font-semibold text-white transition disabled:opacity-50 disabled:cursor-not-allowed ${
+                        className={`w-full rounded-lg px-4 py-2 font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-50 sm:flex-1 ${
                           actionType === 'approve'
                             ? 'bg-emerald-600 hover:bg-emerald-700'
                             : 'bg-red-600 hover:bg-red-700'

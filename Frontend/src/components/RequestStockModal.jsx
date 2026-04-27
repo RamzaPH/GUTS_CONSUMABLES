@@ -3,10 +3,12 @@ import { X } from "lucide-react"
 import { useToast } from "../context/ToastContext"
 import { getTrainers } from "../api/authApi"
 import api from "../api/axios"
+const getDefaultPurpose = (type) => (type === "Stock In" ? "Replenishment" : "Training")
 
 const RequestStockModal = ({
   isOpen,
   item,
+  requestType = "Stock Out",
   onClose,
   onRequestSubmitted,
 }) => {
@@ -16,7 +18,7 @@ const RequestStockModal = ({
     reason: "",
     course: "",
     trainer: "",
-    purpose: "Training",
+    purpose: getDefaultPurpose(requestType),
   })
   const [trainers, setTrainers] = useState([])
   const [loadingTrainers, setLoadingTrainers] = useState(false)
@@ -48,11 +50,11 @@ const RequestStockModal = ({
         reason: "",
         course: "",
         trainer: "",
-        purpose: "Training",
+        purpose: getDefaultPurpose(requestType),
       })
       setSubmitError("")
     }
-  }, [isOpen])
+  }, [isOpen, requestType])
 
   const handleChange = (field, value) => {
     setFormData(prev => ({
@@ -81,7 +83,7 @@ const RequestStockModal = ({
 
       const response = await api.post('/requests', {
         consumableId: item.id,
-        requestType: 'Stock In',
+        requestType,
         quantity: parseInt(formData.quantity, 10),
         reason: formData.reason || null,
         course: formData.course || null,
@@ -114,12 +116,12 @@ const RequestStockModal = ({
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 p-4 sm:items-center">
-      <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border border-slate-200 bg-white p-6 shadow-lg">
+    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 p-3 sm:items-center sm:p-4">
+      <div className="max-h-[92vh] w-full max-w-md overflow-y-auto rounded-2xl border border-slate-200 bg-white p-4 shadow-lg sm:p-6">
         {/* Header */}
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="font-title text-2xl font-bold text-[#800000]">
-            Request Stock Modification
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <h2 className="font-title text-xl font-bold text-[#800000] sm:text-2xl">
+            {requestType === "Stock Out" ? "Request Stock Deduction" : "Request Stock Addition"}
           </h2>
           <button
             onClick={onClose}
@@ -131,7 +133,7 @@ const RequestStockModal = ({
 
         {/* Item Info */}
         {item && (
-          <div className="mb-6 rounded-lg bg-slate-50 p-4">
+          <div className="mb-6 rounded-lg bg-slate-50 p-3 sm:p-4">
             <p className="text-sm text-slate-600">Item</p>
             <p className="font-semibold text-slate-800">{item.itemName}</p>
             <p className="text-xs text-slate-500 mt-1">
@@ -152,7 +154,7 @@ const RequestStockModal = ({
               min="1"
               value={formData.quantity}
               onChange={(e) => handleChange("quantity", e.target.value)}
-              placeholder="Enter quantity needed"
+              placeholder={requestType === "Stock Out" ? "Enter quantity to deduct" : "Enter quantity to add"}
               className="mt-1 w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-[var(--brand-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]/20"
               required
             />
@@ -166,7 +168,7 @@ const RequestStockModal = ({
             <textarea
               value={formData.reason}
               onChange={(e) => handleChange("reason", e.target.value)}
-              placeholder="Why do you need this stock modification?"
+              placeholder={requestType === "Stock Out" ? "Why should this stock be deducted from main inventory?" : "Why do you need this stock addition?"}
               rows="3"
               className="mt-1 w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-[var(--brand-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]/20"
             />
@@ -226,7 +228,7 @@ const RequestStockModal = ({
           </div>
 
           {/* Action Buttons */}
-          <div className="mt-6 flex gap-3">
+          <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:gap-3">
             <button
               type="button"
               onClick={onClose}

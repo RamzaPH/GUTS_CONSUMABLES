@@ -162,11 +162,11 @@ const CourseManagementModal = ({ isOpen, onClose, onCoursesUpdated }) => {
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-4xl rounded-2xl bg-white shadow-xl max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 p-3 sm:items-center sm:p-4">
+      <div className="flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-xl">
         {/* Header */}
-        <div className="sticky top-0 border-b border-slate-200 bg-white px-6 py-4">
-          <div className="flex items-center justify-between mb-4">
+        <div className="sticky top-0 border-b border-slate-200 bg-white px-4 py-4 sm:px-6">
+          <div className="mb-4 flex items-center justify-between gap-3">
             <h2 className="font-title text-lg font-bold text-slate-800">
               Course Management
             </h2>
@@ -180,10 +180,10 @@ const CourseManagementModal = ({ isOpen, onClose, onCoursesUpdated }) => {
           </div>
           
           {/* Tabs */}
-          <div className="flex items-center gap-4 border-b border-slate-200 mb-4">
+          <div className="mb-4 flex flex-wrap items-center gap-2 border-b border-slate-200">
             <button
               onClick={() => setShowArchived(false)}
-              className={`px-4 py-2 font-semibold text-sm transition-colors ${
+              className={`px-3 py-2 font-semibold text-sm transition-colors sm:px-4 ${
                 !showArchived
                   ? 'text-[var(--brand-primary)] border-b-2 border-[var(--brand-primary)]'
                   : 'text-slate-500 hover:text-slate-700'
@@ -194,7 +194,7 @@ const CourseManagementModal = ({ isOpen, onClose, onCoursesUpdated }) => {
             </button>
             <button
               onClick={() => setShowArchived(true)}
-              className={`px-4 py-2 font-semibold text-sm transition-colors ${
+              className={`px-3 py-2 font-semibold text-sm transition-colors sm:px-4 ${
                 showArchived
                   ? 'text-[var(--brand-primary)] border-b-2 border-[var(--brand-primary)]'
                   : 'text-slate-500 hover:text-slate-700'
@@ -209,7 +209,7 @@ const CourseManagementModal = ({ isOpen, onClose, onCoursesUpdated }) => {
           {!showArchived && (
             <div className="flex justify-end">
               <Button
-                className="flex items-center gap-2 bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-strong)]"
+                className="flex items-center gap-2 bg-[var(--brand-primary)] px-3 py-2 text-xs hover:bg-[var(--brand-primary-strong)] sm:px-4 sm:text-sm"
                 onClick={handleAddCourse}
               >
                 <Plus className="h-4 w-4" />
@@ -220,7 +220,7 @@ const CourseManagementModal = ({ isOpen, onClose, onCoursesUpdated }) => {
         </div>
 
         {/* Content */}
-        <div className="p-6">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6">
           {error && (
             <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">
               {error}
@@ -229,8 +229,8 @@ const CourseManagementModal = ({ isOpen, onClose, onCoursesUpdated }) => {
 
           {isFormOpen ? (
             // Form View
-            <form onSubmit={handleSubmit} className="max-w-2xl mx-auto space-y-4 border border-slate-200 rounded-lg p-6 bg-slate-50">
-              <div className="flex items-center justify-between mb-4">
+            <form onSubmit={handleSubmit} className="mx-auto max-w-2xl space-y-4 rounded-lg border border-slate-200 bg-slate-50 p-4 sm:p-6">
+              <div className="mb-4 flex items-center justify-between">
                 <h3 className="font-semibold text-slate-800">
                   {editingCourse ? 'Edit Course' : 'Add New Course'}
                 </h3>
@@ -295,16 +295,16 @@ const CourseManagementModal = ({ isOpen, onClose, onCoursesUpdated }) => {
               </div>
 
               {/* Submit */}
-              <div className="pt-4 flex gap-2 justify-end">
+              <div className="flex flex-col-reverse gap-2 pt-4 sm:flex-row sm:justify-end">
                 <button
                   type="button"
                   onClick={() => setIsFormOpen(false)}
-                  className="px-4 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-100 font-semibold"
+                  className="w-full rounded-lg border border-slate-300 px-4 py-2 font-semibold text-slate-700 hover:bg-slate-100 sm:w-auto"
                 >
                   Cancel
                 </button>
                 <Button
-                  className="bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-strong)]"
+                  className="w-full bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-strong)] sm:w-auto"
                   disabled={isSubmitting}
                   type="submit"
                 >
@@ -330,7 +330,7 @@ const CourseManagementModal = ({ isOpen, onClose, onCoursesUpdated }) => {
                 ) : (
                   <div className="space-y-3">
                     {courses.filter(c => c.isActive).map(course => (
-                      <div key={course.id} className="flex items-center justify-between border border-slate-200 rounded-lg p-4 bg-white hover:bg-slate-50 transition-colors">
+                      <div key={course.id} className="flex flex-col gap-3 rounded-lg border border-slate-200 bg-white p-4 transition-colors hover:bg-slate-50 sm:flex-row sm:items-center sm:justify-between">
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
                             <h3 className="font-semibold text-slate-900">{course.name}</h3>
@@ -342,7 +342,7 @@ const CourseManagementModal = ({ isOpen, onClose, onCoursesUpdated }) => {
                             <p className="text-xs text-slate-500 mt-1">{course.description}</p>
                           )}
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 self-end sm:self-auto">
                           <button
                             onClick={() => handleEditCourse(course)}
                             className="p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-700 rounded-lg transition-colors"
@@ -375,7 +375,7 @@ const CourseManagementModal = ({ isOpen, onClose, onCoursesUpdated }) => {
                 ) : (
                   <div className="space-y-3">
                     {archivedCourses.map(course => (
-                      <div key={course.id} className="flex items-center justify-between border border-slate-200 border-yellow-200 rounded-lg p-4 bg-yellow-50 hover:bg-yellow-100 transition-colors">
+                      <div key={course.id} className="flex flex-col gap-3 rounded-lg border border-slate-200 border-yellow-200 bg-yellow-50 p-4 transition-colors hover:bg-yellow-100 sm:flex-row sm:items-center sm:justify-between">
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
                             <h3 className="font-semibold text-slate-900">{course.name}</h3>
@@ -390,7 +390,7 @@ const CourseManagementModal = ({ isOpen, onClose, onCoursesUpdated }) => {
                             <p className="text-xs text-slate-500 mt-1">{course.description}</p>
                           )}
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 self-end sm:self-auto">
                           <button
                             onClick={() => handleRestoreCourse(course.id)}
                             className="p-2 text-green-600 hover:bg-green-50 hover:text-green-700 rounded-lg transition-colors"

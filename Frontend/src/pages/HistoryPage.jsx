@@ -320,20 +320,20 @@ const HistoryPage = () => {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-4 p-4 sm:space-y-6 sm:p-6">
       {/* Header and Navigation */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <button
           onClick={() => navigate(-1)}
-          className="inline-flex items-center gap-2 text-[#800000] hover:text-[#660000] font-semibold transition"
+          className="inline-flex items-center gap-2 font-semibold text-[#800000] transition hover:text-[#660000]"
         >
           <ChevronLeft size={20} />
           Back
         </button>
-        <h1 className="text-3xl font-bold text-[#800000]">Full History Report</h1>
+        <h1 className="text-2xl font-bold text-[#800000] sm:text-3xl">Full History Report</h1>
         <button
           onClick={handlePrint}
-          className="inline-flex items-center gap-2 bg-[#800000] text-white px-6 py-2 rounded-lg hover:bg-[#660000] transition font-semibold"
+          className="inline-flex items-center gap-2 rounded-lg bg-[#800000] px-4 py-2 font-semibold text-white transition hover:bg-[#660000] sm:px-6"
         >
           <Printer size={20} />
           Print Report
@@ -342,9 +342,9 @@ const HistoryPage = () => {
 
       {/* Item Info Card */}
       {item && (
-        <div className="rounded-2xl border border-slate-200 bg-white p-6">
-          <h2 className="text-2xl font-bold text-[#800000] mb-4">{item.itemName}</h2>
-          <div className="grid gap-4 sm:grid-cols-4">
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-6">
+          <h2 className="mb-4 text-xl font-bold text-[#800000] sm:text-2xl">{item.itemName}</h2>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div>
               <p className="text-xs font-semibold uppercase text-slate-500">Category</p>
               <p className="mt-1 font-semibold text-slate-800">{item.category}</p>
@@ -366,7 +366,7 @@ const HistoryPage = () => {
       )}
 
       {/* Filters Section */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 space-y-4">
+      <div className="rounded-2xl border border-slate-200 bg-white p-4 space-y-4 sm:p-6">
         {/* Row 1: Search and Sort */}
         <div className="grid gap-4 md:grid-cols-4">
           {/* Search Username */}
@@ -392,7 +392,7 @@ const HistoryPage = () => {
                 setSortDate(sortDate === 'DESC' ? 'ASC' : 'DESC')
                 setCurrentPage(1)
               }}
-              className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-medium transition"
+              className="flex w-full items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 font-medium text-slate-700 transition hover:bg-slate-50"
               title={`Sort by date (${sortDate === 'DESC' ? 'Newest' : 'Oldest'} first)`}
             >
               <ArrowUpDown className="h-4 w-4" />
@@ -455,7 +455,7 @@ const HistoryPage = () => {
               setSortDate('DESC')
               setCurrentPage(1)
             }}
-            className="text-xs text-red-600 hover:text-red-700 font-medium"
+            className="text-xs font-medium text-red-600 hover:text-red-700"
           >
             Clear All Filters
           </button>
@@ -463,7 +463,7 @@ const HistoryPage = () => {
       </div>
 
       {/* History Table */}
-      <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
         <div className="overflow-x-auto">
           {currentRecords.length === 0 ? (
             <div className="flex items-center justify-center py-12 text-slate-500">
@@ -474,17 +474,17 @@ const HistoryPage = () => {
               <thead className="bg-[#f8eef0]">
                 <tr>
                   <th className="px-4 py-3 text-left font-semibold text-[#800000]">Inventory Date</th>
-                  <th className="px-4 py-3 text-center font-semibold text-[#800000]">Beginning Inv.</th>
-                  <th className="px-4 py-3 text-center font-semibold text-[#800000]">Purchase</th>
-                  <th className="px-4 py-3 text-center font-semibold text-[#800000]">Stock-on-hand</th>
-                  <th className="px-4 py-3 text-center font-semibold text-[#800000]">Consumption</th>
-                  <th className="px-4 py-3 text-center font-semibold text-[#800000]">Ending Inv.</th>
-                  <th className="px-4 py-3 text-center font-semibold text-[#800000]">Unit</th>
-                  <th className="px-4 py-3 text-left font-semibold text-[#800000]">Performed By</th>
-                  <th className="px-4 py-3 text-left font-semibold text-[#800000]">Course</th>
-                  <th className="px-4 py-3 text-left font-semibold text-[#800000]">Purpose</th>
-                  <th className="px-4 py-3 text-left font-semibold text-[#800000]">Trainer</th>
-                  <th className="px-4 py-3 text-left font-semibold text-[#800000]">Remarks</th>
+                  <th className="hidden px-4 py-3 text-center font-semibold text-[#800000] md:table-cell">Beginning Inv.</th>
+                  <th className="hidden px-4 py-3 text-center font-semibold text-[#800000] sm:table-cell">Purchase</th>
+                  <th className="hidden px-4 py-3 text-center font-semibold text-[#800000] lg:table-cell">Stock-on-hand</th>
+                  <th className="hidden px-4 py-3 text-center font-semibold text-[#800000] lg:table-cell">Consumption</th>
+                  <th className="hidden px-4 py-3 text-center font-semibold text-[#800000] md:table-cell">Ending Inv.</th>
+                  <th className="hidden px-4 py-3 text-center font-semibold text-[#800000] sm:table-cell">Unit</th>
+                  <th className="hidden px-4 py-3 text-left font-semibold text-[#800000] sm:table-cell">Performed By</th>
+                  <th className="hidden px-4 py-3 text-left font-semibold text-[#800000] lg:table-cell">Course</th>
+                  <th className="hidden px-4 py-3 text-left font-semibold text-[#800000] lg:table-cell">Purpose</th>
+                  <th className="hidden px-4 py-3 text-left font-semibold text-[#800000] lg:table-cell">Trainer</th>
+                  <th className="hidden px-4 py-3 text-left font-semibold text-[#800000] xl:table-cell">Remarks</th>
                   {user?.role === 'admin' && (
                     <th className="px-4 py-3 text-center font-semibold text-[#800000]">Action</th>
                   )}
@@ -493,37 +493,37 @@ const HistoryPage = () => {
               <tbody className="divide-y divide-slate-100">
                 {currentRecords.map((record) => (
                   <tr key={record.id} className="hover:bg-slate-50">
-                    <td className="px-4 py-3 text-slate-600 whitespace-nowrap">
+                    <td className="px-4 py-3 whitespace-nowrap text-slate-600">
                       {new Date(record.createdAt).toLocaleDateString("en-PH")}
                     </td>
-                    <td className="px-4 py-3 text-center font-semibold text-slate-600">
+                    <td className="hidden px-4 py-3 text-center font-semibold text-slate-600 md:table-cell">
                       {record.beginningInventory || "—"}
                     </td>
-                    <td className="px-4 py-3 text-center font-semibold text-emerald-600">
+                    <td className="hidden px-4 py-3 text-center font-semibold text-emerald-600 sm:table-cell">
                       {record.quantityChanged > 0 ? record.quantityChanged : "—"}
                     </td>
-                    <td className="px-4 py-3 text-center font-semibold text-slate-600">
+                    <td className="hidden px-4 py-3 text-center font-semibold text-slate-600 lg:table-cell">
                       {record.quantityChanged > 0 
                         ? (record.beginningInventory + record.quantityChanged) || "—"
                         : record.beginningInventory || "—"
                       }
                     </td>
-                    <td className="px-4 py-3 text-center font-semibold text-red-600">
+                    <td className="hidden px-4 py-3 text-center font-semibold text-red-600 lg:table-cell">
                       {record.quantityChanged < 0 ? Math.abs(record.quantityChanged) : "—"}
                     </td>
-                    <td className="px-4 py-3 text-center font-semibold text-slate-600">
+                    <td className="hidden px-4 py-3 text-center font-semibold text-slate-600 md:table-cell">
                       {record.endingInventory || "—"}
                     </td>
-                    <td className="px-4 py-3 text-center font-semibold text-slate-600">
+                    <td className="hidden px-4 py-3 text-center font-semibold text-slate-600 sm:table-cell">
                       {record.unit || "—"}
                     </td>
-                    <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{record.performedBy || "System"}</td>
-                    <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{record.course || "—"}</td>
-                    <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{record.purpose || "—"}</td>
-                    <td className="px-4 py-3 text-slate-600 whitespace-nowrap">{record.trainer || "—"}</td>
-                    <td className="px-4 py-3 text-slate-600">{record.description || "—"}</td>
+                    <td className="hidden px-4 py-3 whitespace-nowrap text-slate-600 sm:table-cell">{record.performedBy || "System"}</td>
+                    <td className="hidden px-4 py-3 whitespace-nowrap text-slate-600 lg:table-cell">{record.course || "—"}</td>
+                    <td className="hidden px-4 py-3 whitespace-nowrap text-slate-600 lg:table-cell">{record.purpose || "—"}</td>
+                    <td className="hidden px-4 py-3 whitespace-nowrap text-slate-600 lg:table-cell">{record.trainer || "—"}</td>
+                    <td className="hidden px-4 py-3 text-slate-600 xl:table-cell">{record.description || "—"}</td>
                     {user?.role === 'admin' && (
-                      <td className="px-4 py-3 text-center">
+                      <td className="hidden px-4 py-3 text-center sm:table-cell">
                         <button
                           onClick={() => handleEditClick(record)}
                           className="inline-flex items-center gap-1 rounded-lg bg-blue-100 px-3 py-2 text-xs font-medium text-blue-700 hover:bg-blue-200 transition"
@@ -544,11 +544,11 @@ const HistoryPage = () => {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-between rounded-2xl border border-slate-200 bg-white p-6">
+        <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between sm:p-6">
           <div className="text-slate-600">
             Showing {startIndex + 1} to {Math.min(endIndex, filteredHistory.length)} of {filteredHistory.length} records {purposeFilter !== 'All' && `(filtered by ${purposeFilter})`}
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <button
               onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}

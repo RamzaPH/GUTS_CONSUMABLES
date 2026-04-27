@@ -56,12 +56,12 @@ const ItemDetailsModal = ({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4">
-      <div className="w-full max-w-2xl rounded-2xl border border-[var(--brand-secondary-soft)] bg-white shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-start justify-center bg-slate-900/50 p-3 sm:items-center sm:p-4">
+      <div className="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-[var(--brand-secondary-soft)] bg-white shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-[var(--brand-secondary-soft)] px-6 py-5">
+        <div className="flex items-center justify-between border-b border-[var(--brand-secondary-soft)] px-4 py-4 sm:px-6 sm:py-5">
           <div>
-            <h3 className="font-title text-xl font-bold text-[var(--brand-primary)]">{item.itemName}</h3>
+            <h3 className="font-title text-lg font-bold text-[var(--brand-primary)] sm:text-xl">{item.itemName}</h3>
             <p className="mt-1 text-sm text-slate-500">Manage stock and track inventory movements</p>
           </div>
           <button
@@ -74,13 +74,13 @@ const ItemDetailsModal = ({
           </button>
         </div>
 
-        <div className="p-6">
+        <div className="p-4 sm:p-6">
           {/* Item Details Card */}
-          <div className="mb-6 rounded-xl bg-gradient-to-r from-[#f8eef0] to-slate-50 border border-[var(--brand-secondary-soft)] p-5">
-            <div className="grid gap-4 sm:grid-cols-4">
+          <div className="mb-6 rounded-xl border border-[var(--brand-secondary-soft)] bg-gradient-to-r from-[#f8eef0] to-slate-50 p-4 sm:p-5">
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Current Stock</p>
-                <p className="mt-2 font-title text-2xl font-bold text-slate-800">{item.quantity}</p>
+                <p className="mt-2 font-title text-xl font-bold text-slate-800 sm:text-2xl">{item.quantity}</p>
                 <p className="text-xs text-slate-600 mt-1">{item.unit}</p>
               </div>
               <div>
@@ -120,11 +120,11 @@ const ItemDetailsModal = ({
                   </div>
                 </div>
               ) : (
-                <div className="grid gap-3 sm:grid-cols-2 mb-6">
+                <div className="mb-6 grid gap-3 sm:grid-cols-2">
                   <button
                     type="button"
                     onClick={() => setActiveAction("purchase")}
-                    className="group flex items-center justify-center gap-3 rounded-xl border-2 border-emerald-200 bg-emerald-50 px-5 py-4 transition hover:border-emerald-400 hover:bg-emerald-100"
+                    className="group flex items-center justify-center gap-3 rounded-xl border-2 border-emerald-200 bg-emerald-50 px-4 py-4 transition hover:border-emerald-400 hover:bg-emerald-100 sm:px-5"
                   >
                     <TrendingUp className="h-5 w-5 text-emerald-600 group-hover:scale-110 transition" />
                     <div className="text-left">
@@ -136,7 +136,7 @@ const ItemDetailsModal = ({
                   <button
                     type="button"
                     onClick={() => setActiveAction("consumption")}
-                    className="group flex items-center justify-center gap-3 rounded-xl border-2 border-red-200 bg-red-50 px-5 py-4 transition hover:border-red-400 hover:bg-red-100"
+                    className="group flex items-center justify-center gap-3 rounded-xl border-2 border-red-200 bg-red-50 px-4 py-4 transition hover:border-red-400 hover:bg-red-100 sm:px-5"
                   >
                     <TrendingDown className="h-5 w-5 text-red-600 group-hover:scale-110 transition" />
                     <div className="text-left">
@@ -225,7 +225,7 @@ const ItemDetailsModal = ({
                 </label>
               </div>
 
-              <div className="flex justify-end gap-2 border-t border-slate-200 pt-4">
+              <div className="flex flex-col-reverse gap-2 border-t border-slate-200 pt-4 sm:flex-row sm:justify-end">
                 <Button
                   type="button"
                   variant="secondary"

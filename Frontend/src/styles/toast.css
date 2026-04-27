@@ -88,7 +88,7 @@
 
 @media (max-width: 480px) {
   .toast-container {
-    top: 10px;
+    top: calc(env(safe-area-inset-top, 0px) + 10px);
     right: 10px;
     left: 10px;
     max-width: none;
@@ -97,5 +97,9 @@
   .toast {
     padding: 10px 12px;
     font-size: 13px;
+  }
+
+  .toast-close {
+    font-size: 18px;
   }
 }

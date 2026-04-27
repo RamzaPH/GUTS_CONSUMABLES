@@ -109,11 +109,11 @@ const ComprehensiveItemModal = ({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4">
-      <div className="w-full max-w-5xl max-h-[90vh] rounded-2xl border border-[var(--brand-secondary-soft)] bg-white shadow-2xl flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-start justify-center bg-slate-900/50 p-3 sm:items-center sm:p-4">
+      <div className="flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-[var(--brand-secondary-soft)] bg-white shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-[var(--brand-secondary-soft)] px-6 py-4">
-          <h2 className="font-title text-2xl font-bold text-[var(--brand-primary)]">
+        <div className="flex items-center justify-between gap-3 border-b border-[var(--brand-secondary-soft)] px-4 py-4 sm:px-6">
+          <h2 className="font-title text-xl font-bold text-[var(--brand-primary)] sm:text-2xl">
             {item.itemName}
           </h2>
           <button
@@ -126,15 +126,15 @@ const ComprehensiveItemModal = ({
         </div>
 
         <div className="flex-1 overflow-y-auto">
-          <div className="p-6 space-y-6">
+          <div className="space-y-4 p-4 sm:space-y-6 sm:p-6">
             {/* Item Info Card */}
-            <div className="rounded-xl bg-gradient-to-r from-[#f8eef0] to-slate-50 border border-[var(--brand-secondary-soft)] p-5">
-              <div className="grid gap-4 sm:grid-cols-5">
+            <div className="rounded-xl border border-[var(--brand-secondary-soft)] bg-gradient-to-r from-[#f8eef0] to-slate-50 p-4 sm:p-5">
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                     Current Stock
                   </p>
-                  <p className="mt-2 font-title text-2xl font-bold text-slate-800">
+                  <p className="mt-2 font-title text-xl font-bold text-slate-800 sm:text-2xl">
                     {item.quantity}
                   </p>
                   <p className="text-xs text-slate-600">{item.unit}</p>
@@ -176,12 +176,12 @@ const ComprehensiveItemModal = ({
 
             {/* Action Section (When not showing form) */}
             {!activeAction && (
-              <div className="rounded-xl border border-slate-200 p-5">
+              <div className="rounded-xl border border-slate-200 p-4 sm:p-5">
                 <h3 className="mb-4 font-title text-lg font-bold text-slate-800">
                   Stock Management
                 </h3>
                 {isStaffAccessingMain ? (
-                  <div className="rounded-xl border-2 border-yellow-300 bg-yellow-50 p-4 flex items-center gap-3">
+                  <div className="flex items-start gap-3 rounded-xl border-2 border-yellow-300 bg-yellow-50 p-4">
                     <Lock className="h-5 w-5 text-yellow-600" />
                     <div>
                       <p className="font-semibold text-yellow-800">Read-Only Access</p>
@@ -193,7 +193,7 @@ const ComprehensiveItemModal = ({
                     <button
                       type="button"
                       onClick={() => setActiveAction("add")}
-                      className="group flex items-center justify-center gap-3 rounded-xl border-2 border-emerald-200 bg-emerald-50 px-5 py-4 transition hover:border-emerald-400 hover:bg-emerald-100"
+                      className="group flex items-center justify-center gap-3 rounded-xl border-2 border-emerald-200 bg-emerald-50 px-4 py-4 transition hover:border-emerald-400 hover:bg-emerald-100 sm:px-5"
                     >
                       <TrendingUp className="h-5 w-5 text-emerald-600 transition group-hover:scale-110" />
                       <div className="text-left">
@@ -205,7 +205,7 @@ const ComprehensiveItemModal = ({
                     <button
                       type="button"
                       onClick={() => setActiveAction("deduct")}
-                      className="group flex items-center justify-center gap-3 rounded-xl border-2 border-red-200 bg-red-50 px-5 py-4 transition hover:border-red-400 hover:bg-red-100"
+                      className="group flex items-center justify-center gap-3 rounded-xl border-2 border-red-200 bg-red-50 px-4 py-4 transition hover:border-red-400 hover:bg-red-100 sm:px-5"
                     >
                       <TrendingDown className="h-5 w-5 text-red-600 transition group-hover:scale-110" />
                       <div className="text-left">
@@ -220,7 +220,7 @@ const ComprehensiveItemModal = ({
 
             {/* Form Section */}
             {activeAction && (
-              <div className={`rounded-xl border-2 p-5 ${
+              <div className={`rounded-xl border-2 p-4 sm:p-5 ${
                 activeAction === "add"
                   ? "border-emerald-200 bg-emerald-50"
                   : "border-red-200 bg-red-50"
@@ -348,10 +348,10 @@ const ComprehensiveItemModal = ({
                   </div>
 
                   {/* Actions */}
-                  <div className="flex gap-3 pt-2">
+                  <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:gap-3">
                     <Button
                       type="submit"
-                      className={`flex-1 ${
+                      className={`w-full sm:flex-1 ${
                         activeAction === "add"
                           ? "bg-emerald-600 hover:bg-emerald-700"
                           : "bg-red-600 hover:bg-red-700"
@@ -363,7 +363,7 @@ const ComprehensiveItemModal = ({
                       type="button"
                       onClick={handleReset}
                       variant="secondary"
-                      className="flex-1"
+                      className="w-full sm:flex-1"
                     >
                       Cancel
                     </Button>
@@ -375,7 +375,7 @@ const ComprehensiveItemModal = ({
         </div>
 
         {/* Footer */}
-        <div className="flex justify-end gap-3 border-t border-slate-200 px-6 py-4">
+        <div className="flex justify-end gap-3 border-t border-slate-200 px-4 py-4 sm:px-6">
           <Button onClick={onClose} variant="secondary">
             Close
           </Button>

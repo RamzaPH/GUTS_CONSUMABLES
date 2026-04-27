@@ -25,12 +25,12 @@ const ConsumableTable = ({ items, onEdit, onArchive, onRowClick, showActions = t
         <table className="min-w-full divide-y divide-slate-200 text-left text-sm dark:divide-slate-700">
           <thead className="bg-[#f8eef0] transition-colors duration-300 dark:bg-slate-900/50">
             <tr>
-              <th className="px-3 py-2 font-semibold text-[var(--brand-primary)] dark:text-red-400 transition-colors duration-300">Item Name</th>
-              <th className="px-3 py-2 font-semibold text-[var(--brand-primary)] dark:text-red-400 transition-colors duration-300">Course</th>
-              <th className="px-3 py-2 font-semibold text-[var(--brand-primary)] dark:text-red-400 transition-colors duration-300">Quantity</th>
-              <th className="px-3 py-2 font-semibold text-[var(--brand-primary)] dark:text-red-400 transition-colors duration-300">Unit</th>
-              <th className="px-3 py-2 font-semibold text-[var(--brand-primary)] dark:text-red-400 transition-colors duration-300">Status</th>
-              {showActions ? <th className="px-3 py-2 font-semibold text-[var(--brand-primary)] dark:text-red-400 transition-colors duration-300 print:hidden">Actions</th> : null}
+              <th className="px-3 py-2 font-semibold text-[var(--brand-primary)] transition-colors duration-300 dark:text-red-400">Item Name</th>
+              <th className="hidden px-3 py-2 font-semibold text-[var(--brand-primary)] transition-colors duration-300 dark:text-red-400 md:table-cell">Course</th>
+              <th className="px-3 py-2 font-semibold text-[var(--brand-primary)] transition-colors duration-300 dark:text-red-400">Quantity</th>
+              <th className="hidden px-3 py-2 font-semibold text-[var(--brand-primary)] transition-colors duration-300 dark:text-red-400 sm:table-cell">Unit</th>
+              <th className="px-3 py-2 font-semibold text-[var(--brand-primary)] transition-colors duration-300 dark:text-red-400">Status</th>
+              {showActions ? <th className="px-3 py-2 font-semibold text-[var(--brand-primary)] transition-colors duration-300 print:hidden dark:text-red-400">Actions</th> : null}
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 bg-white dark:divide-slate-700 dark:bg-slate-800 transition-colors duration-300">
@@ -40,20 +40,20 @@ const ConsumableTable = ({ items, onEdit, onArchive, onRowClick, showActions = t
                 onClick={(e) => handleRowClick(item, e)}
                 className="cursor-pointer hover:bg-[#fce4e8]/40 dark:hover:bg-slate-700/50 transition-colors duration-300"
               >
-                <td className="px-3 py-2 font-medium text-slate-700 dark:text-slate-200 transition-colors duration-300">{item.itemName}</td>
-                <td className="px-3 py-2 text-slate-700 dark:text-slate-300 transition-colors duration-300">{getCourseDisplay(item)}</td>
-                <td className="px-3 py-2 text-slate-700 dark:text-slate-300 transition-colors duration-300">{item.quantity}</td>
-                <td className="px-3 py-2 text-slate-600 dark:text-slate-400 transition-colors duration-300">{item.unit}</td>
+                <td className="px-3 py-2 font-medium text-slate-700 transition-colors duration-300 dark:text-slate-200">{item.itemName}</td>
+                <td className="hidden px-3 py-2 text-slate-700 transition-colors duration-300 dark:text-slate-300 md:table-cell">{getCourseDisplay(item)}</td>
+                <td className="px-3 py-2 text-slate-700 transition-colors duration-300 dark:text-slate-300">{item.quantity}</td>
+                <td className="hidden px-3 py-2 text-slate-600 transition-colors duration-300 dark:text-slate-400 sm:table-cell">{item.unit}</td>
                 <td className="px-3 py-2">
                   <span
-                    className={`inline-flex rounded-full px-3 py-1 text-[11px] font-semibold transition-colors duration-300 ${statusClassMap[item.status]}`}
+                    className={`inline-flex rounded-full px-2 py-1 text-[10px] font-semibold transition-colors duration-300 sm:px-3 sm:text-[11px] ${statusClassMap[item.status]}`}
                   >
                     {item.status}
                   </span>
                 </td>
                 {showActions ? (
                   <td className="px-3 py-2 print:hidden" onClick={(e) => e.stopPropagation()}>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1 sm:gap-2">
                       <button
                         type="button"
                         onClick={() => onEdit?.(item)}

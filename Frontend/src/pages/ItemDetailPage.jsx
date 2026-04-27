@@ -28,6 +28,8 @@ const ItemDetailPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [modalAction, setModalAction] = useState(null) // "add" or "deduct"
   const [isRequestModalOpen, setIsRequestModalOpen] = useState(false)
+  const [requestModalType, setRequestModalType] = useState("Stock Out")
+  const [pendingRequestSummary, setPendingRequestSummary] = useState(null)
   const [purposeFilter, setPurposeFilter] = useState('All')
   const [isSyncing, setIsSyncing] = useState(false)
 
@@ -208,20 +210,20 @@ const ItemDetailPage = () => {
   const recentHistory = filteredByPurpose.slice(0, 5)
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Back Button */}
       <button
         onClick={() => navigate(-1)}
-        className="inline-flex items-center gap-2 text-[#800000] hover:text-[#660000] font-semibold transition"
+        className="inline-flex items-center gap-2 font-semibold text-[#800000] transition hover:text-[#660000]"
       >
         <ChevronLeft size={20} />
         Back to {trackLabel}
       </button>
 
       {/* Item Summary Card */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h1 className="font-title text-3xl font-bold text-[#800000] mb-4">{item.itemName}</h1>
-        <div className="grid gap-4 sm:grid-cols-5">
+      <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
+        <h1 className="font-title mb-4 text-2xl font-bold text-[#800000] sm:text-3xl">{item.itemName}</h1>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           <div>
             <p className="text-xs font-semibold uppercase text-slate-500">Category</p>
             <p className="mt-1 font-semibold text-slate-800">{item.category}</p>
@@ -232,7 +234,7 @@ const ItemDetailPage = () => {
           </div>
           <div>
             <p className="text-xs font-semibold uppercase text-slate-500">Current Stock</p>
-            <p className="mt-2 font-title text-2xl font-bold text-[#800000]">{item.quantity}</p>
+            <p className="mt-2 font-title text-xl font-bold text-[#800000] sm:text-2xl">{item.quantity}</p>
           </div>
           <div>
             <p className="text-xs font-semibold uppercase text-slate-500">Reorder Level</p>
@@ -255,48 +257,76 @@ const ItemDetailPage = () => {
 
       {/* Add/Deduct Stock Buttons */}
       {isStaffAccessingMain ? (
-        <div className="grid gap-3 sm:grid-cols-2">
-          <button
-            onClick={() => setIsRequestModalOpen(true)}
-            className="rounded-2xl border-2 border-blue-200 bg-blue-50 p-6 text-left transition hover:border-blue-400 hover:bg-blue-100"
-          >
-            <h3 className="text-lg font-bold text-blue-700 mb-2">Request Stock Modification</h3>
-            <p className="text-sm text-blue-600">Submit a request for approval</p>
-          </button>
-          <button
-            onClick={handleSyncInventory}
-            disabled={isSyncing}
-            className="rounded-2xl border-2 border-slate-200 bg-slate-50 p-6 text-left transition hover:border-slate-400 hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <h3 className="text-lg font-bold text-slate-700 mb-2 flex items-center gap-2">
-              <RefreshCw size={20} className={isSyncing ? 'animate-spin' : ''} />
-              Sync Inventory
-            </h3>
-            <p className="text-sm text-slate-600">Recalculate ending inventory</p>
-          </button>
+        <div className="space-y-3">
+          {pendingRequestSummary && (
+            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 sm:p-5">
+              <p className="text-sm font-bold text-amber-800">Pending Admin Approval</p>
+              <p className="mt-1 text-sm text-amber-700">
+                Requested {pendingRequestSummary.requestType === 'Stock In' ? 'addition' : 'deduction'} of {pendingRequestSummary.quantity} {item.unit}
+                {pendingRequestSummary.quantity > 1 ? 's' : ''} for {pendingRequestSummary.itemName}.
+              </p>
+              <p className="mt-1 text-xs text-amber-700">
+                Submitted on {new Date(pendingRequestSummary.createdAt).toLocaleString("en-PH")}.
+              </p>
+            </div>
+          )}
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <button
+              onClick={() => {
+                setRequestModalType('Stock In')
+                setIsRequestModalOpen(true)
+              }}
+              className="rounded-2xl border-2 border-emerald-200 bg-emerald-50 p-4 text-left transition hover:border-emerald-400 hover:bg-emerald-100 sm:p-6"
+            >
+              <h3 className="mb-2 text-base font-bold text-emerald-700 sm:text-lg">Request Stock Addition</h3>
+              <p className="text-sm text-emerald-600">Ask admin to approve adding stock to main inventory</p>
+            </button>
+            <button
+              onClick={() => {
+                setRequestModalType('Stock Out')
+                setIsRequestModalOpen(true)
+              }}
+              className="rounded-2xl border-2 border-blue-200 bg-blue-50 p-4 text-left transition hover:border-blue-400 hover:bg-blue-100 sm:p-6"
+            >
+              <h3 className="mb-2 text-base font-bold text-blue-700 sm:text-lg">Request Stock Deduction</h3>
+              <p className="text-sm text-blue-600">Ask admin to approve deducting stock from main inventory</p>
+            </button>
+            <button
+              onClick={handleSyncInventory}
+              disabled={isSyncing}
+              className="rounded-2xl border-2 border-slate-200 bg-slate-50 p-4 text-left transition hover:border-slate-400 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 sm:p-6"
+            >
+              <h3 className="mb-2 flex items-center gap-2 text-base font-bold text-slate-700 sm:text-lg">
+                <RefreshCw size={20} className={isSyncing ? 'animate-spin' : ''} />
+                Sync Inventory
+              </h3>
+              <p className="text-sm text-slate-600">Recalculate ending inventory</p>
+            </button>
+          </div>
         </div>
       ) : (
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <button
             onClick={() => openModal("add")}
-            className="rounded-2xl border-2 border-emerald-200 bg-emerald-50 p-6 text-left transition hover:border-emerald-400 hover:bg-emerald-100"
+            className="rounded-2xl border-2 border-emerald-200 bg-emerald-50 p-4 text-left transition hover:border-emerald-400 hover:bg-emerald-100 sm:p-6"
           >
-            <h3 className="text-lg font-bold text-emerald-700 mb-2"> Add Stock</h3>
+            <h3 className="mb-2 text-base font-bold text-emerald-700 sm:text-lg"> Add Stock</h3>
             <p className="text-sm text-emerald-600">Increase inventory quantity</p>
           </button>
           <button
             onClick={() => openModal("deduct")}
-            className="rounded-2xl border-2 border-red-200 bg-red-50 p-6 text-left transition hover:border-red-400 hover:bg-red-100"
+            className="rounded-2xl border-2 border-red-200 bg-red-50 p-4 text-left transition hover:border-red-400 hover:bg-red-100 sm:p-6"
           >
-            <h3 className="text-lg font-bold text-red-700 mb-2"> Deduct Stock</h3>
+            <h3 className="mb-2 text-base font-bold text-red-700 sm:text-lg"> Deduct Stock</h3>
             <p className="text-sm text-red-600">Decrease inventory quantity</p>
           </button>
           <button
             onClick={handleSyncInventory}
             disabled={isSyncing}
-            className="rounded-2xl border-2 border-blue-200 bg-blue-50 p-6 text-left transition hover:border-blue-400 hover:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="rounded-2xl border-2 border-blue-200 bg-blue-50 p-4 text-left transition hover:border-blue-400 hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-50 sm:p-6"
           >
-            <h3 className="text-lg font-bold text-blue-700 mb-2 flex items-center gap-2">
+            <h3 className="mb-2 flex items-center gap-2 text-base font-bold text-blue-700 sm:text-lg">
               <RefreshCw size={20} className={isSyncing ? 'animate-spin' : ''} />
               Sync Inventory
             </h3>
@@ -310,7 +340,7 @@ const ItemDetailPage = () => {
         {/* Clickable History Header */}
         <button
           onClick={() => navigate(`/history/${track}/${itemId}`)}
-          className="w-full px-6 py-4 bg-slate-50 border-b border-slate-200 text-left hover:bg-slate-100 transition"
+          className="w-full border-b border-slate-200 bg-slate-50 px-4 py-4 text-left transition hover:bg-slate-100 sm:px-6"
         >
           <h2 className="text-lg font-semibold text-[#800000] cursor-pointer hover:underline">
             History ({allHistory.length}) 
@@ -423,8 +453,17 @@ const ItemDetailPage = () => {
       <RequestStockModal
         isOpen={isRequestModalOpen}
         item={item}
+        requestType={requestModalType}
         onClose={() => setIsRequestModalOpen(false)}
-        onRequestSubmitted={() => {
+        onRequestSubmitted={(request) => {
+          if (request) {
+            setPendingRequestSummary({
+              quantity: request.quantity,
+              itemName: item.itemName,
+              requestType: request.requestType || requestModalType,
+              createdAt: request.createdAt || new Date().toISOString(),
+            })
+          }
           setIsRequestModalOpen(false)
         }}
       />

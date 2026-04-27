@@ -55,9 +55,9 @@ const Archive = () => {
   }
 
   return (
-    <section className="space-y-4">
+    <section className="space-y-4 sm:space-y-5">
       <div>
-        <h2 className="font-title text-2xl font-bold text-[var(--brand-primary)]">Archive Vault</h2>
+        <h2 className="font-title text-2xl font-bold text-[var(--brand-primary)] sm:text-3xl">Archive Vault</h2>
         <p className="text-sm text-slate-600">Archived consumables ready for restore.</p>
       </div>
 
@@ -71,21 +71,21 @@ const Archive = () => {
             <table className="min-w-full divide-y divide-slate-200 text-left text-sm">
               <thead className="bg-[#f8eef0]">
                 <tr>
-                  <th className="px-5 py-4 font-semibold text-[var(--brand-primary)]">Item Name</th>
-                  <th className="px-5 py-4 font-semibold text-[var(--brand-primary)]">Category</th>
-                  <th className="px-5 py-4 font-semibold text-[var(--brand-primary)]">Quantity</th>
-                  <th className="px-5 py-4 font-semibold text-[var(--brand-primary)]">Unit</th>
-                  <th className="px-5 py-4 font-semibold text-[var(--brand-primary)]">Actions</th>
+                  <th className="px-4 py-4 font-semibold text-[var(--brand-primary)] sm:px-5">Item Name</th>
+                  <th className="hidden px-4 py-4 font-semibold text-[var(--brand-primary)] sm:table-cell sm:px-5">Category</th>
+                  <th className="px-4 py-4 font-semibold text-[var(--brand-primary)] sm:px-5">Quantity</th>
+                  <th className="hidden px-4 py-4 font-semibold text-[var(--brand-primary)] sm:table-cell sm:px-5">Unit</th>
+                  <th className="px-4 py-4 font-semibold text-[var(--brand-primary)] sm:px-5">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 bg-white">
                 {filteredItems.map((item) => (
                   <tr key={item.id} className="hover:bg-slate-50/70">
-                    <td className="px-5 py-4 font-medium text-slate-700">{item.itemName}</td>
-                    <td className="px-5 py-4 text-slate-700">{item.category}</td>
-                    <td className="px-5 py-4 text-slate-700">{item.quantity}</td>
-                    <td className="px-5 py-4 text-slate-600">{item.unit}</td>
-                    <td className="px-5 py-4">
+                    <td className="px-4 py-4 font-medium text-slate-700 sm:px-5">{item.itemName}</td>
+                    <td className="hidden px-4 py-4 text-slate-700 sm:table-cell sm:px-5">{item.category}</td>
+                    <td className="px-4 py-4 text-slate-700 sm:px-5">{item.quantity}</td>
+                    <td className="hidden px-4 py-4 text-slate-600 sm:table-cell sm:px-5">{item.unit}</td>
+                    <td className="px-4 py-4 sm:px-5">
                       <button
                         type="button"
                         onClick={() => handleRestore(item)}

@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const http = require('http');
 const socketIO = require('socket.io');
+const { Op } = require('sequelize');
 require('dotenv').config();
 
 const sequelize = require('./config/database');
@@ -31,6 +32,26 @@ const io = socketIO(server, {
 });
 
 const PORT = process.env.PORT || 5000;
+
+const alignConsumableRequestSchema = async () => {
+  // Keep legacy databases compatible with the new "New Consumable" request flow.
+  const statements = [
+    "ALTER TABLE consumable_requests MODIFY consumable_id INT UNSIGNED NULL",
+    "ALTER TABLE consumable_requests MODIFY request_type ENUM('Stock In','Stock Out','New Consumable') NOT NULL",
+  ];
+
+  for (const sql of statements) {
+    try {
+      await sequelize.query(sql);
+    } catch (error) {
+      const message = String(error?.message || '');
+      if (message.includes("doesn't exist")) {
+        continue;
+      }
+      console.warn(`⚠  Schema alignment warning: ${message}`);
+    }
+  }
+};
 
 // ─── Socket.IO Setup ──────────────────────────────────────────────────────────
 const userSockets = {}; // Map userId to socket ID
@@ -96,6 +117,8 @@ const start = async () => {
     await sequelize.authenticate();
     console.log('✔  Database connection established.');
 
+    await alignConsumableRequestSchema();
+
     // Set up associations
     const models = { User, Trainer, Course, Consumable, InventoryHistory, Notification, ConsumableRequest };
     Object.values(models).forEach(model => {
@@ -110,7 +133,14 @@ const start = async () => {
 
     // Initialize default users
     try {
-      const existingAdmin = await User.count({ where: { username: 'admin' } });
+      const existingAdmin = await User.count({
+        where: {
+          [Op.or]: [
+            { username: 'admin' },
+            { email: 'admin@vailacademy.org' },
+          ],
+        },
+      });
       if (existingAdmin === 0) {
         await User.create({
           username: 'admin',
@@ -132,7 +162,14 @@ const start = async () => {
     }
 
     try {
-      const existingStaff = await User.count({ where: { username: 'staff' } });
+      const existingStaff = await User.count({
+        where: {
+          [Op.or]: [
+            { username: 'staff' },
+            { email: 'staff@vailacademy.org' },
+          ],
+        },
+      });
       if (existingStaff === 0) {
         await User.create({
           username: 'staff',

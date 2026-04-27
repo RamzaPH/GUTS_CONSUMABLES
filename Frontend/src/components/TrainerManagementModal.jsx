@@ -156,16 +156,17 @@ const TrainerManagementModal = ({ isOpen, onClose }) => {
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-4xl rounded-2xl bg-white shadow-xl max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 p-3 sm:items-center sm:p-4">
+      <div className="flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-xl">
         {/* Header */}
-        <div className="sticky top-0 flex items-center justify-between border-b border-slate-200 bg-white px-6 py-4">
-          <h2 className="font-title text-lg font-bold text-slate-800">
+        <div className="sticky top-0 border-b border-slate-200 bg-white px-4 py-4 sm:px-6">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="font-title text-lg font-bold text-slate-800">
             Trainer Management
-          </h2>
-          <div className="flex items-center gap-2">
+            </h2>
+            <div className="flex items-center gap-2">
             <Button
-              className="flex items-center gap-2 bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-strong)]"
+              className="flex items-center gap-2 bg-[var(--brand-primary)] px-3 py-2 text-xs hover:bg-[var(--brand-primary-strong)] sm:px-4 sm:text-sm"
               onClick={handleAddTrainer}
             >
               <Plus className="h-4 w-4" />
@@ -178,11 +179,12 @@ const TrainerManagementModal = ({ isOpen, onClose }) => {
             >
               <X className="h-5 w-5" />
             </button>
+            </div>
           </div>
         </div>
 
         {/* Content */}
-        <div className="p-6">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6">
           {error && (
             <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">
               {error}
@@ -191,8 +193,8 @@ const TrainerManagementModal = ({ isOpen, onClose }) => {
 
           {isFormOpen ? (
             // Form View
-            <form onSubmit={handleSubmit} className="max-w-2xl mx-auto space-y-4 border border-slate-200 rounded-lg p-6 bg-slate-50">
-              <div className="flex items-center justify-between mb-4">
+            <form onSubmit={handleSubmit} className="mx-auto max-w-2xl space-y-4 rounded-lg border border-slate-200 bg-slate-50 p-4 sm:p-6">
+              <div className="mb-4 flex items-center justify-between">
                 <h3 className="font-semibold text-slate-800">
                   {editingTrainer ? 'Edit Trainer' : 'Add New Trainer'}
                 </h3>
@@ -285,16 +287,16 @@ const TrainerManagementModal = ({ isOpen, onClose }) => {
               </div>
 
               {/* Submit */}
-              <div className="pt-4 flex gap-2 justify-end">
+              <div className="flex flex-col-reverse gap-2 pt-4 sm:flex-row sm:justify-end">
                 <button
                   type="button"
                   onClick={() => setIsFormOpen(false)}
-                  className="px-4 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-100 font-semibold"
+                  className="w-full rounded-lg border border-slate-300 px-4 py-2 font-semibold text-slate-700 hover:bg-slate-100 sm:w-auto"
                 >
                   Cancel
                 </button>
                 <Button
-                  className="bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-strong)]"
+                  className="w-full bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-strong)] sm:w-auto"
                   disabled={isSubmitting}
                   type="submit"
                 >
@@ -314,7 +316,7 @@ const TrainerManagementModal = ({ isOpen, onClose }) => {
                   {trainers.map((trainer) => (
                     <div
                       key={trainer.id}
-                      className="flex items-center justify-between p-4 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
+                      className="flex flex-col gap-3 rounded-lg border border-slate-200 p-4 transition-colors hover:bg-slate-50 sm:flex-row sm:items-center sm:justify-between"
                     >
                       <div className="flex-1">
                         <h4 className="font-semibold text-slate-900">{trainer.name}</h4>
@@ -332,7 +334,7 @@ const TrainerManagementModal = ({ isOpen, onClose }) => {
                           ))}
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 ml-4">
+                      <div className="ml-0 flex flex-wrap items-center gap-2 sm:ml-4">
                         <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
                           trainer.isActive
                             ? 'bg-green-100 text-green-800'

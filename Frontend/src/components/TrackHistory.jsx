@@ -51,18 +51,18 @@ const TrackHistory = ({ track, title, inventoryItems = [], logHeight }) => {
 
   return (
     <div className="overflow-hidden rounded-2xl border border-[var(--brand-secondary-soft)] bg-white">
-      <div className="border-b border-slate-100 bg-white px-6 py-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="border-b border-slate-100 bg-white px-4 py-4 sm:px-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
           <div className="flex items-center gap-2">
             <span className="h-5 w-1 rounded-full bg-[var(--brand-primary)]" />
-            <h3 className="font-title text-lg font-semibold text-slate-800">
+            <h3 className="font-title text-base font-semibold text-slate-800 sm:text-lg">
               Recent Activity - {title || track.toUpperCase()}
             </h3>
           </div>
           <button
             type="button"
             onClick={() => window.print()}
-            className="inline-flex items-center gap-2 rounded-xl bg-[var(--brand-primary)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--brand-primary-strong)]"
+            className="inline-flex w-fit items-center gap-2 rounded-xl bg-[var(--brand-primary)] px-3 py-2 text-xs font-semibold text-white transition hover:bg-[var(--brand-primary-strong)] sm:px-4 sm:text-sm"
           >
             <Printer className="h-4 w-4" />
             Print Report
@@ -71,12 +71,12 @@ const TrackHistory = ({ track, title, inventoryItems = [], logHeight }) => {
       </div>
 
       <div className={`overflow-y-auto ${logHeight || ''}`}>
-        <div className="space-y-4 p-6 print:pt-2">
+        <div className="space-y-4 p-4 print:pt-2 sm:p-6">
           {/* Filter bar */}
-          <div className="flex flex-wrap items-center justify-between gap-3 print:hidden">
+          <div className="flex flex-col gap-3 print:hidden lg:flex-row lg:items-start lg:justify-between">
             <div className="flex flex-wrap items-center gap-3">
               {/* Date selector */}
-              <div className="flex items-center gap-2">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                 <input
                   type="date"
                   value={selectedDate}
@@ -195,45 +195,45 @@ const TrackHistory = ({ track, title, inventoryItems = [], logHeight }) => {
                 <table className="min-w-full divide-y divide-slate-200 text-left text-sm">
                   <thead className="bg-[#f8eef0]">
                     <tr>
-                      <th className="px-5 py-4 font-semibold text-[var(--brand-primary)]">Item</th>
-                      <th className="px-5 py-4 font-semibold text-[var(--brand-primary)]">Action</th>
-                      <th className="px-5 py-4 font-semibold text-[var(--brand-primary)]">Qty Δ</th>
-                      <th className="px-5 py-4 font-semibold text-[var(--brand-primary)]">
+                      <th className="px-4 py-4 font-semibold text-[var(--brand-primary)] sm:px-5">Item</th>
+                      <th className="px-4 py-4 font-semibold text-[var(--brand-primary)] sm:px-5">Action</th>
+                      <th className="hidden px-4 py-4 font-semibold text-[var(--brand-primary)] md:table-cell sm:px-5">Qty Δ</th>
+                      <th className="hidden px-4 py-4 font-semibold text-[var(--brand-primary)] sm:table-cell sm:px-5">
                         Performed By
                       </th>
-                      <th className="px-5 py-4 font-semibold text-[var(--brand-primary)]">
+                      <th className="hidden px-4 py-4 font-semibold text-[var(--brand-primary)] lg:table-cell sm:px-5">
                         Duration
                       </th>
-                      <th className="px-5 py-4 font-semibold text-[var(--brand-primary)]">
+                      <th className="hidden px-4 py-4 font-semibold text-[var(--brand-primary)] lg:table-cell sm:px-5">
                         Description
                       </th>
-                      <th className="px-5 py-4 font-semibold text-[var(--brand-primary)]">Date</th>
+                      <th className="px-4 py-4 font-semibold text-[var(--brand-primary)] sm:px-5">Date</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 bg-white">
                     {filteredLogs.map((log) => (
                       <tr key={log.id} className="hover:bg-slate-50/70">
-                        <td className="px-5 py-4 font-medium text-slate-700">{log.itemName}</td>
-                        <td className="px-5 py-4">
+                        <td className="px-4 py-4 font-medium text-slate-700 sm:px-5">{log.itemName}</td>
+                        <td className="px-4 py-4 sm:px-5">
                           <span
-                            className={`inline-flex rounded-full px-3 py-1 text-[11px] font-semibold ${
+                            className={`inline-flex rounded-full px-2 py-1 text-[10px] font-semibold sm:px-3 sm:text-[11px] ${
                               ACTION_BADGE[log.actionType] ?? "bg-slate-100 text-slate-600"
                             }`}
                           >
                             {log.actionType}
                           </span>
                         </td>
-                        <td className="px-5 py-4 text-slate-700">{log.quantityChanged}</td>
-                        <td className="px-5 py-4 text-slate-700">{log.performedBy || "System"}</td>
-                        <td className="px-5 py-4 text-slate-600">
+                        <td className="hidden px-4 py-4 text-slate-700 md:table-cell sm:px-5">{log.quantityChanged}</td>
+                        <td className="hidden px-4 py-4 text-slate-700 sm:table-cell sm:px-5">{log.performedBy || "System"}</td>
+                        <td className="hidden px-4 py-4 text-slate-600 lg:table-cell sm:px-5">
                           {log.startDate && log.endDate
                             ? `${new Date(log.startDate).toLocaleDateString("en-PH")} - ${new Date(
                                 log.endDate
                               ).toLocaleDateString("en-PH")}`
                             : "—"}
                         </td>
-                        <td className="px-5 py-4 text-slate-600">{log.description || "—"}</td>
-                        <td className="px-5 py-4 text-slate-600">
+                        <td className="hidden px-4 py-4 text-slate-600 lg:table-cell sm:px-5">{log.description || "—"}</td>
+                        <td className="px-4 py-4 text-slate-600 sm:px-5">
                           {new Date(log.createdAt).toLocaleString("en-PH")}
                         </td>
                       </tr>

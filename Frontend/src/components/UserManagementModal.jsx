@@ -69,16 +69,17 @@ const UserManagementModal = ({ isOpen, onClose }) => {
 
   return (
     <>
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-        <div className="w-full max-w-4xl rounded-2xl bg-white shadow-xl max-h-[90vh] overflow-y-auto">
+      <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 p-3 sm:items-center sm:p-4">
+        <div className="flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-white shadow-xl">
           {/* Header */}
-          <div className="sticky top-0 flex items-center justify-between border-b border-slate-200 bg-white px-6 py-4">
-            <h2 className="font-title text-lg font-bold text-slate-800">
+          <div className="sticky top-0 border-b border-slate-200 bg-white px-4 py-4 sm:px-6">
+            <div className="flex items-center justify-between gap-3">
+              <h2 className="font-title text-lg font-bold text-slate-800">
               User Management
-            </h2>
-            <div className="flex items-center gap-2">
+              </h2>
+              <div className="flex items-center gap-2">
               <Button
-                className="flex items-center gap-2 bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-strong)]"
+                className="flex items-center gap-2 bg-[var(--brand-primary)] px-3 py-2 text-xs hover:bg-[var(--brand-primary-strong)] sm:px-4 sm:text-sm"
                 onClick={handleAddUser}
               >
                 <Plus className="h-4 w-4" />
@@ -91,11 +92,12 @@ const UserManagementModal = ({ isOpen, onClose }) => {
               >
                 <X className="h-5 w-5" />
               </button>
+              </div>
             </div>
           </div>
 
           {/* Content */}
-          <div className="p-6">
+          <div className="flex-1 overflow-y-auto p-4 sm:p-6">
             {error && (
               <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700">
                 {error}
@@ -108,14 +110,14 @@ const UserManagementModal = ({ isOpen, onClose }) => {
               <div className="text-center py-8 text-slate-600">No users found.</div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full text-sm">
+                <table className="min-w-[700px] w-full text-sm">
                   <thead>
                     <tr className="border-b border-slate-200 bg-slate-50">
                       <th className="px-4 py-3 text-left font-semibold text-slate-700">Full Name</th>
                       <th className="px-4 py-3 text-left font-semibold text-slate-700">Username</th>
-                      <th className="px-4 py-3 text-left font-semibold text-slate-700">Email</th>
+                      <th className="hidden px-4 py-3 text-left font-semibold text-slate-700 md:table-cell">Email</th>
                       <th className="px-4 py-3 text-left font-semibold text-slate-700">Role</th>
-                      <th className="px-4 py-3 text-center font-semibold text-slate-700">Status</th>
+                      <th className="hidden px-4 py-3 text-center font-semibold text-slate-700 sm:table-cell">Status</th>
                       <th className="px-4 py-3 text-right font-semibold text-slate-700">Actions</th>
                     </tr>
                   </thead>
@@ -124,7 +126,7 @@ const UserManagementModal = ({ isOpen, onClose }) => {
                       <tr key={user.id} className="border-b border-slate-200 hover:bg-slate-50 transition-colors">
                         <td className="px-4 py-3 text-slate-900 font-medium">{user.fullName}</td>
                         <td className="px-4 py-3 text-slate-600">{user.username}</td>
-                        <td className="px-4 py-3 text-slate-600">{user.email}</td>
+                        <td className="hidden px-4 py-3 text-slate-600 md:table-cell">{user.email}</td>
                         <td className="px-4 py-3">
                           <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-semibold ${
                             user.role === 'admin'
@@ -134,7 +136,7 @@ const UserManagementModal = ({ isOpen, onClose }) => {
                             {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
                           </span>
                         </td>
-                        <td className="px-4 py-3 text-center">
+                        <td className="hidden px-4 py-3 text-center sm:table-cell">
                           <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-semibold ${
                             user.isActive
                               ? 'bg-green-100 text-green-800'

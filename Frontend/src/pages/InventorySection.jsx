@@ -14,7 +14,7 @@ import { useInventoryLocation } from "../context/InventoryLocationContext"
 import { normalizeItems } from "../utils/inventory"
 
 const InventorySection = ({ title, description, track }) => {
-  const { error: showError } = useToast()
+  const { error: showError, success } = useToast()
   const [items, setItems] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [isAddOpen, setIsAddOpen] = useState(false)
@@ -69,8 +69,13 @@ const InventorySection = ({ title, description, track }) => {
 
   const handleAdd = async (payload) => {
     try {
-      await addConsumable({ ...payload, category: track.toUpperCase(), location: selectedInventory })
+      const result = await addConsumable({ ...payload, category: track.toUpperCase(), location: selectedInventory })
       setIsAddOpen(false)
+      if (result?.createdAsRequest) {
+        success("Request submitted. An admin will review your new consumable request.")
+      } else {
+        success("New consumable added successfully.")
+      }
       await loadItems()
     } catch (error) {
       showError(error.response?.data?.error || "Failed to add item.")
@@ -104,31 +109,31 @@ const InventorySection = ({ title, description, track }) => {
 
   return (
     <section className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
         <div>
-          <h2 className="font-title text-3xl font-bold text-[var(--brand-primary)]">{title}</h2>
-          <p className="mt-2 text-sm text-slate-600">{description}</p>
+          <h2 className="font-title text-2xl font-bold text-[var(--brand-primary)] sm:text-3xl">{title}</h2>
+          <p className="mt-1 text-sm text-slate-600 sm:mt-2">{description}</p>
         </div>
         <Button
-          className="bg-[var(--brand-primary)] hover:bg-[var(--brand-primary-strong)]"
+          className="bg-[var(--brand-primary)] px-3 py-2 text-xs hover:bg-[var(--brand-primary-strong)] sm:px-4 sm:text-sm"
           onClick={() => setIsAddOpen(true)}
         >
           Add New Consumable
         </Button>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <div className="rounded-xl border border-[var(--brand-secondary-soft)] bg-white px-4 py-3 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Total Items</p>
-          <p className="mt-1 font-title text-xl font-bold text-slate-800">{totalItems} Consumables</p>
+          <p className="mt-1 font-title text-lg font-bold text-slate-800 sm:text-xl">{totalItems} Consumables</p>
         </div>
         <div className="rounded-xl border border-[#e9cfd3] bg-[#fff6f7] px-4 py-3 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Low Stock</p>
-          <p className="mt-1 font-title text-xl font-bold text-[var(--brand-primary)]">{lowStockCount}</p>
+          <p className="mt-1 font-title text-lg font-bold text-[var(--brand-primary)] sm:text-xl">{lowStockCount}</p>
         </div>
         <div className="rounded-xl border border-slate-200 bg-[#f8fafc] px-4 py-3 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">In Stock</p>
-          <p className="mt-1 font-title text-xl font-bold text-slate-700">{inStockCount}</p>
+          <p className="mt-1 font-title text-lg font-bold text-slate-700 sm:text-xl">{inStockCount}</p>
         </div>
       </div>
 
@@ -137,7 +142,7 @@ const InventorySection = ({ title, description, track }) => {
           Loading {title} consumables...
         </div>
       ) : (
-        <div className="h-[340px] overflow-y-auto">
+        <div className="h-[280px] overflow-y-auto sm:h-[340px]">
           <ConsumableTable
             items={filteredItems}
             onEdit={setEditingItem}
@@ -147,7 +152,7 @@ const InventorySection = ({ title, description, track }) => {
         </div>
       )}
 
-      <TrackHistory track={track} title={title} inventoryItems={items} logHeight="h-[260px]" />
+      <TrackHistory track={track} title={title} inventoryItems={items} logHeight="h-[240px] sm:h-[260px]" />
 
       <ConsumableModal
         isOpen={isAddOpen}

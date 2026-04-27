@@ -23,7 +23,7 @@ const trackIconMap = {
 
 const Dashboard = () => {
   const navigate = useNavigate()
-  const { error: showError } = useToast()
+  const { error: showError, success } = useToast()
   const { selectedInventory } = useInventoryLocation()
   const [summary, setSummary] = useState({ totalsByTrack: [], grandTotal: 0 })
   const [allItems, setAllItems] = useState([])
@@ -130,8 +130,13 @@ const Dashboard = () => {
       }
       
       console.log('📝 Adding consumable from Dashboard:', { ...payload, location: selectedInventory })
-      await addConsumable({ ...payload, location: selectedInventory })
+      const result = await addConsumable({ ...payload, location: selectedInventory })
       setIsAddOpen(false)
+      if (result?.createdAsRequest) {
+        success("Request submitted. An admin will review your new consumable request.")
+      } else {
+        success("New consumable added successfully.")
+      }
       await loadDashboard()
     } catch (error) {
       showError(error.response?.data?.error || "Failed to add item.")
@@ -166,12 +171,12 @@ const Dashboard = () => {
   }
 
   return (
-    <section className="space-y-4 transition-all duration-300">
-      <div className="flex flex-wrap items-center justify-between gap-3 print:hidden">
-        <h2 className="font-title text-2xl font-bold text-[var(--brand-primary)] dark:text-red-400 transition-colors duration-300">Dashboard Overview</h2>
+    <section className="space-y-4 transition-all duration-300 sm:space-y-5">
+      <div className="flex flex-col gap-3 print:hidden sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+        <h2 className="font-title text-xl font-bold text-[var(--brand-primary)] transition-colors duration-300 dark:text-red-400 sm:text-2xl">Dashboard Overview</h2>
         <div className="flex flex-wrap items-center gap-2">
-          <Button onClick={() => window.print()}>Print Report</Button>
-          <Button onClick={() => setIsAddOpen(true)}>Add New Consumable</Button>
+          <Button className="px-3 py-2 text-xs sm:px-4 sm:text-sm" onClick={() => window.print()}>Print Report</Button>
+          <Button className="px-3 py-2 text-xs sm:px-4 sm:text-sm" onClick={() => setIsAddOpen(true)}>Add New Consumable</Button>
         </div>
       </div>
 
@@ -181,7 +186,7 @@ const Dashboard = () => {
           ? 'rounded-xl border border-slate-200 bg-slate-50 p-3' 
           : 'rounded-xl border-2 border-yellow-200 bg-yellow-50 p-3'
       } mb-4`}>
-        <div className="flex items-center justify-between mb-3">
+        <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <p className={`text-sm font-semibold ${
             selectedInventory 
               ? 'text-slate-700' 
@@ -190,7 +195,7 @@ const Dashboard = () => {
             {selectedInventory ? 'Current Location' : 'Please select an inventory location to proceed:'}
           </p>
           {selectedInventory && (
-            <span className="text-sm font-bold text-[#800000] bg-white px-3 py-1 rounded-lg">
+            <span className="inline-flex w-fit rounded-lg bg-white px-3 py-1 text-sm font-bold text-[#800000]">
               {selectedInventory === 'main' ? 'Main Inventory' : 'Training Inventory'}
             </span>
           )}
@@ -204,7 +209,7 @@ const Dashboard = () => {
         </div>
       ) : (
         <>
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             <SummaryCard
               label="Total Consumables"
               value={summary.grandTotal}
@@ -226,7 +231,7 @@ const Dashboard = () => {
             {/* Low Stock Alerts - Only show if there are items */}
             {lowStockItems.length > 0 && (
               <div className="space-y-2 flex flex-col">
-                <h3 className="font-title flex items-center gap-2 text-lg font-semibold text-slate-800">
+                <h3 className="font-title flex items-center gap-2 text-base font-semibold text-slate-800 sm:text-lg">
                   <span className="h-5 w-1 rounded-full bg-[var(--brand-primary)]" />
                   Low Stock Alerts
                   <span className="ml-1 rounded-full bg-[#fbe9ed] px-2 py-0.5 text-xs font-semibold text-[#800000]">
@@ -253,7 +258,7 @@ const Dashboard = () => {
 
             {/* High Stock Inventory */}
             <div className="space-y-2 flex flex-col">
-              <h3 className="font-title flex items-center gap-2 text-lg font-semibold text-slate-800">
+              <h3 className="font-title flex items-center gap-2 text-base font-semibold text-slate-800 sm:text-lg">
                 <span className="h-5 w-1 rounded-full bg-emerald-500" />
                 High Stock Inventory
                 <span className="ml-1 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700">
