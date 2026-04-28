@@ -1,6 +1,5 @@
 const { Sequelize } = require('sequelize');
 require('dotenv').config();
-const fs = require('fs');
 
 const DB_NAME = process.env.DB_NAME;
 const DB_USER = process.env.DB_USER;
@@ -25,7 +24,7 @@ if (DB_SSL) {
         rejectUnauthorized: true,
       }
     : {
-        rejectUnauthorized: true,
+        rejectUnauthorized: false, // BINAGO NATIN ITO: Gawing false para sa Aiven
       };
 }
 
