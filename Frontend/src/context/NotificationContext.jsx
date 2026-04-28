@@ -4,6 +4,9 @@ import { useAuth } from './AuthContext';
 
 const NotificationContext = createContext();
 
+const DEFAULT_API_BASE_URL = 'https://guts-inventory.onrender.com/api';
+const DEFAULT_SOCKET_URL = 'https://guts-inventory.onrender.com';
+
 export const NotificationProvider = ({ children }) => {
   const { user, token } = useAuth();
   const [notifications, setNotifications] = useState([]);
@@ -12,7 +15,7 @@ export const NotificationProvider = ({ children }) => {
   const onStockUpdateRef = useRef(null);
 
   const getApiBaseUrl = () => {
-    return import.meta.env.VITE_API_URL || '/api';
+    return import.meta.env.VITE_API_URL || DEFAULT_API_BASE_URL;
   };
 
   const getSocketUrl = () => {
@@ -21,10 +24,10 @@ export const NotificationProvider = ({ children }) => {
     }
 
     if (typeof window !== 'undefined' && window.location?.origin) {
-      return window.location.origin;
+      return DEFAULT_SOCKET_URL;
     }
 
-    return 'http://localhost:80';
+    return DEFAULT_SOCKET_URL;
   };
 
   useEffect(() => {
