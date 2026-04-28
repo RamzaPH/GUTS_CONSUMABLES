@@ -14,6 +14,12 @@ const sequelizeOptions = {
   dialect: 'mysql',
   logging: false,
   dialectOptions: {},
+  pool: {
+    max: 5,
+    min: 0,
+    acquire: 30000,
+    idle: 10000,
+  },
 };
 
 if (DB_SSL) {

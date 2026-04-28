@@ -14,6 +14,7 @@ const ItemDetailsModal = ({
   const { user } = useAuth()
   const { selectedInventory } = useInventoryLocation()
   const [activeAction, setActiveAction] = useState(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [formData, setFormData] = useState({
     quantity: 1,
     performedBy: "",
@@ -41,18 +42,27 @@ const ItemDetailsModal = ({
   }
 
   const handleSubmit = (type) => {
-    if (type === "purchase") {
-      onPurchaseHistory({
+    if (isSubmitting) return
+
+    setIsSubmitting(true)
+    const submitPromise = Promise.resolve().then(() => {
+      if (type === "purchase") {
+        return onPurchaseHistory({
+          ...formData,
+          quantity: Number(formData.quantity)
+        })
+      }
+
+      return onConsumptionHistory({
         ...formData,
         quantity: Number(formData.quantity)
       })
-    } else {
-      onConsumptionHistory({
-        ...formData,
-        quantity: Number(formData.quantity)
-      })
-    }
-    handleReset()
+    })
+
+    submitPromise.finally(() => {
+      handleReset()
+      setIsSubmitting(false)
+    })
   }
 
   return (
@@ -182,6 +192,7 @@ const ItemDetailsModal = ({
                     min="1"
                     value={formData.quantity}
                     onChange={(e) => handleChange("quantity", e.target.value)}
+                    disabled={isSubmitting}
                     className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-[var(--brand-primary)]"
                     placeholder="Enter quantity"
                   />
@@ -194,6 +205,7 @@ const ItemDetailsModal = ({
                     type="text"
                     value={formData.performedBy}
                     onChange={(e) => handleChange("performedBy", e.target.value)}
+                    disabled={isSubmitting}
                     className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-[var(--brand-primary)]"
                     placeholder="Your name"
                   />
@@ -207,6 +219,7 @@ const ItemDetailsModal = ({
                       type="text"
                       value={formData.destination}
                       onChange={(e) => handleChange("destination", e.target.value)}
+                      disabled={isSubmitting}
                       className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-[var(--brand-primary)]"
                       placeholder="Where/how used"
                     />
@@ -218,6 +231,7 @@ const ItemDetailsModal = ({
                   <textarea
                     value={formData.notes}
                     onChange={(e) => handleChange("notes", e.target.value)}
+                    disabled={isSubmitting}
                     className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-[var(--brand-primary)]"
                     placeholder="Optional notes..."
                     rows="2"
@@ -235,9 +249,10 @@ const ItemDetailsModal = ({
                 </Button>
                 <Button
                   type="submit"
+                  disabled={isSubmitting}
                   className={activeAction === "purchase" ? "bg-emerald-600 hover:bg-emerald-700" : "bg-red-600 hover:bg-red-700"}
                 >
-                  {activeAction === "purchase" ? "Confirm Add Stock" : "Confirm Deduct Stock"}
+                  {isSubmitting ? "Submitting..." : (activeAction === "purchase" ? "Confirm Add Stock" : "Confirm Deduct Stock")}
                 </Button>
               </div>
             </form>

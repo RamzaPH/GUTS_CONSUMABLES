@@ -33,6 +33,7 @@ const ComprehensiveItemModal = ({
   })
   const [trainers, setTrainers] = useState([])
   const [loadingTrainers, setLoadingTrainers] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Fetch trainers on component mount
   useEffect(() => {
@@ -89,23 +90,29 @@ const ComprehensiveItemModal = ({
   }
 
   const handleSubmit = (type) => {
+    if (isSubmitting) return
+
     if (!formData.quantity) {
       warning('Please fill in Quantity field')
       return
     }
 
-    if (type === "add") {
-      onAddStock({
-        ...formData,
-        quantity: parseInt(formData.quantity, 10),
-      })
-    } else {
-      onDeductStock({
-        ...formData,
-        quantity: parseInt(formData.quantity, 10),
-      })
-    }
-    handleReset()
+    setIsSubmitting(true)
+
+    Promise.resolve().then(() => (
+      type === "add"
+        ? onAddStock({
+            ...formData,
+            quantity: parseInt(formData.quantity, 10),
+          })
+        : onDeductStock({
+            ...formData,
+            quantity: parseInt(formData.quantity, 10),
+          })
+    )).finally(() => {
+      handleReset()
+      setIsSubmitting(false)
+    })
   }
 
   return (
@@ -255,6 +262,7 @@ const ComprehensiveItemModal = ({
                       min="1"
                       value={formData.quantity}
                       onChange={(e) => handleChange("quantity", e.target.value)}
+                      disabled={isSubmitting}
                       placeholder="Enter quantity"
                       className="mt-1 w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-[var(--brand-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]/20"
                       required
@@ -272,6 +280,7 @@ const ComprehensiveItemModal = ({
                       <select
                         value={formData.purpose}
                         onChange={(e) => handleChange("purpose", e.target.value)}
+                        disabled={isSubmitting}
                         className="mt-1 w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-[var(--brand-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]/20"
                       >
                         <option value="Replenishment">Replenishment</option>
@@ -303,7 +312,7 @@ const ComprehensiveItemModal = ({
                     <select
                       value={formData.trainer}
                       onChange={(e) => handleChange("trainer", e.target.value)}
-                      disabled={loadingTrainers}
+                      disabled={loadingTrainers || isSubmitting}
                       className="mt-1 w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-[var(--brand-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]/20 disabled:bg-slate-100 disabled:cursor-not-allowed"
                     >
                       <option value="">
@@ -326,6 +335,7 @@ const ComprehensiveItemModal = ({
                       type="text"
                       value={formData.course}
                       onChange={(e) => handleChange("course", e.target.value)}
+                      disabled={isSubmitting}
                       placeholder="Enter course name"
                       className="mt-1 w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-[var(--brand-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]/20"
                     />
@@ -341,6 +351,7 @@ const ComprehensiveItemModal = ({
                     <textarea
                       value={formData.notes}
                       onChange={(e) => handleChange("notes", e.target.value)}
+                      disabled={isSubmitting}
                       placeholder="Enter any additional notes"
                       rows="3"
                       className="mt-1 w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-[var(--brand-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]/20"
@@ -351,13 +362,14 @@ const ComprehensiveItemModal = ({
                   <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:gap-3">
                     <Button
                       type="submit"
+                      disabled={isSubmitting}
                       className={`w-full sm:flex-1 ${
                         activeAction === "add"
                           ? "bg-emerald-600 hover:bg-emerald-700"
                           : "bg-red-600 hover:bg-red-700"
                       }`}
                     >
-                      {activeAction === "add" ? "Add Stock" : "Deduct Stock"}
+                      {isSubmitting ? "Submitting..." : (activeAction === "add" ? "Add Stock" : "Deduct Stock")}
                     </Button>
                     <Button
                       type="button"

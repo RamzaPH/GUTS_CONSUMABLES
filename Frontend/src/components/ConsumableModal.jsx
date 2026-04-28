@@ -22,6 +22,7 @@ const ConsumableModal = ({
   const seed = useMemo(() => ({ ...emptyForm, ...initialValues }), [initialValues])
   const [formData, setFormData] = useState(seed)
   const [courses, setCourses] = useState([])
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   useEffect(() => {
     setFormData(seed)
@@ -49,19 +50,26 @@ const ConsumableModal = ({
 
   const handleSubmit = async (event) => {
     event.preventDefault()
+
+    if (isSubmitting) return
     
     if (!formData.category) {
       alert("Please select a course/category for this item.")
       return
     }
     
-    await onSubmit({
-      itemName: formData.itemName.trim(),
-      category: formData.category,
-      quantity: Number(formData.quantity),
-      unit: formData.unit.trim(),
-      reorderLevel: Number(formData.reorderLevel)
-    })
+    setIsSubmitting(true)
+    try {
+      await onSubmit({
+        itemName: formData.itemName.trim(),
+        category: formData.category,
+        quantity: Number(formData.quantity),
+        unit: formData.unit.trim(),
+        reorderLevel: Number(formData.reorderLevel)
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -87,6 +95,7 @@ const ConsumableModal = ({
                 required
                 value={formData.itemName}
                 onChange={(event) => handleChange("itemName", event.target.value)}
+                disabled={isSubmitting}
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-[var(--brand-primary)]"
                 placeholder="Enter item name"
               />
@@ -98,6 +107,7 @@ const ConsumableModal = ({
                 required
                 value={formData.category}
                 onChange={(event) => handleChange("category", event.target.value)}
+                disabled={isSubmitting}
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-[var(--brand-primary)]"
               >
                 <option value="">-- Select a course/category --</option>
@@ -117,6 +127,7 @@ const ConsumableModal = ({
                 required
                 value={formData.unit}
                 onChange={(event) => handleChange("unit", event.target.value)}
+                disabled={isSubmitting}
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-[var(--brand-primary)]"
                 placeholder="pcs, kg, box"
               />
@@ -130,6 +141,7 @@ const ConsumableModal = ({
                 type="number"
                 value={formData.quantity}
                 onChange={(event) => handleChange("quantity", event.target.value)}
+                disabled={isSubmitting}
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-[var(--brand-primary)]"
               />
             </label>
@@ -144,6 +156,7 @@ const ConsumableModal = ({
                 type="number"
                 value={formData.reorderLevel}
                 onChange={(event) => handleChange("reorderLevel", event.target.value)}
+                disabled={isSubmitting}
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-[var(--brand-primary)]"
               />
               <p className="text-xs text-slate-500">
@@ -156,7 +169,9 @@ const ConsumableModal = ({
             <Button type="button" variant="secondary" onClick={onClose}>
               Cancel
             </Button>
-            <Button type="submit">{submitLabel}</Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Submitting..." : submitLabel}
+            </Button>
           </div>
         </form>
       </div>
