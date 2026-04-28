@@ -1,0 +1,35 @@
+services:
+  - type: web
+    name: guts-inventory-backend
+    env: node
+    plan: free
+    buildCommand: cd Backend && npm install
+    startCommand: cd Backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "5000"
+      - key: DB_HOST
+        fromSecret: AIVEN_DB_HOST
+      - key: DB_PORT
+        fromSecret: AIVEN_DB_PORT
+      - key: DB_NAME
+        fromSecret: AIVEN_DB_NAME
+      - key: DB_USER
+        fromSecret: AIVEN_DB_USER
+      - key: DB_PASSWORD
+        fromSecret: AIVEN_DB_PASSWORD
+      - key: DB_SSL
+        value: "true"
+      - key: JWT_SECRET
+        fromSecret: JWT_SECRET
+  - type: web
+    name: guts-inventory-frontend
+    env: node
+    plan: free
+    buildCommand: cd Frontend && npm install && npm run build
+    startCommand: cd Frontend && npm run preview
+    envVars:
+      - key: VITE_API_URL
+        value: https://guts-inventory-backend.onrender.com/api
