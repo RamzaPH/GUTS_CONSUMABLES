@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
-import { ChevronLeft, Printer, ArrowUpDown, Edit2, X } from "lucide-react"
+import { ChevronLeft, Printer, ArrowUpDown, Edit2, X, Image as ImageIcon } from "lucide-react"
 import { getInventoryByTrack } from "../api/inventoryApi"
 import { getHistoryLogs, updateHistoryRecord } from "../api/historyApi"
 import { useInventoryLocation } from "../context/InventoryLocationContext"
@@ -31,6 +31,8 @@ const HistoryPage = () => {
   const [endDate, setEndDate] = useState('')
   const [isEditLoading, setIsEditLoading] = useState(false)
   const [editError, setEditError] = useState(null)
+  const [selectedEvidenceRecord, setSelectedEvidenceRecord] = useState(null)
+  const [selectedEvidenceImage, setSelectedEvidenceImage] = useState(null)
   const printRef = useRef(null)
 
   useEffect(() => {
@@ -485,6 +487,7 @@ const HistoryPage = () => {
                   <th className="hidden px-4 py-3 text-left font-semibold text-[#800000] lg:table-cell">Purpose</th>
                   <th className="hidden px-4 py-3 text-left font-semibold text-[#800000] lg:table-cell">Trainer</th>
                   <th className="hidden px-4 py-3 text-left font-semibold text-[#800000] xl:table-cell">Remarks</th>
+                  <th className="hidden px-4 py-3 text-center font-semibold text-[#800000] lg:table-cell">Evidence</th>
                   {user?.role === 'admin' && (
                     <th className="px-4 py-3 text-center font-semibold text-[#800000]">Action</th>
                   )}
@@ -522,6 +525,20 @@ const HistoryPage = () => {
                     <td className="hidden px-4 py-3 whitespace-nowrap text-slate-600 lg:table-cell">{record.purpose || "—"}</td>
                     <td className="hidden px-4 py-3 whitespace-nowrap text-slate-600 lg:table-cell">{record.trainer || "—"}</td>
                     <td className="hidden px-4 py-3 text-slate-600 xl:table-cell">{record.description || "—"}</td>
+                    <td className="hidden px-4 py-3 text-center lg:table-cell">
+                      {record.verificationImages?.length > 0 ? (
+                        <button
+                          type="button"
+                          onClick={() => setSelectedEvidenceRecord(record)}
+                          className="inline-flex items-center gap-1 rounded-lg bg-[#800000]/10 px-3 py-2 text-xs font-semibold text-[#800000] transition hover:bg-[#800000]/15"
+                        >
+                          <ImageIcon className="h-3 w-3" />
+                          {record.verificationImages.length}
+                        </button>
+                      ) : (
+                        <span className="text-xs text-slate-400">None</span>
+                      )}
+                    </td>
                     {user?.role === 'admin' && (
                       <td className="hidden px-4 py-3 text-center sm:table-cell">
                         <button
@@ -638,6 +655,82 @@ const HistoryPage = () => {
           </tbody>
         </table>
       </div>
+
+      {/* Evidence Gallery Modal */}
+      {selectedEvidenceRecord && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 p-4">
+          <div className="w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-2xl bg-white shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3 sm:px-6">
+              <div>
+                <h3 className="font-semibold text-slate-900">Verification Images</h3>
+                <p className="text-xs text-slate-500">
+                  {new Date(selectedEvidenceRecord.createdAt).toLocaleDateString("en-PH")}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedEvidenceRecord(null)
+                  setSelectedEvidenceImage(null)
+                }}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="max-h-[calc(90vh-72px)] overflow-y-auto p-4 sm:p-6">
+              {selectedEvidenceRecord.verificationImages?.length > 0 ? (
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {selectedEvidenceRecord.verificationImages.map((image, index) => (
+                    <button
+                      key={`${image.fileName}-${index}`}
+                      type="button"
+                      onClick={() => setSelectedEvidenceImage(image)}
+                      className="overflow-hidden rounded-xl border border-slate-200 bg-white text-left shadow-sm transition hover:shadow-md"
+                    >
+                      <img src={image.dataUrl} alt={image.fileName} className="h-48 w-full object-cover" />
+                      <div className="p-3">
+                        <p className="truncate text-sm font-semibold text-slate-800">{image.fileName}</p>
+                        <p className="text-xs text-slate-500">{Math.round((image.size || 0) / 1024)} KB</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-xl border border-dashed border-slate-300 p-8 text-center text-slate-500">
+                  No verification images found.
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {selectedEvidenceImage && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/80 p-4">
+          <div className="w-full max-w-5xl overflow-hidden rounded-2xl bg-white shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-200 p-4">
+              <div>
+                <p className="text-sm font-semibold text-slate-800">Image Preview</p>
+                <p className="text-xs text-slate-500">{selectedEvidenceImage.fileName}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedEvidenceImage(null)}
+                className="rounded-full p-2 text-slate-500 transition hover:bg-slate-100"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <img
+              src={selectedEvidenceImage.dataUrl}
+              alt={selectedEvidenceImage.fileName}
+              className="max-h-[80vh] w-full object-contain bg-black"
+            />
+          </div>
+        </div>
+      )}
 
       {/* Edit Modal */}
       {editingRecord && (

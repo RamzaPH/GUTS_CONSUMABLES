@@ -54,6 +54,11 @@ const ConsumableRequest = sequelize.define('ConsumableRequest', {
     type: DataTypes.DATE,
     allowNull: true,
   },
+  verificationImages: {
+    type: DataTypes.JSON,
+    allowNull: false,
+    defaultValue: [],
+  },
   status: {
     type: DataTypes.ENUM('pending', 'approved', 'rejected'),
     allowNull: false,

@@ -77,6 +77,7 @@ const getHistory = async (req, res) => {
         location: plain.location || 'main',
         startDate: plain.startDate,
         endDate: plain.endDate,
+        verificationImages: plain.verificationImages || [],
         createdAt: plain.createdAt,
       };
     });

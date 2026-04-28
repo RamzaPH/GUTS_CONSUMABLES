@@ -11,6 +11,62 @@ const emitUserNotification = (userId, notification) => {
   }
 };
 
+const MAX_VERIFICATION_IMAGES = 5;
+const MAX_VERIFICATION_IMAGE_BYTES = 2 * 1024 * 1024;
+
+const normalizeVerificationImages = (rawImages, uploaderName) => {
+  if (!rawImages) return [];
+
+  let verificationImages = rawImages;
+  if (typeof verificationImages === 'string') {
+    verificationImages = JSON.parse(verificationImages);
+  }
+
+  if (!Array.isArray(verificationImages)) {
+    throw new Error('verificationImages must be an array.');
+  }
+
+  if (verificationImages.length > MAX_VERIFICATION_IMAGES) {
+    throw new Error(`You can upload up to ${MAX_VERIFICATION_IMAGES} verification images.`);
+  }
+
+  return verificationImages.map((image, index) => {
+    if (!image || typeof image !== 'object') {
+      throw new Error(`verificationImages[${index}] is invalid.`);
+    }
+
+    const dataUrl = typeof image.dataUrl === 'string' ? image.dataUrl.trim() : '';
+    if (!dataUrl.startsWith('data:image/')) {
+      throw new Error(`verificationImages[${index}] must be an image data URL.`);
+    }
+
+    const mimeMatch = dataUrl.match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,/);
+    if (!mimeMatch) {
+      throw new Error(`verificationImages[${index}] has an invalid image format.`);
+    }
+
+    const base64Payload = dataUrl.includes(',') ? dataUrl.split(',')[1] : '';
+    const estimatedBytes = Math.ceil((base64Payload.length * 3) / 4);
+    const declaredSize = Number(image.size);
+    const normalizedSize = Number.isFinite(declaredSize) && declaredSize > 0 ? declaredSize : estimatedBytes;
+
+    if (normalizedSize > MAX_VERIFICATION_IMAGE_BYTES) {
+      throw new Error(`verificationImages[${index}] exceeds the 2MB limit.`);
+    }
+
+    return {
+      fileName: typeof image.fileName === 'string' && image.fileName.trim()
+        ? image.fileName.trim()
+        : `verification-${index + 1}.jpg`,
+      fileType: mimeMatch[1],
+      size: normalizedSize,
+      dataUrl,
+      uploadedAt: image.uploadedAt || new Date().toISOString(),
+      uploadedBy: uploaderName,
+    };
+  });
+};
+
 const getRequestActionText = (requestType) => {
   if (requestType === 'Stock In') return 'add';
   if (requestType === 'Stock Out') return 'transfer';
@@ -21,7 +77,7 @@ const getRequestActionText = (requestType) => {
 // Create a new stock modification request (staff only)
 exports.createRequest = async (req, res) => {
   try {
-    const { consumableId, requestType, quantity, reason, purpose, course, trainer, startDate, endDate } = req.body;
+    const { consumableId, requestType, quantity, reason, purpose, course, trainer, startDate, endDate, verificationImages } = req.body;
     const userId = req.user.id;
     const requesterName = req.user.username;
 
@@ -36,6 +92,13 @@ exports.createRequest = async (req, res) => {
 
     if (quantity < 1 || !Number.isInteger(quantity)) {
       return res.status(400).json({ error: 'quantity must be a positive integer.' });
+    }
+
+    let normalizedVerificationImages = [];
+    try {
+      normalizedVerificationImages = normalizeVerificationImages(verificationImages, requesterName);
+    } catch (imageError) {
+      return res.status(400).json({ error: imageError.message });
     }
 
     // Get consumable
@@ -63,6 +126,7 @@ exports.createRequest = async (req, res) => {
       trainer: trainer || null,
       startDate: startDate || null,
       endDate: endDate || null,
+      verificationImages: normalizedVerificationImages,
       status: 'pending',
     });
 
@@ -215,6 +279,7 @@ exports.approveRequest = async (req, res) => {
     let mainEndingInventory = 0;
     let annexBeginningInventory = 0;
     let annexEndingInventory = 0;
+    const verificationImages = request.verificationImages || [];
 
     if (request.requestType === 'New Consumable') {
       if (!request.requestedItemName || !request.requestedCategory || !request.requestedUnit) {
@@ -285,6 +350,7 @@ exports.approveRequest = async (req, res) => {
       performedById: adminId,
       startDate: request.startDate,
       endDate: request.endDate,
+      verificationImages,
     });
 
     if (request.requestType === 'Stock Out') {
@@ -303,6 +369,7 @@ exports.approveRequest = async (req, res) => {
         performedById: adminId,
         startDate: request.startDate,
         endDate: request.endDate,
+        verificationImages,
       });
     }
 

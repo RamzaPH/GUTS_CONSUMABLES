@@ -74,6 +74,11 @@ const InventoryHistory = sequelize.define('InventoryHistory', {
     type: DataTypes.DATE,
     allowNull: true,
   },
+  verificationImages: {
+    type: DataTypes.JSON,
+    allowNull: false,
+    defaultValue: [],
+  },
 }, {
   tableName: 'inventory_history',
   timestamps: true,

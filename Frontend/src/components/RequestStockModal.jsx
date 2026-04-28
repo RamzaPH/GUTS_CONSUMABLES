@@ -1,9 +1,20 @@
 import { useState, useEffect } from "react"
-import { X } from "lucide-react"
+import { X, Upload, Image as ImageIcon } from "lucide-react"
 import { useToast } from "../context/ToastContext"
 import { getTrainers } from "../api/authApi"
-import api from "../api/axios"
+import { submitRequest } from "../api/requestApi"
 const getDefaultPurpose = (type) => (type === "Stock In" ? "Replenishment" : "Training")
+
+const MAX_VERIFICATION_IMAGES = 5
+const MAX_VERIFICATION_IMAGE_BYTES = 2 * 1024 * 1024
+const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/jpg", "image/png", "image/webp"])
+
+const readFileAsDataUrl = (file) => new Promise((resolve, reject) => {
+  const reader = new FileReader()
+  reader.onload = () => resolve(reader.result)
+  reader.onerror = () => reject(new Error(`Failed to read ${file.name}`))
+  reader.readAsDataURL(file)
+})
 
 const RequestStockModal = ({
   isOpen,
@@ -24,6 +35,9 @@ const RequestStockModal = ({
   const [loadingTrainers, setLoadingTrainers] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState("")
+  const [verificationImages, setVerificationImages] = useState([])
+  const [imageError, setImageError] = useState("")
+  const [previewImage, setPreviewImage] = useState(null)
 
   // Fetch trainers on component mount
   useEffect(() => {
@@ -53,6 +67,9 @@ const RequestStockModal = ({
         purpose: getDefaultPurpose(requestType),
       })
       setSubmitError("")
+      setImageError("")
+      setVerificationImages([])
+      setPreviewImage(null)
     }
   }, [isOpen, requestType])
 
@@ -61,6 +78,65 @@ const RequestStockModal = ({
       ...prev,
       [field]: value,
     }))
+  }
+
+  const handleImageSelection = async (event) => {
+    const files = Array.from(event.target.files || [])
+    event.target.value = ""
+
+    if (files.length === 0) return
+
+    const remainingSlots = MAX_VERIFICATION_IMAGES - verificationImages.length
+    if (remainingSlots <= 0) {
+      const message = `You can upload up to ${MAX_VERIFICATION_IMAGES} images.`
+      setImageError(message)
+      showError(message)
+      return
+    }
+
+    if (files.length > remainingSlots) {
+      const message = `Only ${remainingSlots} more image${remainingSlots !== 1 ? "s" : ""} can be added.`
+      setImageError(message)
+      showError(message)
+      return
+    }
+
+    for (const file of files) {
+      if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
+        const message = `${file.name} is not a supported image type.`
+        setImageError(message)
+        showError(message)
+        return
+      }
+
+      if (file.size > MAX_VERIFICATION_IMAGE_BYTES) {
+        const message = `${file.name} exceeds the 2MB limit.`
+        setImageError(message)
+        showError(message)
+        return
+      }
+    }
+
+    try {
+      const nextImages = await Promise.all(files.map(async (file) => ({
+        fileName: file.name,
+        fileType: file.type,
+        size: file.size,
+        dataUrl: await readFileAsDataUrl(file),
+        uploadedAt: new Date().toISOString(),
+      })))
+
+      setVerificationImages(prev => [...prev, ...nextImages])
+      setImageError("")
+    } catch (error) {
+      const message = error.message || "Failed to load selected images."
+      setImageError(message)
+      showError(message)
+    }
+  }
+
+  const removeImage = (index) => {
+    setVerificationImages(prev => prev.filter((_, imageIndex) => imageIndex !== index))
   }
 
   const handleSubmit = async (e) => {
@@ -76,12 +152,19 @@ const RequestStockModal = ({
       return
     }
 
+    if (verificationImages.length > MAX_VERIFICATION_IMAGES) {
+      const message = `You can upload up to ${MAX_VERIFICATION_IMAGES} images.`
+      setImageError(message)
+      showError(message)
+      return
+    }
+
     setSubmitError("")
     setIsSubmitting(true)
     try {
       const today = new Date().toISOString().split("T")[0]
 
-      const response = await api.post('/requests', {
+      const response = await submitRequest({
         consumableId: item.id,
         requestType,
         quantity: parseInt(formData.quantity, 10),
@@ -91,13 +174,14 @@ const RequestStockModal = ({
         purpose: formData.purpose,
         startDate: today,
         endDate: today,
+        verificationImages,
       })
 
       success("✓ Request submitted successfully! Administrators will review your request shortly.")
 
       if (onRequestSubmitted) {
         try {
-          onRequestSubmitted(response.data.request)
+          onRequestSubmitted(response.request)
         } catch (callbackError) {
           console.error("onRequestSubmitted callback error:", callbackError)
         }
@@ -227,6 +311,78 @@ const RequestStockModal = ({
             </select>
           </div>
 
+          {/* Verification Images */}
+          <div>
+            <label className="block text-sm font-semibold text-slate-700">
+              Verification Images (Optional)
+            </label>
+            <div className="mt-1 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 p-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-start gap-3">
+                  <div className="rounded-lg bg-[#800000]/10 p-2 text-[#800000]">
+                    <Upload size={18} />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-slate-800">Upload index card photos</p>
+                    <p className="text-xs text-slate-500">Up to {MAX_VERIFICATION_IMAGES} images, 2MB each.</p>
+                  </div>
+                </div>
+                <label className="inline-flex cursor-pointer items-center justify-center rounded-lg bg-white px-4 py-2 text-sm font-semibold text-[#800000] ring-1 ring-inset ring-[#800000]/20 transition hover:bg-[#fff7f8]">
+                  Choose Images
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    onChange={handleImageSelection}
+                    capture="environment"
+                  />
+                </label>
+              </div>
+
+              <div className="mt-4 flex items-center gap-2 text-sm text-slate-600">
+                <ImageIcon size={16} />
+                <span>{verificationImages.length} / {MAX_VERIFICATION_IMAGES} images selected</span>
+              </div>
+
+              {imageError && (
+                <p className="mt-3 text-sm text-red-600">{imageError}</p>
+              )}
+
+              {verificationImages.length > 0 && (
+                <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                  {verificationImages.map((image, index) => (
+                    <div key={`${image.fileName}-${index}`} className="group relative overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+                      <button
+                        type="button"
+                        onClick={() => setPreviewImage(image)}
+                        className="block w-full"
+                      >
+                        <img
+                          src={image.dataUrl}
+                          alt={image.fileName}
+                          className="h-28 w-full object-cover"
+                        />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => removeImage(index)}
+                        className="absolute right-2 top-2 rounded-full bg-black/70 p-1 text-white opacity-100 transition group-hover:bg-black"
+                        aria-label={`Remove ${image.fileName}`}
+                      >
+                        <X size={14} />
+                      </button>
+                      <div className="p-2">
+                        <p className="truncate text-xs font-semibold text-slate-700">{image.fileName}</p>
+                        <p className="text-[11px] text-slate-500">{Math.round(image.size / 1024)} KB</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* Action Buttons */}
           <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:gap-3">
             <button
@@ -252,6 +408,27 @@ const RequestStockModal = ({
             </p>
           )}
         </form>
+
+        {previewImage && (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/75 p-4">
+            <div className="w-full max-w-3xl overflow-hidden rounded-2xl bg-white shadow-2xl">
+              <div className="flex items-center justify-between border-b border-slate-200 p-4">
+                <div>
+                  <p className="text-sm font-semibold text-slate-800">Preview Image</p>
+                  <p className="text-xs text-slate-500">{previewImage.fileName}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setPreviewImage(null)}
+                  className="rounded-full p-2 text-slate-500 transition hover:bg-slate-100"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+              <img src={previewImage.dataUrl} alt={previewImage.fileName} className="max-h-[75vh] w-full object-contain bg-black" />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
