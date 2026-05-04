@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react"
+import { flushSync } from "react-dom"
 import { ChevronLeft, ChevronRight, ArrowUpDown, Edit2, X } from "lucide-react"
 import Button from "../components/Button"
 import { useSearch } from "../context/SearchContext"
@@ -29,6 +30,7 @@ const History = () => {
   const [searchUsername, setSearchUsername] = useState('')
   const [sortDate, setSortDate] = useState('DESC') // DESC or ASC
   const [currentPage, setCurrentPage] = useState(1)
+  const [isPrintingAll, setIsPrintingAll] = useState(false)
   const [editingLog, setEditingLog] = useState(null)
   const [editDescription, setEditDescription] = useState('')
   const { searchQuery } = useSearch()
@@ -82,11 +84,25 @@ const History = () => {
     setCurrentPage(1)
   }, [searchQuery, selectedAction, selectedDate, searchUsername, sortDate])
 
+  useEffect(() => {
+    const handleBeforePrint = () => setIsPrintingAll(true)
+    const handleAfterPrint = () => setIsPrintingAll(false)
+
+    window.addEventListener('beforeprint', handleBeforePrint)
+    window.addEventListener('afterprint', handleAfterPrint)
+
+    return () => {
+      window.removeEventListener('beforeprint', handleBeforePrint)
+      window.removeEventListener('afterprint', handleAfterPrint)
+    }
+  }, [])
+
   // Pagination calculations
   const totalPages = Math.ceil(filteredLogs.length / ITEMS_PER_PAGE)
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
   const endIndex = startIndex + ITEMS_PER_PAGE
   const paginatedLogs = filteredLogs.slice(startIndex, endIndex)
+  const recordsToDisplay = isPrintingAll ? filteredLogs : paginatedLogs
 
   const handleEditClick = (log) => {
     setEditingLog(log)
@@ -104,15 +120,23 @@ const History = () => {
     }
   }
 
+  const handlePrintAllRecords = () => {
+    flushSync(() => {
+      setIsPrintingAll(true)
+    })
+
+    window.print()
+  }
+
   return (
     <section className="space-y-6">
-      <div>
+      <div className="print:hidden">
         <h2 className="font-title text-3xl font-bold text-[var(--brand-primary)] dark:text-red-400 transition-colors duration-300">Activity Logs</h2>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400 transition-colors duration-300">Complete system activity history including all item movements, updates, and actions.</p>
       </div>
 
       {/* Filters */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-4 space-y-4 transition-colors duration-300 dark:bg-slate-800 dark:border-slate-700">
+      <div className="rounded-2xl border border-slate-200 bg-white p-4 space-y-4 transition-colors duration-300 dark:bg-slate-800 dark:border-slate-700 print:hidden">
         {/* Search Bar */}
         <div>
           <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 block mb-2 transition-colors duration-300">Search by Username or Action:</label>
@@ -198,7 +222,7 @@ const History = () => {
 
       {/* Print Button */}
       <div className="flex justify-end print:hidden">
-        <Button onClick={() => window.print()}> Print Report</Button>
+        <Button type="button" onClick={handlePrintAllRecords}>Print All Records</Button>
       </div>
 
       {/* Logs Table */}
@@ -228,7 +252,7 @@ const History = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 bg-white">
-                {paginatedLogs.map((log) => {
+                {recordsToDisplay.map((log) => {
                   const colors = getActionColor(log.actionType)
                   return (
                     <tr key={log.id} className="hover:bg-slate-50/70 transition">
@@ -284,7 +308,7 @@ const History = () => {
           </div>
 
           {/* Summary Footer and Pagination */}
-          <div className="bg-slate-50 px-5 py-4 text-sm border-t border-slate-200">
+          <div className="bg-slate-50 px-5 py-4 text-sm border-t border-slate-200 print:hidden">
             <div className="flex items-center justify-between">
               <div className="font-semibold text-slate-700">
                 Total Records: <span className="text-[var(--brand-primary)]">{filteredLogs.length}</span> {selectedAction && `| Filter: ${selectedAction}`}
