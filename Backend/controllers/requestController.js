@@ -477,6 +477,7 @@ exports.rejectRequest = async (req, res) => {
     request.status = 'rejected';
     request.approvedById = adminId;
     request.approvalNotes = reason;
+    request.rejectionReason = reason;
     request.approvedAt = new Date();
     await request.save();
 

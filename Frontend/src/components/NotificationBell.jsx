@@ -3,12 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import { Bell, Check, Trash2 } from 'lucide-react';
 import { useNotifications } from '../context/NotificationContext';
 import { useInventoryLocation } from '../context/InventoryLocationContext';
+import { useAuth } from '../context/AuthContext';
+import RequestRejectionModal from './RequestRejectionModal';
 
 const NotificationBell = () => {
   const navigate = useNavigate();
   const { handleInventoryChange } = useInventoryLocation();
   const { notifications, unreadCount, markAsRead, markAllAsRead, deleteNotification } = useNotifications();
+  const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
+  const [rejectionModalState, setRejectionModalState] = useState({ isOpen: false, request: null, rejectionReason: '' });
   const menuRef = useRef(null);
 
   // Close menu when clicking outside
@@ -101,6 +105,21 @@ const NotificationBell = () => {
     if (notif.type === 'stock_requested' || metadata?.target === 'pending-requests') {
       setIsOpen(false);
       navigate('/dashboard?openPendingRequests=1');
+      return;
+    }
+
+    if (notif.type === 'request_rejected' && user?.role === 'staff') {
+      setIsOpen(false);
+      setRejectionModalState({
+        isOpen: true,
+        request: {
+          requestId: metadata?.requestId || notif.id,
+          itemName: metadata?.itemName,
+          requestType: metadata?.requestType,
+          quantity: metadata?.quantity,
+        },
+        rejectionReason: metadata?.rejectionReason || '',
+      });
       return;
     }
 
@@ -204,6 +223,13 @@ const NotificationBell = () => {
           </div>
         </div>
       )}
+
+      <RequestRejectionModal
+        isOpen={rejectionModalState.isOpen}
+        request={rejectionModalState.request}
+        rejectionReason={rejectionModalState.rejectionReason}
+        onClose={() => setRejectionModalState({ isOpen: false, request: null, rejectionReason: '' })}
+      />
     </div>
   );
 };

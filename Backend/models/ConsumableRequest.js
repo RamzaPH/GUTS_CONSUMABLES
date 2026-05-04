@@ -76,6 +76,10 @@ const ConsumableRequest = sequelize.define('ConsumableRequest', {
     type: DataTypes.TEXT,
     allowNull: true,
   },
+  rejectionReason: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
   approvedAt: {
     type: DataTypes.DATE,
     allowNull: true,
