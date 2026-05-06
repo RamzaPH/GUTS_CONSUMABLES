@@ -72,9 +72,9 @@ const Archive = () => {
               <thead className="bg-[#f8eef0]">
                 <tr>
                   <th className="px-4 py-4 font-semibold text-[var(--brand-primary)] sm:px-5">Item Name</th>
-                  <th className="hidden px-4 py-4 font-semibold text-[var(--brand-primary)] sm:table-cell sm:px-5">Category</th>
+                  <th className="px-4 py-4 font-semibold text-[var(--brand-primary)] sm:px-5">Category</th>
                   <th className="px-4 py-4 font-semibold text-[var(--brand-primary)] sm:px-5">Quantity</th>
-                  <th className="hidden px-4 py-4 font-semibold text-[var(--brand-primary)] sm:table-cell sm:px-5">Unit</th>
+                  <th className="px-4 py-4 font-semibold text-[var(--brand-primary)] sm:px-5">Unit</th>
                   <th className="px-4 py-4 font-semibold text-[var(--brand-primary)] sm:px-5">Actions</th>
                 </tr>
               </thead>
@@ -82,9 +82,9 @@ const Archive = () => {
                 {filteredItems.map((item) => (
                   <tr key={item.id} className="hover:bg-slate-50/70">
                     <td className="px-4 py-4 font-medium text-slate-700 sm:px-5">{item.itemName}</td>
-                    <td className="hidden px-4 py-4 text-slate-700 sm:table-cell sm:px-5">{item.category}</td>
+                    <td className="px-4 py-4 text-slate-700 sm:px-5">{item.category}</td>
                     <td className="px-4 py-4 text-slate-700 sm:px-5">{item.quantity}</td>
-                    <td className="hidden px-4 py-4 text-slate-600 sm:table-cell sm:px-5">{item.unit}</td>
+                    <td className="px-4 py-4 text-slate-600 sm:px-5">{item.unit}</td>
                     <td className="px-4 py-4 sm:px-5">
                       <button
                         type="button"

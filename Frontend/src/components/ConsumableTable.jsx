@@ -26,9 +26,9 @@ const ConsumableTable = ({ items, onEdit, onArchive, onRowClick, showActions = t
           <thead className="bg-[#f8eef0] transition-colors duration-300 dark:bg-slate-900/50">
             <tr>
               <th className="px-3 py-2 font-semibold text-[var(--brand-primary)] transition-colors duration-300 dark:text-red-400">Item Name</th>
-              <th className="hidden px-3 py-2 font-semibold text-[var(--brand-primary)] transition-colors duration-300 dark:text-red-400 md:table-cell">Course</th>
+              <th className="px-3 py-2 font-semibold text-[var(--brand-primary)] transition-colors duration-300 dark:text-red-400">Course</th>
               <th className="px-3 py-2 font-semibold text-[var(--brand-primary)] transition-colors duration-300 dark:text-red-400">Quantity</th>
-              <th className="hidden px-3 py-2 font-semibold text-[var(--brand-primary)] transition-colors duration-300 dark:text-red-400 sm:table-cell">Unit</th>
+              <th className="px-3 py-2 font-semibold text-[var(--brand-primary)] transition-colors duration-300 dark:text-red-400">Unit</th>
               <th className="px-3 py-2 font-semibold text-[var(--brand-primary)] transition-colors duration-300 dark:text-red-400">Status</th>
               {showActions ? <th className="px-3 py-2 font-semibold text-[var(--brand-primary)] transition-colors duration-300 print:hidden dark:text-red-400">Actions</th> : null}
             </tr>
@@ -41,9 +41,9 @@ const ConsumableTable = ({ items, onEdit, onArchive, onRowClick, showActions = t
                 className="cursor-pointer hover:bg-[#fce4e8]/40 dark:hover:bg-slate-700/50 transition-colors duration-300"
               >
                 <td className="px-3 py-2 font-medium text-slate-700 transition-colors duration-300 dark:text-slate-200">{item.itemName}</td>
-                <td className="hidden px-3 py-2 text-slate-700 transition-colors duration-300 dark:text-slate-300 md:table-cell">{getCourseDisplay(item)}</td>
+                <td className="px-3 py-2 text-slate-700 transition-colors duration-300 dark:text-slate-300">{getCourseDisplay(item)}</td>
                 <td className="px-3 py-2 text-slate-700 transition-colors duration-300 dark:text-slate-300">{item.quantity}</td>
-                <td className="hidden px-3 py-2 text-slate-600 transition-colors duration-300 dark:text-slate-400 sm:table-cell">{item.unit}</td>
+                <td className="px-3 py-2 text-slate-600 transition-colors duration-300 dark:text-slate-400">{item.unit}</td>
                 <td className="px-3 py-2">
                   <span
                     className={`inline-flex rounded-full px-2 py-1 text-[10px] font-semibold transition-colors duration-300 sm:px-3 sm:text-[11px] ${statusClassMap[item.status]}`}

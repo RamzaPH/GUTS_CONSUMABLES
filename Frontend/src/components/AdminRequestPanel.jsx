@@ -167,15 +167,15 @@ const AdminRequestPanel = ({ isOpen, onClose }) => {
             <>
               {/* Requests Table */}
               <div className="overflow-x-auto">
-                <table className="min-w-[680px] w-full text-sm sm:min-w-[760px]">
+                <table className="w-full text-sm">
                   <thead className="bg-slate-50">
                     <tr>
                       <th className="px-4 py-3 text-left font-semibold text-slate-700">Item</th>
                       <th className="px-4 py-3 text-left font-semibold text-slate-700">Staff Member</th>
                       <th className="px-4 py-3 text-left font-semibold text-slate-700">Type</th>
                       <th className="px-4 py-3 text-center font-semibold text-slate-700">Quantity</th>
-                      <th className="hidden px-4 py-3 text-left font-semibold text-slate-700 md:table-cell">Purpose</th>
-                      <th className="hidden px-4 py-3 text-left font-semibold text-slate-700 sm:table-cell">Date</th>
+                      <th className="px-4 py-3 text-left font-semibold text-slate-700">Purpose</th>
+                      <th className="px-4 py-3 text-left font-semibold text-slate-700">Date</th>
                       <th className="px-4 py-3 text-center font-semibold text-slate-700">Evidence</th>
                       {activeTab === 'pending' && (
                         <th className="px-4 py-3 text-center font-semibold text-slate-700">Action</th>
@@ -215,12 +215,12 @@ const AdminRequestPanel = ({ isOpen, onClose }) => {
                         <td className="px-4 py-3 text-center font-semibold text-[#800000]">
                           {request.quantity}
                         </td>
-                        <td className="hidden px-4 py-3 text-slate-600 md:table-cell">
+                        <td className="px-4 py-3 text-slate-600">
                           {request.requestType === 'New Consumable'
                             ? (request.requestedLocation === 'annex' ? 'Training Inventory' : 'Main Inventory')
                             : (request.purpose || '—')}
                         </td>
-                        <td className="hidden px-4 py-3 text-xs text-slate-500 sm:table-cell">
+                        <td className="px-4 py-3 text-xs text-slate-500">
                           {new Date(request.createdAt).toLocaleDateString()}
                         </td>
                         <td className="px-4 py-3 text-center">

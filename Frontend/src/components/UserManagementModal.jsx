@@ -110,14 +110,14 @@ const UserManagementModal = ({ isOpen, onClose }) => {
               <div className="text-center py-8 text-slate-600">No users found.</div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="min-w-[700px] w-full text-sm">
+                <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-slate-200 bg-slate-50">
                       <th className="px-4 py-3 text-left font-semibold text-slate-700">Full Name</th>
                       <th className="px-4 py-3 text-left font-semibold text-slate-700">Username</th>
-                      <th className="hidden px-4 py-3 text-left font-semibold text-slate-700 md:table-cell">Email</th>
+                      <th className="px-4 py-3 text-left font-semibold text-slate-700">Email</th>
                       <th className="px-4 py-3 text-left font-semibold text-slate-700">Role</th>
-                      <th className="hidden px-4 py-3 text-center font-semibold text-slate-700 sm:table-cell">Status</th>
+                      <th className="px-4 py-3 text-center font-semibold text-slate-700">Status</th>
                       <th className="px-4 py-3 text-right font-semibold text-slate-700">Actions</th>
                     </tr>
                   </thead>
@@ -126,7 +126,7 @@ const UserManagementModal = ({ isOpen, onClose }) => {
                       <tr key={user.id} className="border-b border-slate-200 hover:bg-slate-50 transition-colors">
                         <td className="px-4 py-3 text-slate-900 font-medium">{user.fullName}</td>
                         <td className="px-4 py-3 text-slate-600">{user.username}</td>
-                        <td className="hidden px-4 py-3 text-slate-600 md:table-cell">{user.email}</td>
+                        <td className="px-4 py-3 text-slate-600">{user.email}</td>
                         <td className="px-4 py-3">
                           <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-semibold ${
                             user.role === 'admin'
@@ -136,7 +136,7 @@ const UserManagementModal = ({ isOpen, onClose }) => {
                             {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
                           </span>
                         </td>
-                        <td className="hidden px-4 py-3 text-center sm:table-cell">
+                        <td className="px-4 py-3 text-center">
                           <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-semibold ${
                             user.isActive
                               ? 'bg-green-100 text-green-800'
