@@ -2,12 +2,27 @@ import React, { createContext, useContext, useState, useCallback } from 'react';
 
 const ToastContext = createContext();
 
+const formatToastMessage = (message) => {
+  if (typeof message !== 'string') {
+    return '';
+  }
+
+  const compact = message.replace(/\s+/g, ' ').trim();
+  const primary = compact.split(/[:\n-]/)[0].trim();
+
+  if (primary.length <= 72) {
+    return primary.replace(/[.!?]+$/, '');
+  }
+
+  return `${primary.slice(0, 69).trimEnd()}...`;
+};
+
 export const ToastProvider = ({ children }) => {
   const [toasts, setToasts] = useState([]);
 
   const addToast = useCallback((message, type = 'info', duration = 3000) => {
     const id = Date.now();
-    const toast = { id, message, type };
+    const toast = { id, message: formatToastMessage(message), type };
 
     setToasts((prev) => [...prev, toast]);
 

@@ -8,7 +8,7 @@ export const Toast = ({ toast, onClose }) => {
       case 'success':
         return '✓';
       case 'error':
-        return '✕';
+        return '!';
       case 'warning':
         return '⚠';
       case 'info':
