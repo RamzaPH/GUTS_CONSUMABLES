@@ -206,52 +206,73 @@ const HistoryPage = () => {
               padding: 0;
               box-sizing: border-box;
             }
+            @page {
+              size: landscape;
+              margin: 12mm;
+            }
             body {
               font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
-              padding: 20px;
+              padding: 12px;
               background-color: white;
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
             }
             .print-header {
-              margin-bottom: 30px;
+              margin-bottom: 20px;
               text-align: center;
               border-bottom: 3px solid #800000;
-              padding-bottom: 15px;
+              padding-bottom: 18px;
             }
             .print-header h1 {
               color: #800000;
-              margin-bottom: 10px;
-              font-size: 22px;
+              margin-bottom: 6px;
+              font-size: 28px;
+              line-height: 1.1;
+            }
+            .print-header h2 {
+              color: #666;
+              font-size: 18px;
+              font-weight: 600;
+              margin-bottom: 12px;
             }
             .print-header p {
               color: #666;
-              margin: 5px 0;
-              font-size: 13px;
+              margin: 4px 0;
+              font-size: 15px;
+              line-height: 1.4;
             }
             table {
               width: 100%;
               border-collapse: collapse;
-              margin-top: 15px;
+              margin-top: 18px;
               background-color: white;
+              font-size: 14px;
+              table-layout: auto;
             }
             thead {
               background-color: #f8eef0;
               border-bottom: 2px solid #800000;
             }
             th {
-              padding: 10px;
+              padding: 12px 14px;
               text-align: left;
               font-weight: 600;
               color: #800000;
-              font-size: 12px;
+              font-size: 13px;
               text-transform: uppercase;
-              white-space: nowrap;
+              white-space: normal;
+              word-break: break-word;
               border: 1px solid #ddd;
             }
             td {
-              padding: 9px 10px;
+              padding: 11px 14px;
               border-bottom: 1px solid #e5e7eb;
-              font-size: 12px;
+              font-size: 14px;
+              line-height: 1.4;
               border: 1px solid #ddd;
+              vertical-align: top;
+              white-space: normal;
+              word-break: break-word;
             }
             tbody tr:nth-child(even) {
               background-color: #f9fafb;
@@ -263,12 +284,12 @@ const HistoryPage = () => {
               text-align: right;
             }
             .print-footer {
-              margin-top: 30px;
+              margin-top: 22px;
               text-align: center;
               color: #999;
-              font-size: 11px;
+              font-size: 13px;
               border-top: 1px solid #ddd;
-              padding-top: 15px;
+              padding-top: 12px;
             }
             @media print {
               body {
@@ -279,6 +300,9 @@ const HistoryPage = () => {
               }
               thead {
                 display: table-header-group;
+              }
+              tr {
+                page-break-inside: avoid;
               }
             }
           </style>

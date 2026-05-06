@@ -4,8 +4,6 @@ import { ChevronLeft, ChevronRight, ArrowUpDown, Edit2, X } from "lucide-react"
 import Button from "../components/Button"
 import { useSearch } from "../context/SearchContext"
 import { getConsumptionReport, getHistoryLogs } from "../api/historyApi"
-import { useToast } from "../context/ToastContext"
-import { exportConsumptionReportPdf } from "../utils/pdfExport"
 
 const ITEMS_PER_PAGE = 10
 
@@ -24,6 +22,110 @@ const getActionColor = (actionType) => {
   return ACTION_TYPES[actionType] || { color: 'bg-slate-100', textColor: 'text-slate-700', badge: 'bg-slate-500' }
 }
 
+const printStyles = `
+  @media print {
+    @page {
+      size: landscape;
+      margin: 12mm;
+    }
+
+    body {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+
+    .print-consumption-report {
+      border: none !important;
+      background: white !important;
+      padding: 0 !important;
+      color: #0f172a !important;
+    }
+
+    .print-consumption-report .print-report-controls,
+    .print-consumption-report .print-report-button,
+    .print-consumption-report .print-report-note {
+      display: none !important;
+    }
+
+    .print-consumption-report .print-report-header {
+      display: block !important;
+      margin-bottom: 16px !important;
+      padding-bottom: 12px !important;
+      border-bottom: 2px solid #800000 !important;
+    }
+
+    .print-consumption-report .print-report-title {
+      font-size: 24px !important;
+      font-weight: 800 !important;
+      color: #800000 !important;
+      margin: 0 0 4px 0 !important;
+    }
+
+    .print-consumption-report .print-report-subtitle {
+      font-size: 13px !important;
+      color: #475569 !important;
+      margin: 0 !important;
+    }
+
+    .print-consumption-report .print-report-meta {
+      display: grid !important;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px !important;
+      margin-top: 12px !important;
+    }
+
+    .print-consumption-report .print-report-meta div {
+      border: 1px solid #cbd5e1 !important;
+      border-radius: 12px !important;
+      padding: 10px 12px !important;
+      background: #fff !important;
+    }
+
+    .print-consumption-report .print-report-meta p:first-child {
+      font-size: 10px !important;
+      text-transform: uppercase !important;
+      letter-spacing: 0.08em !important;
+      color: #64748b !important;
+      margin-bottom: 4px !important;
+    }
+
+    .print-consumption-report .print-report-meta p:last-child {
+      font-size: 13px !important;
+      font-weight: 700 !important;
+      color: #0f172a !important;
+      margin: 0 !important;
+    }
+
+    .print-consumption-report .print-table-wrapper {
+      overflow: visible !important;
+      border: 1px solid #cbd5e1 !important;
+      border-radius: 12px !important;
+    }
+
+    .print-consumption-report table {
+      width: 100% !important;
+      table-layout: auto !important;
+      font-size: 12px !important;
+    }
+
+    .print-consumption-report th,
+    .print-consumption-report td {
+      padding: 10px 12px !important;
+      white-space: normal !important;
+      word-break: break-word !important;
+      vertical-align: top !important;
+    }
+
+    .print-consumption-report th {
+      font-size: 11px !important;
+    }
+
+    .print-consumption-report tr {
+      page-break-inside: avoid !important;
+    }
+  }
+`
+
 const History = () => {
   const [logs, setLogs] = useState([])
   const [isLoading, setIsLoading] = useState(true)
@@ -36,7 +138,6 @@ const History = () => {
   const [selectedCourse, setSelectedCourse] = useState('')
   const [selectedBatchKey, setSelectedBatchKey] = useState('')
   const [isReportLoading, setIsReportLoading] = useState(true)
-  const [isExportingReport, setIsExportingReport] = useState(false)
   const [selectedAction, setSelectedAction] = useState('')
   const [selectedDate, setSelectedDate] = useState('')
   const [searchUsername, setSearchUsername] = useState('')
@@ -46,7 +147,6 @@ const History = () => {
   const [editingLog, setEditingLog] = useState(null)
   const [editDescription, setEditDescription] = useState('')
   const { searchQuery } = useSearch()
-  const { error: showError } = useToast()
 
   useEffect(() => {
     const load = async () => {
@@ -177,33 +277,45 @@ const History = () => {
     window.print()
   }
 
-  const handleExportConsumptionReport = async () => {
-    setIsExportingReport(true)
-    try {
-      await exportConsumptionReportPdf({
-        records: consumptionReport.records,
-        course: selectedCourse || 'All Courses',
-        batchLabel: selectedBatch?.batchLabel || 'All Batches',
-      })
-    } catch (error) {
-      console.error('Failed to export consumption report:', error)
-      showError('Failed to export report.')
-    } finally {
-      setIsExportingReport(false)
-    }
+  const handlePrintConsumptionReport = () => {
+    flushSync(() => {
+      setIsPrintingAll(true)
+    })
+
+    window.print()
   }
 
   return (
     <section className="space-y-6">
+      <style>{printStyles}</style>
       <div className="print:hidden">
         <h2 className="font-title text-3xl font-bold text-[var(--brand-primary)] dark:text-red-400 transition-colors duration-300">Activity Logs</h2>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400 transition-colors duration-300">Complete system activity history including all item movements, updates, and actions.</p>
       </div>
 
       {/* Consumption Report */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-4 space-y-4 transition-colors duration-300 dark:bg-slate-800 dark:border-slate-700 print:hidden">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <div>
+      <div className="print-consumption-report rounded-2xl border border-slate-200 bg-white p-4 space-y-4 transition-colors duration-300 dark:bg-slate-800 dark:border-slate-700">
+        <div className="print-report-header hidden">
+          <h3 className="print-report-title">Consumption Report by Batch</h3>
+          <p className="print-report-subtitle">GUTS TESDA Inventory System</p>
+          <div className="print-report-meta">
+            <div>
+              <p>Course</p>
+              <p>{selectedCourse || 'All Courses'}</p>
+            </div>
+            <div>
+              <p>Batch</p>
+              <p>{selectedBatch?.batchLabel || 'All Batches'}</p>
+            </div>
+            <div>
+              <p>Total</p>
+              <p>{consumptionReport.totals.recordCount} records · {consumptionReport.totals.totalConsumed} units</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="print-report-controls flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="print-report-note">
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Consumption Report by Batch</h3>
             <p className="text-sm text-slate-500 dark:text-slate-400">
               View all consumption records per course batch and filter down to a specific batch.
@@ -211,15 +323,15 @@ const History = () => {
           </div>
           <button
             type="button"
-            onClick={handleExportConsumptionReport}
-            disabled={isReportLoading || isExportingReport || consumptionReport.records.length === 0}
-            className="inline-flex items-center justify-center rounded-lg bg-[var(--brand-primary)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--brand-primary-strong)] disabled:cursor-not-allowed disabled:opacity-50"
+            onClick={handlePrintConsumptionReport}
+            disabled={isReportLoading || consumptionReport.records.length === 0}
+            className="print-report-button inline-flex items-center justify-center rounded-lg bg-[var(--brand-primary)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--brand-primary-strong)] disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {isExportingReport ? 'Exporting...' : 'Export PDF'}
+            Print Report
           </button>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="print-report-controls grid gap-4 md:grid-cols-3 print:hidden">
           <div>
             <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-300">Course</label>
             <select
@@ -274,7 +386,7 @@ const History = () => {
             No consumption records found for the selected filters.
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700">
+          <div className="print-table-wrapper overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700">
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-slate-200 text-left text-sm dark:divide-slate-700">
                 <thead className="bg-[#f8eef0] dark:bg-slate-700">
@@ -414,7 +526,7 @@ const History = () => {
           No activity logs found {selectedAction && `for action "${selectedAction}"`}.
         </div>
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-[var(--brand-secondary-soft)] bg-white">
+        <div className="overflow-hidden rounded-2xl border border-[var(--brand-secondary-soft)] bg-white print:hidden">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-slate-200 text-left text-sm">
               <thead className="bg-[#f8eef0]">
