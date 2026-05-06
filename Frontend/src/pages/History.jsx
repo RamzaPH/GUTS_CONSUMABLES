@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react"
-import { flushSync } from "react-dom"
 import { ChevronLeft, ChevronRight, ArrowUpDown, Edit2, X } from "lucide-react"
 import Button from "../components/Button"
 import { useSearch } from "../context/SearchContext"
@@ -22,109 +21,189 @@ const getActionColor = (actionType) => {
   return ACTION_TYPES[actionType] || { color: 'bg-slate-100', textColor: 'text-slate-700', badge: 'bg-slate-500' }
 }
 
-const printStyles = `
-  @media print {
-    @page {
-      size: landscape;
-      margin: 12mm;
-    }
+const escapeHtml = (value) => String(value ?? '').replace(/[&<>'"]/g, (char) => ({
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  "'": '&#39;',
+  '"': '&quot;',
+}[char]))
 
-    body {
-      -webkit-print-color-adjust: exact;
-      print-color-adjust: exact;
-    }
+const getLogoDataUrl = async () => {
+  try {
+    const response = await fetch('/guts-logo.png')
+    if (!response.ok) return ''
 
-    .print-consumption-report {
-      border: none !important;
-      background: white !important;
-      padding: 0 !important;
-      color: #0f172a !important;
-    }
-
-    .print-consumption-report .print-report-controls,
-    .print-consumption-report .print-report-button,
-    .print-consumption-report .print-report-note {
-      display: none !important;
-    }
-
-    .print-consumption-report .print-report-header {
-      display: block !important;
-      margin-bottom: 16px !important;
-      padding-bottom: 12px !important;
-      border-bottom: 2px solid #800000 !important;
-    }
-
-    .print-consumption-report .print-report-title {
-      font-size: 24px !important;
-      font-weight: 800 !important;
-      color: #800000 !important;
-      margin: 0 0 4px 0 !important;
-    }
-
-    .print-consumption-report .print-report-subtitle {
-      font-size: 13px !important;
-      color: #475569 !important;
-      margin: 0 !important;
-    }
-
-    .print-consumption-report .print-report-meta {
-      display: grid !important;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 12px !important;
-      margin-top: 12px !important;
-    }
-
-    .print-consumption-report .print-report-meta div {
-      border: 1px solid #cbd5e1 !important;
-      border-radius: 12px !important;
-      padding: 10px 12px !important;
-      background: #fff !important;
-    }
-
-    .print-consumption-report .print-report-meta p:first-child {
-      font-size: 10px !important;
-      text-transform: uppercase !important;
-      letter-spacing: 0.08em !important;
-      color: #64748b !important;
-      margin-bottom: 4px !important;
-    }
-
-    .print-consumption-report .print-report-meta p:last-child {
-      font-size: 13px !important;
-      font-weight: 700 !important;
-      color: #0f172a !important;
-      margin: 0 !important;
-    }
-
-    .print-consumption-report .print-table-wrapper {
-      overflow: visible !important;
-      border: 1px solid #cbd5e1 !important;
-      border-radius: 12px !important;
-    }
-
-    .print-consumption-report table {
-      width: 100% !important;
-      table-layout: auto !important;
-      font-size: 12px !important;
-    }
-
-    .print-consumption-report th,
-    .print-consumption-report td {
-      padding: 10px 12px !important;
-      white-space: normal !important;
-      word-break: break-word !important;
-      vertical-align: top !important;
-    }
-
-    .print-consumption-report th {
-      font-size: 11px !important;
-    }
-
-    .print-consumption-report tr {
-      page-break-inside: avoid !important;
-    }
+    const blob = await response.blob()
+    return await new Promise((resolve) => {
+      const reader = new FileReader()
+      reader.onloadend = () => resolve(reader.result || '')
+      reader.readAsDataURL(blob)
+    })
+  } catch {
+    return ''
   }
-`
+}
+
+const buildPrintFrame = async ({ title, subtitle, summaryItems, tableHeaders, tableRows, footer }) => {
+  const logoDataUrl = await getLogoDataUrl()
+  const printFrame = document.createElement('iframe')
+  printFrame.style.position = 'fixed'
+  printFrame.style.right = '0'
+  printFrame.style.bottom = '0'
+  printFrame.style.width = '0'
+  printFrame.style.height = '0'
+  printFrame.style.border = '0'
+  printFrame.style.visibility = 'hidden'
+  document.body.appendChild(printFrame)
+
+  const logoHtml = logoDataUrl
+    ? `<img src="${logoDataUrl}" alt="GUTS Logo" style="width:72px;height:72px;object-fit:contain;display:block;" />`
+    : `<div style="width:72px;height:72px;border:2px solid #800000;border-radius:18px;display:flex;align-items:center;justify-content:center;color:#800000;font-weight:800;font-size:18px;">GUTS</div>`
+
+  const summaryHtml = summaryItems.map((item) => `
+    <div style="border:1px solid #cbd5e1;border-radius:12px;padding:10px 12px;background:#fff;">
+      <div style="font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#64748b;margin-bottom:4px;">${escapeHtml(item.label)}</div>
+      <div style="font-size:13px;font-weight:700;color:#0f172a;line-height:1.4;">${escapeHtml(item.value)}</div>
+    </div>
+  `).join('')
+
+  const headerCells = tableHeaders.map((header) => `<th>${escapeHtml(header)}</th>`).join('')
+  const bodyRows = tableRows.map((row) => `
+    <tr>
+      ${row.map((cell) => `<td>${cell}</td>`).join('')}
+    </tr>
+  `).join('')
+
+  const html = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>${escapeHtml(title)}</title>
+      <style>
+        * { box-sizing: border-box; }
+        @page { size: landscape; margin: 12mm; }
+        body {
+          margin: 0;
+          padding: 0;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+          background: #fff;
+          color: #0f172a;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
+        }
+        .page {
+          padding: 0;
+        }
+        .header {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+          border-bottom: 3px solid #800000;
+          padding-bottom: 14px;
+          margin-bottom: 16px;
+        }
+        .title {
+          font-size: 26px;
+          font-weight: 800;
+          color: #800000;
+          margin: 0 0 4px 0;
+          line-height: 1.1;
+        }
+        .subtitle {
+          margin: 0;
+          font-size: 14px;
+          color: #475569;
+          line-height: 1.4;
+        }
+        .summary {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 12px;
+          margin-bottom: 16px;
+        }
+        table {
+          width: 100%;
+          border-collapse: collapse;
+          table-layout: auto;
+          font-size: 13px;
+        }
+        th, td {
+          border: 1px solid #dbe2ea;
+          padding: 11px 12px;
+          text-align: left;
+          vertical-align: top;
+          white-space: normal;
+          word-break: break-word;
+        }
+        th {
+          background: #f8eef0;
+          color: #800000;
+          font-size: 12px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: .02em;
+        }
+        tbody tr:nth-child(even) td {
+          background: #fafafa;
+        }
+        .footer {
+          margin-top: 18px;
+          padding-top: 12px;
+          border-top: 1px solid #dbe2ea;
+          text-align: center;
+          color: #64748b;
+          font-size: 12px;
+        }
+        tr { page-break-inside: avoid; }
+      </style>
+    </head>
+    <body>
+      <div class="page">
+        <div class="header">
+          <div>${logoHtml}</div>
+          <div>
+            <h1 class="title">${escapeHtml(title)}</h1>
+            <p class="subtitle">${escapeHtml(subtitle)}</p>
+          </div>
+        </div>
+        <div class="summary">${summaryHtml}</div>
+        <table>
+          <thead>
+            <tr>${headerCells}</tr>
+          </thead>
+          <tbody>${bodyRows}</tbody>
+        </table>
+        <div class="footer">${escapeHtml(footer)}</div>
+      </div>
+    </body>
+    </html>
+  `
+
+  const cleanup = () => {
+    setTimeout(() => {
+      if (printFrame.parentNode) {
+        printFrame.parentNode.removeChild(printFrame)
+      }
+    }, 500)
+  }
+
+  printFrame.onload = () => {
+    const printWindow = printFrame.contentWindow
+    printWindow.focus()
+    printWindow.print()
+    printWindow.onafterprint = cleanup
+    setTimeout(cleanup, 2000)
+  }
+
+  printFrame.contentDocument.open()
+  printFrame.contentDocument.write(html)
+  printFrame.contentDocument.close()
+
+  return printFrame
+}
 
 const History = () => {
   const [logs, setLogs] = useState([])
@@ -143,7 +222,6 @@ const History = () => {
   const [searchUsername, setSearchUsername] = useState('')
   const [sortDate, setSortDate] = useState('DESC') // DESC or ASC
   const [currentPage, setCurrentPage] = useState(1)
-  const [isPrintingAll, setIsPrintingAll] = useState(false)
   const [editingLog, setEditingLog] = useState(null)
   const [editDescription, setEditDescription] = useState('')
   const { searchQuery } = useSearch()
@@ -233,25 +311,12 @@ const History = () => {
     setCurrentPage(1)
   }, [searchQuery, selectedAction, selectedDate, searchUsername, sortDate])
 
-  useEffect(() => {
-    const handleBeforePrint = () => setIsPrintingAll(true)
-    const handleAfterPrint = () => setIsPrintingAll(false)
-
-    window.addEventListener('beforeprint', handleBeforePrint)
-    window.addEventListener('afterprint', handleAfterPrint)
-
-    return () => {
-      window.removeEventListener('beforeprint', handleBeforePrint)
-      window.removeEventListener('afterprint', handleAfterPrint)
-    }
-  }, [])
-
   // Pagination calculations
   const totalPages = Math.ceil(filteredLogs.length / ITEMS_PER_PAGE)
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
   const endIndex = startIndex + ITEMS_PER_PAGE
   const paginatedLogs = filteredLogs.slice(startIndex, endIndex)
-  const recordsToDisplay = isPrintingAll ? filteredLogs : paginatedLogs
+  const recordsToDisplay = paginatedLogs
 
   const handleEditClick = (log) => {
     setEditingLog(log)
@@ -269,20 +334,58 @@ const History = () => {
     }
   }
 
-  const handlePrintAllRecords = () => {
-    flushSync(() => {
-      setIsPrintingAll(true)
-    })
+  const handlePrintAllRecords = async () => {
+    const tableRows = filteredLogs.map((log) => [
+      `<strong>${escapeHtml(log.itemName)}</strong>`,
+      `<span style="display:inline-block;padding:4px 8px;border-radius:999px;background:${log.actionType === 'Stock Out' ? '#fee2e2' : log.actionType === 'Stock In' ? '#dcfce7' : '#e2e8f0'};color:${log.actionType === 'Stock Out' ? '#b91c1c' : log.actionType === 'Stock In' ? '#15803d' : '#475569'};font-weight:700;font-size:11px;">${escapeHtml(log.actionType)}</span>`,
+      `<span style="font-weight:700;${log.quantityChanged > 0 ? 'color:#15803d' : log.quantityChanged < 0 ? 'color:#dc2626' : 'color:#475569'}">${log.quantityChanged > 0 ? '+' : ''}${escapeHtml(log.quantityChanged)}</span>`,
+      escapeHtml(log.performedBy || 'System'),
+      escapeHtml(log.startDate && log.endDate ? `${new Date(log.startDate).toLocaleDateString('en-PH')} - ${new Date(log.endDate).toLocaleDateString('en-PH')}` : '—'),
+      escapeHtml(log.description || '—'),
+      escapeHtml(new Date(log.createdAt).toLocaleString('en-PH')),
+      '',
+    ])
 
-    window.print()
+    await buildPrintFrame({
+      title: 'Full History Report',
+      subtitle: 'All activity logs with the current filters applied',
+      summaryItems: [
+        { label: 'Item', value: item?.itemName || 'All Items' },
+        { label: 'Filters', value: [selectedAction !== 'All' ? `Action: ${selectedAction}` : null, selectedDate ? `Date: ${selectedDate}` : null, searchUsername ? `User: ${searchUsername}` : null].filter(Boolean).join(' • ') || 'None' },
+        { label: 'Total Records', value: `${filteredLogs.length}` },
+      ],
+      tableHeaders: ['Item Name', 'Action', 'Quantity Changed', 'Performed By', 'Duration', 'Details', 'Date & Time', 'Action'],
+      tableRows,
+      footer: `Total records shown: ${filteredLogs.length}`,
+    })
   }
 
-  const handlePrintConsumptionReport = () => {
-    flushSync(() => {
-      setIsPrintingAll(true)
+  const handlePrintConsumptionReport = async () => {
+    await buildPrintFrame({
+      title: 'Consumption Report by Batch',
+      subtitle: 'Consumption records grouped by course batch',
+      summaryItems: [
+        { label: 'Course', value: selectedCourse || 'All Courses' },
+        { label: 'Batch', value: selectedBatch?.batchLabel || 'All Batches' },
+        { label: 'Total', value: `${consumptionReport.totals.recordCount} records • ${consumptionReport.totals.totalConsumed} units` },
+      ],
+      tableHeaders: ['Item', 'Course', 'Batch', 'Qty Used', 'Performed By', 'Date & Time'],
+      tableRows: consumptionReport.records.map((record) => [
+        `<strong>${escapeHtml(record.itemName)}</strong>`,
+        escapeHtml(record.course || '-'),
+        escapeHtml(record.batchLabel),
+        `<span style="font-weight:700;color:#dc2626">${Math.abs(record.quantityChanged || 0)}</span>`,
+        escapeHtml(record.performedBy || 'System'),
+        escapeHtml(new Date(record.createdAt).toLocaleString('en-PH', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        })),
+      ]),
+      footer: `Total records shown: ${consumptionReport.totals.recordCount}`,
     })
-
-    window.print()
   }
 
   return (
@@ -294,26 +397,6 @@ const History = () => {
       </div>
 
       {/* Consumption Report */}
-      <div className="print-consumption-report rounded-2xl border border-slate-200 bg-white p-4 space-y-4 transition-colors duration-300 dark:bg-slate-800 dark:border-slate-700">
-        <div className="print-report-header hidden">
-          <h3 className="print-report-title">Consumption Report by Batch</h3>
-          <p className="print-report-subtitle">GUTS TESDA Inventory System</p>
-          <div className="print-report-meta">
-            <div>
-              <p>Course</p>
-              <p>{selectedCourse || 'All Courses'}</p>
-            </div>
-            <div>
-              <p>Batch</p>
-              <p>{selectedBatch?.batchLabel || 'All Batches'}</p>
-            </div>
-            <div>
-              <p>Total</p>
-              <p>{consumptionReport.totals.recordCount} records · {consumptionReport.totals.totalConsumed} units</p>
-            </div>
-          </div>
-        </div>
-
         <div className="print-report-controls flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="print-report-note">
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Consumption Report by Batch</h3>
@@ -526,7 +609,7 @@ const History = () => {
           No activity logs found {selectedAction && `for action "${selectedAction}"`}.
         </div>
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-[var(--brand-secondary-soft)] bg-white print:hidden">
+        <div className="overflow-hidden rounded-2xl border border-[var(--brand-secondary-soft)] bg-white">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-slate-200 text-left text-sm">
               <thead className="bg-[#f8eef0]">
