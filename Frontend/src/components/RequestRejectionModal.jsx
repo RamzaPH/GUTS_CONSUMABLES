@@ -4,8 +4,7 @@ const RequestRejectionModal = ({ isOpen, request, rejectionReason, onClose }) =>
   if (!isOpen || !request) return null
 
   const details = [
-    { label: "Request ID", value: request.requestId || request.id || "-" },
-    { label: "Username", value: request.requesterUsername || request.requesterFullName || "-" },
+    { label: "Requested By", value: request.requesterFullName || request.requesterUsername || "-" },
     { label: "Item", value: request.itemName || request.consumableName || "-" },
     { label: "Request Type", value: request.requestType || "-" },
     { label: "Quantity", value: request.quantity ?? "-" },
