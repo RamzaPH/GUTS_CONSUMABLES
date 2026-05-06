@@ -359,53 +359,41 @@ const History = () => {
     })
   }
 
-  const exportFullHistory = async () => {
+  const printFullHistory = async () => {
     try {
       setIsLoading(true)
       const allLogs = await getHistoryLogs({ all: true })
 
       if (!allLogs || allLogs.length === 0) {
-        window.alert('No history records to export.')
+        window.alert('No history records to print.')
         return
       }
 
-      const headers = ['Item Name', 'Action', 'Quantity Changed', 'Performed By', 'Duration', 'Details', 'Date & Time', 'Course', 'Batch', 'Location']
-      const rows = allLogs.map((log) => {
-        const duration = log.startDate && log.endDate
-          ? `${new Date(log.startDate).toLocaleDateString('en-PH')} - ${new Date(log.endDate).toLocaleDateString('en-PH')}`
-          : ''
-        const created = new Date(log.createdAt).toLocaleString('en-PH')
-        return [
-          log.itemName || '',
-          log.actionType || '',
-          log.quantityChanged ?? '',
-          log.performedBy || 'System',
-          duration,
-          log.description || '',
-          created,
-          log.course || '',
-          log.batch || log.batchLabel || '',
-          log.location || '',
-        ].map((cell) => {
-          if (cell === null || cell === undefined) return ''
-          const s = String(cell).replace(/"/g, '""')
-          return `"${s}"`
-        }).join(',')
-      })
+      const tableRows = allLogs.map((log) => [
+        `<strong>${escapeHtml(log.itemName)}</strong>`,
+        `<span style="display:inline-block;padding:4px 8px;border-radius:999px;background:${log.actionType === 'Stock Out' ? '#fee2e2' : log.actionType === 'Stock In' ? '#dcfce7' : '#e2e8f0'};color:${log.actionType === 'Stock Out' ? '#b91c1c' : log.actionType === 'Stock In' ? '#15803d' : '#475569'};font-weight:700;font-size:11px;">${escapeHtml(log.actionType)}</span>`,
+        `<span style="font-weight:700;${log.quantityChanged > 0 ? 'color:#15803d' : log.quantityChanged < 0 ? 'color:#dc2626' : 'color:#475569'}">${log.quantityChanged > 0 ? '+' : ''}${escapeHtml(log.quantityChanged)}</span>`,
+        escapeHtml(log.performedBy || 'System'),
+        escapeHtml(log.startDate && log.endDate ? `${new Date(log.startDate).toLocaleDateString('en-PH')} - ${new Date(log.endDate).toLocaleDateString('en-PH')}` : '—'),
+        escapeHtml(log.description || '—'),
+        escapeHtml(new Date(log.createdAt).toLocaleString('en-PH')),
+      ])
 
-      const csvContent = [headers.map(h => `"${h.replace(/"/g, '""')}"`).join(','), ...rows].join('\r\n')
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `guts-history-${new Date().toISOString().slice(0,10)}.csv`
-      document.body.appendChild(a)
-      a.click()
-      a.remove()
-      URL.revokeObjectURL(url)
+      await buildPrintFrame({
+        title: 'Activity Logs Report (Full)',
+        subtitle: 'Complete activity history (all records)',
+        summaryItems: [
+          { label: 'Scope', value: 'All Activity Logs' },
+          { label: 'Filters', value: 'None' },
+          { label: 'Total Records', value: `${allLogs.length}` },
+        ],
+        tableHeaders: ['Item Name', 'Action', 'Quantity Changed', 'Performed By', 'Duration', 'Details', 'Date & Time'],
+        tableRows,
+        footer: `Total records shown: ${allLogs.length}`,
+      })
     } catch (err) {
-      console.error('Export failed', err)
-      window.alert('Failed to export history.')
+      console.error('Print full history failed', err)
+      window.alert('Failed to print full history.')
     } finally {
       setIsLoading(false)
     }
@@ -647,7 +635,7 @@ const History = () => {
       {/* Print / Export Buttons */}
       <div className="flex justify-end print:hidden gap-2">
         <Button type="button" onClick={handlePrintAllRecords}>Print Visible</Button>
-        <Button type="button" onClick={exportFullHistory} disabled={isLoading}>Export Full History</Button>
+        <Button type="button" onClick={printFullHistory} disabled={isLoading}>Print Full History</Button>
       </div>
 
       {/* Logs Table */}
