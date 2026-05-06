@@ -274,7 +274,7 @@ const History = () => {
             No consumption records found for the selected filters.
           </div>
         ) : (
-          <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700">
+          <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700">
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-slate-200 text-left text-sm dark:divide-slate-700">
                 <thead className="bg-[#f8eef0] dark:bg-slate-700">
@@ -290,11 +290,11 @@ const History = () => {
                 <tbody className="divide-y divide-slate-100 bg-white dark:divide-slate-800 dark:bg-slate-800">
                   {consumptionReport.records.map((record) => (
                     <tr key={record.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-700/60 transition">
-                      <td className="px-4 py-3 font-medium text-slate-800 dark:text-slate-100">{record.itemName}</td>
-                      <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{record.course || '-'}</td>
-                      <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{record.batchLabel}</td>
+                      <td className="px-4 py-3 font-medium text-slate-800 dark:text-slate-100 whitespace-normal break-words">{record.itemName}</td>
+                      <td className="px-4 py-3 text-slate-600 dark:text-slate-300 whitespace-normal break-words">{record.course || '-'}</td>
+                      <td className="px-4 py-3 text-slate-600 dark:text-slate-300 whitespace-normal break-words">{record.batchLabel}</td>
                       <td className="px-4 py-3 font-semibold text-red-600">{Math.abs(record.quantityChanged || 0)}</td>
-                      <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{record.performedBy || 'System'}</td>
+                      <td className="px-4 py-3 text-slate-600 dark:text-slate-300 whitespace-normal break-words">{record.performedBy || 'System'}</td>
                       <td className="px-4 py-3 text-slate-600 dark:text-slate-300 whitespace-nowrap">
                         {new Date(record.createdAt).toLocaleString('en-PH', {
                           year: 'numeric',

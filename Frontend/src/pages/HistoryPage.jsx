@@ -465,7 +465,7 @@ const HistoryPage = () => {
       </div>
 
       {/* History Table */}
-      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
         <div className="overflow-x-auto">
           {currentRecords.length === 0 ? (
             <div className="flex items-center justify-center py-12 text-slate-500">
@@ -476,18 +476,18 @@ const HistoryPage = () => {
               <thead className="bg-[#f8eef0]">
                 <tr>
                   <th className="px-4 py-3 text-left font-semibold text-[#800000]">Inventory Date</th>
-                  <th className="hidden px-4 py-3 text-center font-semibold text-[#800000] md:table-cell">Beginning Inv.</th>
-                  <th className="hidden px-4 py-3 text-center font-semibold text-[#800000] sm:table-cell">Purchase</th>
-                  <th className="hidden px-4 py-3 text-center font-semibold text-[#800000] lg:table-cell">Stock-on-hand</th>
-                  <th className="hidden px-4 py-3 text-center font-semibold text-[#800000] lg:table-cell">Consumption</th>
-                  <th className="hidden px-4 py-3 text-center font-semibold text-[#800000] md:table-cell">Ending Inv.</th>
-                  <th className="hidden px-4 py-3 text-center font-semibold text-[#800000] sm:table-cell">Unit</th>
-                  <th className="hidden px-4 py-3 text-left font-semibold text-[#800000] sm:table-cell">Performed By</th>
-                  <th className="hidden px-4 py-3 text-left font-semibold text-[#800000] lg:table-cell">Course</th>
-                  <th className="hidden px-4 py-3 text-left font-semibold text-[#800000] lg:table-cell">Purpose</th>
-                  <th className="hidden px-4 py-3 text-left font-semibold text-[#800000] lg:table-cell">Trainer</th>
-                  <th className="hidden px-4 py-3 text-left font-semibold text-[#800000] xl:table-cell">Remarks</th>
-                  <th className="hidden px-4 py-3 text-center font-semibold text-[#800000] lg:table-cell">Evidence</th>
+                  <th className="px-4 py-3 text-center font-semibold text-[#800000]">Beginning Inv.</th>
+                  <th className="px-4 py-3 text-center font-semibold text-[#800000]">Purchase</th>
+                  <th className="px-4 py-3 text-center font-semibold text-[#800000]">Stock-on-hand</th>
+                  <th className="px-4 py-3 text-center font-semibold text-[#800000]">Consumption</th>
+                  <th className="px-4 py-3 text-center font-semibold text-[#800000]">Ending Inv.</th>
+                  <th className="px-4 py-3 text-center font-semibold text-[#800000]">Unit</th>
+                  <th className="px-4 py-3 text-left font-semibold text-[#800000]">Performed By</th>
+                  <th className="px-4 py-3 text-left font-semibold text-[#800000]">Course</th>
+                  <th className="px-4 py-3 text-left font-semibold text-[#800000]">Purpose</th>
+                  <th className="px-4 py-3 text-left font-semibold text-[#800000]">Trainer</th>
+                  <th className="px-4 py-3 text-left font-semibold text-[#800000]">Remarks</th>
+                  <th className="px-4 py-3 text-center font-semibold text-[#800000]">Evidence</th>
                   {user?.role === 'admin' && (
                     <th className="px-4 py-3 text-center font-semibold text-[#800000]">Action</th>
                   )}
@@ -499,33 +499,33 @@ const HistoryPage = () => {
                     <td className="px-4 py-3 whitespace-nowrap text-slate-600">
                       {new Date(record.createdAt).toLocaleDateString("en-PH")}
                     </td>
-                    <td className="hidden px-4 py-3 text-center font-semibold text-slate-600 md:table-cell">
+                    <td className="px-4 py-3 text-center font-semibold text-slate-600">
                       {record.beginningInventory || "—"}
                     </td>
-                    <td className="hidden px-4 py-3 text-center font-semibold text-emerald-600 sm:table-cell">
+                    <td className="px-4 py-3 text-center font-semibold text-emerald-600">
                       {record.quantityChanged > 0 ? record.quantityChanged : "—"}
                     </td>
-                    <td className="hidden px-4 py-3 text-center font-semibold text-slate-600 lg:table-cell">
+                    <td className="px-4 py-3 text-center font-semibold text-slate-600">
                       {record.quantityChanged > 0 
                         ? (record.beginningInventory + record.quantityChanged) || "—"
                         : record.beginningInventory || "—"
                       }
                     </td>
-                    <td className="hidden px-4 py-3 text-center font-semibold text-red-600 lg:table-cell">
+                    <td className="px-4 py-3 text-center font-semibold text-red-600">
                       {record.quantityChanged < 0 ? Math.abs(record.quantityChanged) : "—"}
                     </td>
-                    <td className="hidden px-4 py-3 text-center font-semibold text-slate-600 md:table-cell">
+                    <td className="px-4 py-3 text-center font-semibold text-slate-600">
                       {record.endingInventory || "—"}
                     </td>
-                    <td className="hidden px-4 py-3 text-center font-semibold text-slate-600 sm:table-cell">
+                    <td className="px-4 py-3 text-center font-semibold text-slate-600">
                       {record.unit || "—"}
                     </td>
-                    <td className="hidden px-4 py-3 whitespace-nowrap text-slate-600 sm:table-cell">{record.performedBy || "System"}</td>
-                    <td className="hidden px-4 py-3 whitespace-nowrap text-slate-600 lg:table-cell">{record.course || "—"}</td>
-                    <td className="hidden px-4 py-3 whitespace-nowrap text-slate-600 lg:table-cell">{record.purpose || "—"}</td>
-                    <td className="hidden px-4 py-3 whitespace-nowrap text-slate-600 lg:table-cell">{record.trainer || "—"}</td>
-                    <td className="hidden px-4 py-3 text-slate-600 xl:table-cell">{record.description || "—"}</td>
-                    <td className="hidden px-4 py-3 text-center lg:table-cell">
+                    <td className="px-4 py-3 whitespace-normal break-words text-slate-600">{record.performedBy || "System"}</td>
+                    <td className="px-4 py-3 whitespace-normal break-words text-slate-600">{record.course || "—"}</td>
+                    <td className="px-4 py-3 whitespace-normal break-words text-slate-600">{record.purpose || "—"}</td>
+                    <td className="px-4 py-3 whitespace-normal break-words text-slate-600">{record.trainer || "—"}</td>
+                    <td className="px-4 py-3 whitespace-normal break-words text-slate-600">{record.description || "—"}</td>
+                    <td className="px-4 py-3 text-center">
                       {record.verificationImages?.length > 0 ? (
                         <button
                           type="button"
@@ -540,7 +540,7 @@ const HistoryPage = () => {
                       )}
                     </td>
                     {user?.role === 'admin' && (
-                      <td className="hidden px-4 py-3 text-center sm:table-cell">
+                      <td className="px-4 py-3 text-center">
                         <button
                           onClick={() => handleEditClick(record)}
                           className="inline-flex items-center gap-1 rounded-lg bg-blue-100 px-3 py-2 text-xs font-medium text-blue-700 hover:bg-blue-200 transition"

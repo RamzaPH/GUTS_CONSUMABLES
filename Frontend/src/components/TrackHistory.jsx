@@ -190,21 +190,21 @@ const TrackHistory = ({ track, title, inventoryItems = [], logHeight }) => {
               No history records found for the selected filters.
             </div>
           ) : (
-            <div className="overflow-hidden rounded-2xl border border-slate-200">
+            <div className="overflow-x-auto rounded-2xl border border-slate-200">
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-slate-200 text-left text-sm">
                   <thead className="bg-[#f8eef0]">
                     <tr>
                       <th className="px-4 py-4 font-semibold text-[var(--brand-primary)] sm:px-5">Item</th>
                       <th className="px-4 py-4 font-semibold text-[var(--brand-primary)] sm:px-5">Action</th>
-                      <th className="hidden px-4 py-4 font-semibold text-[var(--brand-primary)] md:table-cell sm:px-5">Qty Δ</th>
-                      <th className="hidden px-4 py-4 font-semibold text-[var(--brand-primary)] sm:table-cell sm:px-5">
+                      <th className="px-4 py-4 font-semibold text-[var(--brand-primary)] sm:px-5">Qty Δ</th>
+                      <th className="px-4 py-4 font-semibold text-[var(--brand-primary)] sm:px-5">
                         Performed By
                       </th>
-                      <th className="hidden px-4 py-4 font-semibold text-[var(--brand-primary)] lg:table-cell sm:px-5">
+                      <th className="px-4 py-4 font-semibold text-[var(--brand-primary)] sm:px-5">
                         Duration
                       </th>
-                      <th className="hidden px-4 py-4 font-semibold text-[var(--brand-primary)] lg:table-cell sm:px-5">
+                      <th className="px-4 py-4 font-semibold text-[var(--brand-primary)] sm:px-5">
                         Description
                       </th>
                       <th className="px-4 py-4 font-semibold text-[var(--brand-primary)] sm:px-5">Date</th>
@@ -223,17 +223,17 @@ const TrackHistory = ({ track, title, inventoryItems = [], logHeight }) => {
                             {log.actionType}
                           </span>
                         </td>
-                        <td className="hidden px-4 py-4 text-slate-700 md:table-cell sm:px-5">{log.quantityChanged}</td>
-                        <td className="hidden px-4 py-4 text-slate-700 sm:table-cell sm:px-5">{log.performedBy || "System"}</td>
-                        <td className="hidden px-4 py-4 text-slate-600 lg:table-cell sm:px-5">
+                        <td className="px-4 py-4 text-slate-700 sm:px-5">{log.quantityChanged}</td>
+                        <td className="px-4 py-4 text-slate-700 sm:px-5 whitespace-normal break-words">{log.performedBy || "System"}</td>
+                        <td className="px-4 py-4 text-slate-600 sm:px-5 whitespace-normal break-words">
                           {log.startDate && log.endDate
                             ? `${new Date(log.startDate).toLocaleDateString("en-PH")} - ${new Date(
                                 log.endDate
                               ).toLocaleDateString("en-PH")}`
                             : "—"}
                         </td>
-                        <td className="hidden px-4 py-4 text-slate-600 lg:table-cell sm:px-5">{log.description || "—"}</td>
-                        <td className="px-4 py-4 text-slate-600 sm:px-5">
+                        <td className="px-4 py-4 text-slate-600 sm:px-5 whitespace-normal break-words">{log.description || "—"}</td>
+                        <td className="px-4 py-4 text-slate-600 sm:px-5 whitespace-nowrap">
                           {new Date(log.createdAt).toLocaleString("en-PH")}
                         </td>
                       </tr>
