@@ -212,33 +212,42 @@ body {
   }
 }
 
-/* Slim custom scrollbar for sidebar */
-.sidebar-scroll {
+/* Global slim scrollbar styled to match brand color */
+:root {
+  --scrollbar-thumb: rgba(128,0,0,0.42);
+  --scrollbar-thumb-hover: rgba(128,0,0,0.72);
+  --scrollbar-track: transparent;
+}
+
+/* Firefox */
+* {
   scrollbar-width: thin;
-  scrollbar-color: rgba(203,213,225,0.6) transparent; /* thumb, track for Firefox */
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
 }
 
-.sidebar-scroll::-webkit-scrollbar {
+/* WebKit browsers */
+*::-webkit-scrollbar {
   width: 8px;
+  height: 8px;
 }
 
-.sidebar-scroll::-webkit-scrollbar-track {
+*::-webkit-scrollbar-track {
   background: transparent;
 }
 
-.sidebar-scroll::-webkit-scrollbar-thumb {
-  background-color: rgba(148,163,184,0.45);
+*::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb);
   border-radius: 999px;
   border: 2px solid transparent;
   background-clip: padding-box;
 }
 
-/* Hover and focus states to make scrollbar slightly more visible */
-.sidebar-scroll:hover::-webkit-scrollbar-thumb,
-.sidebar-scroll:focus::-webkit-scrollbar-thumb {
-  background-color: rgba(148,163,184,0.7);
+*::-webkit-scrollbar-thumb:hover,
+*:focus::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb-hover);
 }
 
+/* Keep a visible focus outline for keyboard users on focused scrollable containers */
 .sidebar-scroll:focus {
   outline: 2px solid rgba(128,0,0,0.12);
   outline-offset: 2px;
