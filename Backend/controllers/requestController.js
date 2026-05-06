@@ -500,6 +500,8 @@ exports.rejectRequest = async (req, res) => {
           quantity: request.quantity,
           requestType: request.requestType,
           rejectionReason: reason,
+          requesterUsername: request.requestedBy?.username || '',
+          requesterFullName: request.requestedBy?.fullName || '',
         }),
         isRead: false,
       });
@@ -517,6 +519,8 @@ exports.rejectRequest = async (req, res) => {
           quantity: request.quantity,
           requestType: request.requestType,
           rejectionReason: reason,
+          requesterUsername: request.requestedBy?.username || '',
+          requesterFullName: request.requestedBy?.fullName || '',
         },
         isRead: false,
         createdAt: new Date().toISOString(),

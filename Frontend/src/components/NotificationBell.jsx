@@ -117,6 +117,8 @@ const NotificationBell = () => {
           itemName: metadata?.itemName,
           requestType: metadata?.requestType,
           quantity: metadata?.quantity,
+          requesterUsername: metadata?.requesterUsername,
+          requesterFullName: metadata?.requesterFullName,
         },
         rejectionReason: metadata?.rejectionReason || '',
       });
