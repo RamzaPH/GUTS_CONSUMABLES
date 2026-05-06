@@ -389,7 +389,6 @@ const History = () => {
 
   return (
     <section className="space-y-6">
-      <style>{printStyles}</style>
       <div className="print:hidden">
         <h2 className="font-title text-3xl font-bold text-[var(--brand-primary)] dark:text-red-400 transition-colors duration-300">Activity Logs</h2>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400 transition-colors duration-300">Complete system activity history including all item movements, updates, and actions.</p>
