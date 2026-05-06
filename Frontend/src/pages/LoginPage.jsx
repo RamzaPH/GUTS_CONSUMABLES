@@ -10,14 +10,12 @@ const LoginPage = () => {
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState("")
   const { login } = useAuth()
   const { success, error: showError } = useToast()
   const navigate = useNavigate()
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setError("")
     setIsLoading(true)
 
     try {
@@ -40,7 +38,6 @@ const LoginPage = () => {
     } catch (err) {
       console.error("❌ Login error:", err)
       const errorMessage = err.response?.data?.error || err.message || "Login failed. Please try again."
-      setError(errorMessage)
       showError(errorMessage)
     } finally {
       setIsLoading(false)
@@ -124,12 +121,6 @@ const LoginPage = () => {
                   </button>
                 </div>
               </div>
-
-              {error && (
-                <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-                  {error}
-                </div>
-              )}
 
               {/* Login Button */}
               <button
