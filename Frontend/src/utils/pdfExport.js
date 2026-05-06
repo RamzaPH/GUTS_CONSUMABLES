@@ -83,3 +83,36 @@ export const exportHistoryReportPdf = async (logs) => {
 
   doc.save("guts-history-report.pdf")
 }
+
+export const exportConsumptionReportPdf = async ({ records, course, batchLabel }) => {
+  const doc = new jsPDF({ orientation: "landscape" })
+  await addLogoAndHeader(doc, "Consumption Report by Batch")
+
+  doc.setFontSize(10)
+  doc.setTextColor(51, 65, 85)
+  doc.text(`Course: ${course || 'All Courses'}`, 14, 48)
+  doc.text(`Batch: ${batchLabel || 'All Batches'}`, 14, 54)
+
+  autoTable(doc, {
+    startY: 60,
+    head: [["Item Name", "Course", "Batch", "Qty Used", "Performed By", "Date"]],
+    body: records.map((record) => [
+      record.itemName,
+      record.course || '-',
+      record.batchLabel || '-',
+      Math.abs(record.quantityChanged || 0),
+      record.performedBy || 'System',
+      new Date(record.createdAt).toLocaleString("en-PH")
+    ]),
+    headStyles: {
+      fillColor: [128, 0, 0],
+      textColor: [255, 255, 255]
+    },
+    styles: {
+      fontSize: 8,
+      cellPadding: 2
+    }
+  })
+
+  doc.save("guts-consumption-report.pdf")
+}

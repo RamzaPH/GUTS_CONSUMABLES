@@ -3,6 +3,31 @@ const InventoryHistory = require('../models/InventoryHistory');
 const Consumable = require('../models/Consumable');
 const User = require('../models/User');
 
+const toDateKey = (value) => {
+  if (!value) return '';
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+
+  return date.toISOString().slice(0, 10);
+};
+
+const buildBatchKey = (row) => [
+  row.course || 'Unknown Course',
+  row.trainer || 'No Trainer',
+  toDateKey(row.startDate) || 'no-start',
+  toDateKey(row.endDate) || 'no-end',
+].join('|');
+
+const buildBatchLabel = (row) => {
+  const course = row.course || 'Unknown Course';
+  const trainer = row.trainer || 'No Trainer';
+  const start = row.startDate ? new Date(row.startDate).toLocaleDateString('en-PH') : 'No start date';
+  const end = row.endDate ? new Date(row.endDate).toLocaleDateString('en-PH') : 'No end date';
+
+  return `${course} • ${trainer} • ${start} - ${end}`;
+};
+
 const getHistory = async (req, res) => {
   try {
     const { category, itemId } = req.query;
@@ -86,6 +111,116 @@ const getHistory = async (req, res) => {
   } catch (err) {
     console.error('[getHistory]', err);
     return res.status(500).json({ error: 'Failed to fetch history logs.' });
+  }
+};
+
+const getConsumptionReport = async (req, res) => {
+  try {
+    const { course, batchKey } = req.query;
+
+    const historyWhere = { actionType: 'Stock Out' };
+
+    if (course) {
+      historyWhere.course = course;
+    }
+
+    const historyRows = await InventoryHistory.findAll({
+      where: historyWhere,
+      include: [
+        {
+          model: User,
+          as: 'performer',
+          attributes: ['id', 'username'],
+          required: false,
+          foreignKey: 'performedById',
+        },
+      ],
+      order: [['createdAt', 'DESC']],
+      limit: 1000,
+    });
+
+    const ids = [...new Set(historyRows.map((row) => row.consumableId))];
+    const consumables = await Consumable.findAll({
+      where: { id: ids },
+      attributes: ['id', 'itemName', 'unit'],
+    });
+
+    const nameMap = consumables.reduce((acc, item) => {
+      acc[item.id] = { itemName: item.itemName, unit: item.unit };
+      return acc;
+    }, {});
+
+    const records = historyRows.map((row) => {
+      const plain = row.get({ plain: true });
+      const consumableData = nameMap[plain.consumableId] || { itemName: 'Unknown Item', unit: 'N/A' };
+      const derivedBatchKey = buildBatchKey(plain);
+
+      return {
+        id: plain.id,
+        consumableId: plain.consumableId,
+        itemName: consumableData.itemName,
+        unit: consumableData.unit,
+        actionType: plain.actionType,
+        quantityChanged: plain.quantityChanged,
+        description: plain.description || '',
+        course: plain.course || '',
+        trainer: plain.trainer || '',
+        purpose: plain.purpose || '',
+        performedBy: plain.performer?.username || plain.performedBy || 'System',
+        location: plain.location || 'main',
+        startDate: plain.startDate,
+        endDate: plain.endDate,
+        batchKey: derivedBatchKey,
+        batchLabel: buildBatchLabel(plain),
+        createdAt: plain.createdAt,
+      };
+    });
+
+    const batchesMap = new Map();
+    records.forEach((record) => {
+      const existing = batchesMap.get(record.batchKey);
+      if (!existing) {
+        batchesMap.set(record.batchKey, {
+          batchKey: record.batchKey,
+          batchLabel: record.batchLabel,
+          course: record.course,
+          trainer: record.trainer,
+          startDate: record.startDate,
+          endDate: record.endDate,
+          recordCount: 1,
+          totalConsumed: Math.abs(record.quantityChanged || 0),
+          latestAt: record.createdAt,
+        });
+        return;
+      }
+
+      existing.recordCount += 1;
+      existing.totalConsumed += Math.abs(record.quantityChanged || 0);
+      if (new Date(record.createdAt) > new Date(existing.latestAt)) {
+        existing.latestAt = record.createdAt;
+      }
+    });
+
+    const batches = [...batchesMap.values()].sort((a, b) => new Date(b.latestAt) - new Date(a.latestAt));
+    const selectedBatchKey = batchKey ? String(batchKey) : '';
+    const filteredRecords = selectedBatchKey
+      ? records.filter((record) => record.batchKey === selectedBatchKey)
+      : records;
+
+    return res.json({
+      course: course || '',
+      selectedBatchKey,
+      courses: [...new Set(records.map((record) => record.course).filter(Boolean))].sort(),
+      batches,
+      records: filteredRecords,
+      totals: {
+        recordCount: filteredRecords.length,
+        totalConsumed: filteredRecords.reduce((sum, record) => sum + Math.abs(record.quantityChanged || 0), 0),
+      },
+    });
+  } catch (err) {
+    console.error('[getConsumptionReport]', err);
+    return res.status(500).json({ error: 'Failed to fetch consumption report.' });
   }
 };
 
@@ -429,6 +564,7 @@ const recalculateAndSyncInventory = async (req, res) => {
 
 module.exports = {
   getHistory,
+  getConsumptionReport,
   updateInventoryHistory,
   recalculateAndSyncInventory,
 };

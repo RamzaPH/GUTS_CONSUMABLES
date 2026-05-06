@@ -8,6 +8,15 @@ export const getHistoryLogs = async ({ category, itemId } = {}) => {
   return response.data?.logs || []
 }
 
+export const getConsumptionReport = async ({ course, batchKey } = {}) => {
+  const params = {}
+  if (course) params.course = course
+  if (batchKey) params.batchKey = batchKey
+
+  const response = await api.get("/history/consumption-report", { params })
+  return response.data || { courses: [], batches: [], records: [], totals: { recordCount: 0, totalConsumed: 0 } }
+}
+
 export const updateHistoryRecord = async (id, data) => {
   const response = await api.put(`/history/${id}`, data)
   return response.data

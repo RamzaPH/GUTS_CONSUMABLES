@@ -3,7 +3,9 @@ import { flushSync } from "react-dom"
 import { ChevronLeft, ChevronRight, ArrowUpDown, Edit2, X } from "lucide-react"
 import Button from "../components/Button"
 import { useSearch } from "../context/SearchContext"
-import { getHistoryLogs } from "../api/historyApi"
+import { getConsumptionReport, getHistoryLogs } from "../api/historyApi"
+import { useToast } from "../context/ToastContext"
+import { exportConsumptionReportPdf } from "../utils/pdfExport"
 
 const ITEMS_PER_PAGE = 10
 
@@ -25,6 +27,16 @@ const getActionColor = (actionType) => {
 const History = () => {
   const [logs, setLogs] = useState([])
   const [isLoading, setIsLoading] = useState(true)
+  const [consumptionReport, setConsumptionReport] = useState({
+    courses: [],
+    batches: [],
+    records: [],
+    totals: { recordCount: 0, totalConsumed: 0 },
+  })
+  const [selectedCourse, setSelectedCourse] = useState('')
+  const [selectedBatchKey, setSelectedBatchKey] = useState('')
+  const [isReportLoading, setIsReportLoading] = useState(true)
+  const [isExportingReport, setIsExportingReport] = useState(false)
   const [selectedAction, setSelectedAction] = useState('')
   const [selectedDate, setSelectedDate] = useState('')
   const [searchUsername, setSearchUsername] = useState('')
@@ -34,6 +46,7 @@ const History = () => {
   const [editingLog, setEditingLog] = useState(null)
   const [editDescription, setEditDescription] = useState('')
   const { searchQuery } = useSearch()
+  const { error: showError } = useToast()
 
   useEffect(() => {
     const load = async () => {
@@ -52,9 +65,45 @@ const History = () => {
     load()
   }, [])
 
+  useEffect(() => {
+    const loadConsumptionReport = async () => {
+      setIsReportLoading(true)
+
+      try {
+        const report = await getConsumptionReport({
+          course: selectedCourse || undefined,
+          batchKey: selectedBatchKey || undefined,
+        })
+
+        setConsumptionReport(report)
+
+        if (selectedBatchKey && !report.batches.some((batch) => batch.batchKey === selectedBatchKey)) {
+          setSelectedBatchKey('')
+        }
+      } catch (error) {
+        console.error('Failed to load consumption report:', error)
+        setConsumptionReport({
+          courses: [],
+          batches: [],
+          records: [],
+          totals: { recordCount: 0, totalConsumed: 0 },
+        })
+      } finally {
+        setIsReportLoading(false)
+      }
+    }
+
+    loadConsumptionReport()
+  }, [selectedCourse, selectedBatchKey])
+
   const uniqueActions = useMemo(
     () => [...new Set(logs.map((log) => log.actionType))],
     [logs]
+  )
+
+  const selectedBatch = useMemo(
+    () => consumptionReport.batches.find((batch) => batch.batchKey === selectedBatchKey),
+    [consumptionReport.batches, selectedBatchKey]
   )
 
   const filteredLogs = useMemo(
@@ -128,11 +177,140 @@ const History = () => {
     window.print()
   }
 
+  const handleExportConsumptionReport = async () => {
+    setIsExportingReport(true)
+    try {
+      await exportConsumptionReportPdf({
+        records: consumptionReport.records,
+        course: selectedCourse || 'All Courses',
+        batchLabel: selectedBatch?.batchLabel || 'All Batches',
+      })
+    } catch (error) {
+      console.error('Failed to export consumption report:', error)
+      showError('Failed to export report.')
+    } finally {
+      setIsExportingReport(false)
+    }
+  }
+
   return (
     <section className="space-y-6">
       <div className="print:hidden">
         <h2 className="font-title text-3xl font-bold text-[var(--brand-primary)] dark:text-red-400 transition-colors duration-300">Activity Logs</h2>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400 transition-colors duration-300">Complete system activity history including all item movements, updates, and actions.</p>
+      </div>
+
+      {/* Consumption Report */}
+      <div className="rounded-2xl border border-slate-200 bg-white p-4 space-y-4 transition-colors duration-300 dark:bg-slate-800 dark:border-slate-700 print:hidden">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Consumption Report by Batch</h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400">
+              View all consumption records per course batch and filter down to a specific batch.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handleExportConsumptionReport}
+            disabled={isReportLoading || isExportingReport || consumptionReport.records.length === 0}
+            className="inline-flex items-center justify-center rounded-lg bg-[var(--brand-primary)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--brand-primary-strong)] disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {isExportingReport ? 'Exporting...' : 'Export PDF'}
+          </button>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-3">
+          <div>
+            <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-300">Course</label>
+            <select
+              value={selectedCourse}
+              onChange={(e) => {
+                setSelectedCourse(e.target.value)
+                setSelectedBatchKey('')
+              }}
+              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] dark:border-slate-600 dark:bg-slate-700 dark:text-white"
+            >
+              <option value="">All Courses</option>
+              {consumptionReport.courses.map((course) => (
+                <option key={course} value={course}>
+                  {course}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="mb-2 block text-sm font-semibold text-slate-700 dark:text-slate-300">Batch</label>
+            <select
+              value={selectedBatchKey}
+              onChange={(e) => setSelectedBatchKey(e.target.value)}
+              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] dark:border-slate-600 dark:bg-slate-700 dark:text-white"
+            >
+              <option value="">All Batches</option>
+              {consumptionReport.batches.map((batch) => (
+                <option key={batch.batchKey} value={batch.batchKey}>
+                  {batch.batchLabel}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-700 dark:bg-slate-700/50">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">Summary</p>
+            <p className="mt-1 text-sm font-medium text-slate-800 dark:text-slate-100">
+              {isReportLoading
+                ? 'Loading report...'
+                : `${consumptionReport.totals.recordCount} records · ${consumptionReport.totals.totalConsumed} total units`}
+            </p>
+          </div>
+        </div>
+
+        {isReportLoading ? (
+          <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-700/50 dark:text-slate-400">
+            Loading consumption report...
+          </div>
+        ) : consumptionReport.records.length === 0 ? (
+          <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-6 text-sm text-slate-500 dark:border-slate-700 dark:bg-slate-700/50 dark:text-slate-400">
+            No consumption records found for the selected filters.
+          </div>
+        ) : (
+          <div className="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-slate-200 text-left text-sm dark:divide-slate-700">
+                <thead className="bg-[#f8eef0] dark:bg-slate-700">
+                  <tr>
+                    <th className="px-4 py-3 font-semibold text-[var(--brand-primary)]">Item</th>
+                    <th className="px-4 py-3 font-semibold text-[var(--brand-primary)]">Course</th>
+                    <th className="px-4 py-3 font-semibold text-[var(--brand-primary)]">Batch</th>
+                    <th className="px-4 py-3 font-semibold text-[var(--brand-primary)]">Qty Used</th>
+                    <th className="px-4 py-3 font-semibold text-[var(--brand-primary)]">Performed By</th>
+                    <th className="px-4 py-3 font-semibold text-[var(--brand-primary)]">Date & Time</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 bg-white dark:divide-slate-800 dark:bg-slate-800">
+                  {consumptionReport.records.map((record) => (
+                    <tr key={record.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-700/60 transition">
+                      <td className="px-4 py-3 font-medium text-slate-800 dark:text-slate-100">{record.itemName}</td>
+                      <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{record.course || '-'}</td>
+                      <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{record.batchLabel}</td>
+                      <td className="px-4 py-3 font-semibold text-red-600">{Math.abs(record.quantityChanged || 0)}</td>
+                      <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{record.performedBy || 'System'}</td>
+                      <td className="px-4 py-3 text-slate-600 dark:text-slate-300 whitespace-nowrap">
+                        {new Date(record.createdAt).toLocaleString('en-PH', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Filters */}
