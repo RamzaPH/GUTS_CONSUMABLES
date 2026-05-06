@@ -12,6 +12,7 @@ const UserManagementModal = ({ isOpen, onClose }) => {
   const [isAddUserOpen, setIsAddUserOpen] = useState(false)
   const [editingUser, setEditingUser] = useState(null)
   const [error, setError] = useState(null)
+  const [statusFilter, setStatusFilter] = useState('all')
 
   useEffect(() => {
     if (isOpen) {
@@ -32,6 +33,12 @@ const UserManagementModal = ({ isOpen, onClose }) => {
       setLoading(false)
     }
   }
+
+  const filteredUsers = users.filter((user) => {
+    if (statusFilter === 'active') return user.isActive
+    if (statusFilter === 'archived') return !user.isActive
+    return true
+  })
 
   const handleAddUser = () => {
     setEditingUser(null)
@@ -105,6 +112,42 @@ const UserManagementModal = ({ isOpen, onClose }) => {
               </button>
               </div>
             </div>
+
+            <div className="mt-4 flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => setStatusFilter('all')}
+                className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
+                  statusFilter === 'all'
+                    ? 'bg-[var(--brand-primary)] text-white'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
+              >
+                All Users
+              </button>
+              <button
+                type="button"
+                onClick={() => setStatusFilter('active')}
+                className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
+                  statusFilter === 'active'
+                    ? 'bg-emerald-600 text-white'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
+              >
+                Active
+              </button>
+              <button
+                type="button"
+                onClick={() => setStatusFilter('archived')}
+                className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
+                  statusFilter === 'archived'
+                    ? 'bg-amber-600 text-white'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
+              >
+                Archived
+              </button>
+            </div>
           </div>
 
           {/* Content */}
@@ -117,7 +160,7 @@ const UserManagementModal = ({ isOpen, onClose }) => {
 
             {loading ? (
               <div className="text-center py-8 text-slate-600">Loading users...</div>
-            ) : users.length === 0 ? (
+            ) : filteredUsers.length === 0 ? (
               <div className="text-center py-8 text-slate-600">No users found.</div>
             ) : (
               <div className="overflow-x-auto">
@@ -133,7 +176,7 @@ const UserManagementModal = ({ isOpen, onClose }) => {
                     </tr>
                   </thead>
                   <tbody>
-                    {users.map((user) => (
+                    {filteredUsers.map((user) => (
                       <tr key={user.id} className="border-b border-slate-200 hover:bg-slate-50 transition-colors">
                         <td className="px-4 py-3 text-slate-900 font-medium">{user.fullName}</td>
                         <td className="px-4 py-3 text-slate-600">{user.username}</td>
@@ -153,7 +196,7 @@ const UserManagementModal = ({ isOpen, onClose }) => {
                               ? 'bg-green-100 text-green-800'
                               : 'bg-red-100 text-red-800'
                           }`}>
-                            {user.isActive ? 'Active' : 'Inactive'}
+                            {user.isActive ? 'Active' : 'Archived'}
                           </span>
                         </td>
                         <td className="px-4 py-3 text-right">
