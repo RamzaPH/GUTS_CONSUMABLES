@@ -80,7 +80,7 @@ const Sidebar = ({ isCollapsed = false, onToggleCollapse, isMobile = false, onNa
   }, [location.pathname, location.search, navigate, user?.role])
 
   return (
-    <div className={`flex h-full flex-col overflow-y-auto overscroll-contain ${isMobile ? "pb-4" : ""}`}>
+    <div className={`flex h-screen flex-col ${isMobile ? "pb-4" : ""}`}>
       <div className={`border-b border-slate-600/80 pb-4 pt-5 transition-all duration-300 ${isCollapsed ? "px-3" : "px-6"}`}>
         {!isMobile ? (
           <button
@@ -105,7 +105,8 @@ const Sidebar = ({ isCollapsed = false, onToggleCollapse, isMobile = false, onNa
         </p>
       </div>
 
-      <nav className={`mt-6 space-y-3 py-3 transition-all duration-300 ${isCollapsed ? "px-2" : "px-4"}`}>
+      <div className="flex-1 overflow-y-auto">
+        <nav className={`mt-6 space-y-3 py-3 transition-all duration-300 ${isCollapsed ? "px-2" : "px-4"}`}>
         {/* Dashboard */}
         {navItems.map((item) => {
           const Icon = item.icon
@@ -202,9 +203,9 @@ const Sidebar = ({ isCollapsed = false, onToggleCollapse, isMobile = false, onNa
             </div>
           )}
         </div>
-      </nav>
+        </nav>
 
-      <div className={`mt-8 border-t border-slate-600/80 py-4 transition-all duration-300 ${isCollapsed ? "px-2" : "px-4"}`}>
+        <div className={`mt-8 border-t border-slate-600/80 py-4 transition-all duration-300 ${isCollapsed ? "px-2" : "px-4"}`}>
         {/* Settings Dropdown */}
         <div className="relative">
           <button
@@ -273,10 +274,11 @@ const Sidebar = ({ isCollapsed = false, onToggleCollapse, isMobile = false, onNa
             </div>
           )}
         </div>
+        </div>
       </div>
 
-      {/* User Profile Section - Pushed to bottom */}
-      <div className={`mt-auto border-t border-slate-600/80 py-4 transition-all duration-300 ${isCollapsed ? "px-2" : "px-4"}`}>
+      {/* User Profile Section - Fixed at bottom */}
+      <div className={`border-t border-slate-600/80 py-4 transition-all duration-300 ${isCollapsed ? "px-2" : "px-4"}`}>
         {/* Admin Management Section */}
         {user?.role === "admin" && !isCollapsed && (
           <div className="mb-4 space-y-2">
