@@ -40,6 +40,7 @@ const alignConsumableRequestSchema = async () => {
     "ALTER TABLE consumable_requests MODIFY request_type ENUM('Stock In','Stock Out','New Consumable') NOT NULL",
     "ALTER TABLE consumable_requests ADD COLUMN IF NOT EXISTS verification_images JSON NULL",
     "ALTER TABLE inventory_history ADD COLUMN IF NOT EXISTS verification_images JSON NULL",
+    "ALTER TABLE inventory_history ADD COLUMN IF NOT EXISTS batch VARCHAR(255) NULL",
   ];
 
   for (const sql of statements) {

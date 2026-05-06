@@ -134,7 +134,7 @@ const parsePayload = ({ itemName, category, quantity, unit, reorderLevel }) => (
   reorderLevel: reorderLevel !== undefined ? parseInt(reorderLevel, 10) : 10,
 });
 
-const logHistory = async ({ consumableId, actionType, quantityChanged, description, performedBy, performedById, beginningInventory, endingInventory, course, trainer, purpose, location, startDate, endDate }) => {
+const logHistory = async ({ consumableId, actionType, quantityChanged, description, performedBy, performedById, beginningInventory, endingInventory, course, trainer, batch, purpose, location, startDate, endDate }) => {
   await InventoryHistory.create({
     consumableId,
     actionType,
@@ -146,6 +146,7 @@ const logHistory = async ({ consumableId, actionType, quantityChanged, descripti
     endingInventory: endingInventory || null,
     course: course || null,
     trainer: trainer || null,
+    batch: batch || null,
     purpose: purpose || null,
     location: location || 'main',
     startDate: startDate || null,
@@ -466,6 +467,7 @@ const updateStock = async (req, res) => {
       endingInventory: newQuantity,
       course: req.body.course || null,
       trainer: req.body.trainer || null,
+      batch: req.body.batch || null,
       purpose: req.body.purpose || null,
       location: currentLocation,
       startDate: req.body.startDate || null,
@@ -489,6 +491,7 @@ const updateStock = async (req, res) => {
         endingInventory: oppositeBeginningQty + parsedAmount,
         course: req.body.course || null,
         trainer: req.body.trainer || null,
+        batch: req.body.batch || null,
         purpose: req.body.purpose || null,
         location: oppositeLocation,
         startDate: req.body.startDate || null,

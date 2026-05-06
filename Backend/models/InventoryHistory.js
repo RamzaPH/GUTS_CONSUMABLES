@@ -44,6 +44,10 @@ const InventoryHistory = sequelize.define('InventoryHistory', {
     type: DataTypes.STRING(100),
     allowNull: true,
   },
+  batch: {
+    type: DataTypes.STRING(255),
+    allowNull: true,
+  },
   purpose: {
     type: DataTypes.ENUM('Training', 'Assessment', 'Replenishment'),
     allowNull: true,

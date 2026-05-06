@@ -26,6 +26,7 @@ const ComprehensiveItemModal = ({
     quantity: "",
     trainer: "",
     course: "",
+    batch: "",
     notes: "",
     purpose: "Training",
     startDate: "",
@@ -34,6 +35,15 @@ const ComprehensiveItemModal = ({
   const [trainers, setTrainers] = useState([])
   const [loadingTrainers, setLoadingTrainers] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  // Static list of GUTS courses
+  const courses = [
+    { id: "eim-ncii", name: "EIM NCII" },
+    { id: "smaw-nci", name: "SMAW NCI" },
+    { id: "smaw-ncii", name: "SMAW NCII" },
+    { id: "css-ncii", name: "CSS NCII" },
+    { id: "driving-ncii", name: "DRIVING NCII" },
+  ]
 
   // Fetch trainers on component mount
   useEffect(() => {
@@ -61,6 +71,7 @@ const ComprehensiveItemModal = ({
         quantity: "",
         trainer: "",
         course: "",
+        batch: "",
         notes: "",
         purpose: "Training",
         startDate: today,
@@ -82,6 +93,7 @@ const ComprehensiveItemModal = ({
       quantity: "",
       trainer: "",
       course: "",
+      batch: "",
       notes: "",
       purpose: "Training",
       startDate: today,
@@ -331,12 +343,32 @@ const ComprehensiveItemModal = ({
                     <label className="block text-sm font-semibold text-slate-700">
                       Course
                     </label>
-                    <input
-                      type="text"
+                    <select
                       value={formData.course}
                       onChange={(e) => handleChange("course", e.target.value)}
                       disabled={isSubmitting}
-                      placeholder="Enter course name"
+                      className="mt-1 w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-[var(--brand-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]/20"
+                    >
+                      <option value="">Select a course</option>
+                      {courses.map((c) => (
+                        <option key={c.id} value={c.name}>
+                          {c.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Batch */}
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700">
+                      Batch
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.batch}
+                      onChange={(e) => handleChange("batch", e.target.value)}
+                      disabled={isSubmitting}
+                      placeholder="Enter batch (optional)"
                       className="mt-1 w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-[var(--brand-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]/20"
                     />
                   </div>
