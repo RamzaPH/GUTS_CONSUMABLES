@@ -211,3 +211,35 @@ body {
     font-size: 10px !important;
   }
 }
+
+/* Slim custom scrollbar for sidebar */
+.sidebar-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(203,213,225,0.6) transparent; /* thumb, track for Firefox */
+}
+
+.sidebar-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background-color: rgba(148,163,184,0.45);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+/* Hover and focus states to make scrollbar slightly more visible */
+.sidebar-scroll:hover::-webkit-scrollbar-thumb,
+.sidebar-scroll:focus::-webkit-scrollbar-thumb {
+  background-color: rgba(148,163,184,0.7);
+}
+
+.sidebar-scroll:focus {
+  outline: 2px solid rgba(128,0,0,0.12);
+  outline-offset: 2px;
+}

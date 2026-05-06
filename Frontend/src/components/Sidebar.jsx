@@ -105,7 +105,7 @@ const Sidebar = ({ isCollapsed = false, onToggleCollapse, isMobile = false, onNa
         </p>
       </div>
 
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto sidebar-scroll" tabIndex={0} aria-label="Sidebar navigation" role="navigation">
         <nav className={`mt-6 space-y-3 py-3 transition-all duration-300 ${isCollapsed ? "px-2" : "px-4"}`}>
         {/* Dashboard */}
         {navItems.map((item) => {
