@@ -46,7 +46,6 @@ export const NotificationProvider = ({ children }) => {
           setNotifications(data);
           const unread = data.filter((notif) => !notif.isRead).length;
           setUnreadCount(unread);
-          console.log('✅ Loaded', data.length, 'notifications from database');
         }
       } catch (error) {
         console.error('Error fetching notifications:', error);
@@ -69,25 +68,21 @@ export const NotificationProvider = ({ children }) => {
       });
 
       socketInstance.on('connect', () => {
-        console.log('📱 Socket connected');
         socketInstance.emit('user_connect', user.id);
       });
 
       socketInstance.on('new_notification', (data) => {
-        console.log('🔔 New notification:', data);
         setNotifications((prev) => [data, ...prev]);
         setUnreadCount((prev) => prev + 1);
       });
 
       socketInstance.on('stock_updated', (data) => {
-        console.log('📦 Stock updated:', data);
         if (onStockUpdateRef.current) {
           onStockUpdateRef.current(data);
         }
       });
 
       socketInstance.on('history_updated', (data) => {
-        console.log('📝 History updated:', data);
         // Also trigger stock update since history changes affect inventory
         if (onStockUpdateRef.current) {
           onStockUpdateRef.current(data);
@@ -95,7 +90,6 @@ export const NotificationProvider = ({ children }) => {
       });
 
       socketInstance.on('disconnect', () => {
-        console.log('📴 Socket disconnected');
       });
 
       setSocket(socketInstance);

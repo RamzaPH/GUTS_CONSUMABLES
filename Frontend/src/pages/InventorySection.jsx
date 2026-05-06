@@ -42,7 +42,6 @@ const InventorySection = ({ title, description, track }) => {
 
   // Create stable callback for stock updates
   const handleStockUpdate = useCallback((data) => {
-    console.log('📦 Updating inventory section with stock update:', data)
     setItems(prevItems =>
       prevItems.map(item =>
         item.id === data.id ? { ...item, quantity: data.quantity } : item

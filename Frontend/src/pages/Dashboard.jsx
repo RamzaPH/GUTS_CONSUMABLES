@@ -63,7 +63,6 @@ const Dashboard = () => {
 
   // Create stable callback for stock updates
   const handleStockUpdate = useCallback(async (data) => {
-    console.log('📦 Updating dashboard with stock update:', data)
     setAllItems(prevItems =>
       prevItems.map(item =>
         item.id === data.id ? { ...item, quantity: data.quantity } : item
@@ -129,7 +128,6 @@ const Dashboard = () => {
         return
       }
       
-      console.log('📝 Adding consumable from Dashboard:', { ...payload, location: selectedInventory })
       const result = await addConsumable({ ...payload, location: selectedInventory })
       setIsAddOpen(false)
       if (result?.createdAsRequest) {

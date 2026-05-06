@@ -19,20 +19,16 @@ const LoginPage = () => {
     setIsLoading(true)
 
     try {
-      console.log("🔐 Attempting login with username:", username)
       const data = await loginApi(username, password)
-      console.log("✅ Login response received:", data)
 
       // Update auth context and localStorage
       login(data.user, data.token)
-      console.log("✅ Auth context updated")
 
       // Show success toast
       success(`Welcome ${data.user.fullName || username}! 🎉`)
       
       // Small delay to ensure state is updated before navigation
       setTimeout(() => {
-        console.log("🚀 Navigating to dashboard")
         navigate("/dashboard", { replace: true })
       }, 500)
     } catch (err) {
