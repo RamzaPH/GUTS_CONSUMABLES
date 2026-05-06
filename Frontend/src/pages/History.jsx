@@ -359,6 +359,58 @@ const History = () => {
     })
   }
 
+  const exportFullHistory = async () => {
+    try {
+      setIsLoading(true)
+      const allLogs = await getHistoryLogs({ all: true })
+
+      if (!allLogs || allLogs.length === 0) {
+        window.alert('No history records to export.')
+        return
+      }
+
+      const headers = ['Item Name', 'Action', 'Quantity Changed', 'Performed By', 'Duration', 'Details', 'Date & Time', 'Course', 'Batch', 'Location']
+      const rows = allLogs.map((log) => {
+        const duration = log.startDate && log.endDate
+          ? `${new Date(log.startDate).toLocaleDateString('en-PH')} - ${new Date(log.endDate).toLocaleDateString('en-PH')}`
+          : ''
+        const created = new Date(log.createdAt).toLocaleString('en-PH')
+        return [
+          log.itemName || '',
+          log.actionType || '',
+          log.quantityChanged ?? '',
+          log.performedBy || 'System',
+          duration,
+          log.description || '',
+          created,
+          log.course || '',
+          log.batch || log.batchLabel || '',
+          log.location || '',
+        ].map((cell) => {
+          if (cell === null || cell === undefined) return ''
+          const s = String(cell).replace(/"/g, '""')
+          return `"${s}"`
+        }).join(',')
+      })
+
+      const csvContent = [headers.map(h => `"${h.replace(/"/g, '""')}"`).join(','), ...rows].join('\r\n')
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `guts-history-${new Date().toISOString().slice(0,10)}.csv`
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      URL.revokeObjectURL(url)
+    } catch (err) {
+      console.error('Export failed', err)
+      window.alert('Failed to export history.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   const handlePrintConsumptionReport = async () => {
     await buildPrintFrame({
       title: 'Consumption Report by Batch',
@@ -592,9 +644,10 @@ const History = () => {
         )}
       </div>
 
-      {/* Print Button */}
-      <div className="flex justify-end print:hidden">
-        <Button type="button" onClick={handlePrintAllRecords}>Print All Logs</Button>
+      {/* Print / Export Buttons */}
+      <div className="flex justify-end print:hidden gap-2">
+        <Button type="button" onClick={handlePrintAllRecords}>Print Visible</Button>
+        <Button type="button" onClick={exportFullHistory} disabled={isLoading}>Export Full History</Button>
       </div>
 
       {/* Logs Table */}

@@ -30,7 +30,8 @@ const buildBatchLabel = (row) => {
 
 const getHistory = async (req, res) => {
   try {
-    const { category, itemId } = req.query;
+    const { category, itemId, all } = req.query;
+    const fetchAll = String(all) === 'true';
 
     let historyWhere = {};
 
@@ -52,7 +53,7 @@ const getHistory = async (req, res) => {
       historyWhere.consumableId = { [Op.in]: catIds };
     }
 
-    const historyRows = await InventoryHistory.findAll({
+    const findOptions = {
       where: historyWhere,
       include: [
         {
@@ -64,8 +65,13 @@ const getHistory = async (req, res) => {
         },
       ],
       order: [['createdAt', 'DESC']],
-      limit: 300,
-    });
+    };
+
+    if (!fetchAll) {
+      findOptions.limit = 300;
+    }
+
+    const historyRows = await InventoryHistory.findAll(findOptions);
 
     const ids = [...new Set(historyRows.map((row) => row.consumableId))];
     const consumables = await Consumable.findAll({
@@ -81,10 +87,8 @@ const getHistory = async (req, res) => {
     const logs = historyRows.map((row) => {
       const plain = row.get({ plain: true });
       const consumableData = nameMap[plain.consumableId] || { itemName: 'Unknown Item', unit: 'N/A' };
-      
-      // Get performer name: use current username from User table if performedById exists, otherwise use stored name
       const performerName = plain.performer?.username || plain.performedBy || 'System';
-      
+
       return {
         id: plain.id,
         consumableId: plain.consumableId,

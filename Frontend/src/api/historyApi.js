@@ -1,9 +1,10 @@
 import api from "./axios"
 
-export const getHistoryLogs = async ({ category, itemId } = {}) => {
+export const getHistoryLogs = async ({ category, itemId, all } = {}) => {
   const params = {}
   if (category) params.category = category
   if (itemId) params.itemId = itemId
+  if (all) params.all = true
   const response = await api.get("/history", { params })
   return response.data?.logs || []
 }
