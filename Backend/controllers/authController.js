@@ -234,7 +234,7 @@ const updateUser = async (req, res) => {
   }
 };
 
-// Admin: Delete user (soft delete via isActive flag)
+// Admin: Archive user (soft delete via isActive flag)
 const deleteUser = async (req, res) => {
   const { id } = req.params;
 
@@ -255,7 +255,7 @@ const deleteUser = async (req, res) => {
     await user.save();
 
     return res.json({
-      message: 'User deactivated successfully.',
+      message: 'User archived successfully.',
       user: {
         id: user.id,
         username: user.username,
@@ -265,7 +265,40 @@ const deleteUser = async (req, res) => {
     });
   } catch (err) {
     console.error('[deleteUser]', err);
-    return res.status(500).json({ error: 'Failed to delete user.' });
+    return res.status(500).json({ error: 'Failed to archive user.' });
+  }
+};
+
+// Admin: Restore archived user
+const restoreUser = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const user = await User.findByPk(id);
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found.' });
+    }
+
+    if (user.isActive) {
+      return res.status(400).json({ error: 'User is already active.' });
+    }
+
+    user.isActive = true;
+    await user.save();
+
+    return res.json({
+      message: 'User restored successfully.',
+      user: {
+        id: user.id,
+        username: user.username,
+        fullName: user.fullName,
+        isActive: user.isActive,
+      },
+    });
+  } catch (err) {
+    console.error('[restoreUser]', err);
+    return res.status(500).json({ error: 'Failed to restore user.' });
   }
 };
 
@@ -277,4 +310,5 @@ module.exports = {
   listUsers,
   updateUser,
   deleteUser,
+  restoreUser,
 };

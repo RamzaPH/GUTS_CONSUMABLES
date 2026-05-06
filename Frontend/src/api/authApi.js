@@ -24,6 +24,12 @@ export const deleteUser = async (userId) => {
   return response.data
 }
 
+// Admin: Restore archived user
+export const restoreUser = async (userId) => {
+  const response = await api.patch(`/auth/admin/users/${userId}/restore`)
+  return response.data
+}
+
 // Login
 export const login = async (username, password) => {
   const response = await api.post('/auth/login', { username, password })

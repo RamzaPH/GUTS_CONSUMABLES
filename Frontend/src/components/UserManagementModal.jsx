@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
-import { X, Trash2, Edit2, Plus } from 'lucide-react'
+import { X, Trash2, Edit2, Plus, RotateCcw } from 'lucide-react'
 import Button from './Button'
 import { useToast } from '../context/ToastContext'
 import AddUserModal from './AddUserModal'
-import { getUsers, deleteUser } from '../api/authApi'
+import { getUsers, deleteUser, restoreUser } from '../api/authApi'
 
 const UserManagementModal = ({ isOpen, onClose }) => {
   const { success, error: showError, warning } = useToast()
@@ -52,16 +52,27 @@ const UserManagementModal = ({ isOpen, onClose }) => {
     }, 500)
   }
 
-  const handleDeleteUser = async (userId, userName) => {
-    if (window.confirm(`Are you sure you want to deactivate user "${userName}"? This action cannot be undone.`)) {
+  const handleArchiveUser = async (userId, userName) => {
+    if (window.confirm(`Are you sure you want to archive user "${userName}"? They can be restored later.`)) {
       try {
         await deleteUser(userId)
-        success(`User "${userName}" has been deactivated.`)
+        success(`User "${userName}" has been archived.`)
         fetchUsers()
       } catch (error) {
-        const errorMsg = error.response?.data?.error || 'Failed to deactivate user'
+        const errorMsg = error.response?.data?.error || 'Failed to archive user'
         showError(`Error: ${errorMsg}`)
       }
+    }
+  }
+
+  const handleRestoreUser = async (userId, userName) => {
+    try {
+      await restoreUser(userId)
+      success(`User "${userName}" has been restored.`)
+      fetchUsers()
+    } catch (error) {
+      const errorMsg = error.response?.data?.error || 'Failed to restore user'
+      showError(`Error: ${errorMsg}`)
     }
   }
 
@@ -154,13 +165,23 @@ const UserManagementModal = ({ isOpen, onClose }) => {
                             >
                               <Edit2 className="h-4 w-4" />
                             </button>
-                            <button
-                              onClick={() => handleDeleteUser(user.id, user.fullName)}
-                              className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                              title="Deactivate user"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </button>
+                            {user.isActive ? (
+                              <button
+                                onClick={() => handleArchiveUser(user.id, user.fullName)}
+                                className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                title="Archive user"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => handleRestoreUser(user.id, user.fullName)}
+                                className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
+                                title="Restore user"
+                              >
+                                <RotateCcw className="h-4 w-4" />
+                              </button>
+                            )}
                           </div>
                         </td>
                       </tr>
