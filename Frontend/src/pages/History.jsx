@@ -343,18 +343,17 @@ const History = () => {
       escapeHtml(log.startDate && log.endDate ? `${new Date(log.startDate).toLocaleDateString('en-PH')} - ${new Date(log.endDate).toLocaleDateString('en-PH')}` : '—'),
       escapeHtml(log.description || '—'),
       escapeHtml(new Date(log.createdAt).toLocaleString('en-PH')),
-      '',
     ])
 
     await buildPrintFrame({
-      title: 'Full History Report',
+      title: 'Activity Logs Report',
       subtitle: 'All activity logs with the current filters applied',
       summaryItems: [
-        { label: 'Item', value: item?.itemName || 'All Items' },
+        { label: 'Scope', value: 'All Activity Logs' },
         { label: 'Filters', value: [selectedAction !== 'All' ? `Action: ${selectedAction}` : null, selectedDate ? `Date: ${selectedDate}` : null, searchUsername ? `User: ${searchUsername}` : null].filter(Boolean).join(' • ') || 'None' },
         { label: 'Total Records', value: `${filteredLogs.length}` },
       ],
-      tableHeaders: ['Item Name', 'Action', 'Quantity Changed', 'Performed By', 'Duration', 'Details', 'Date & Time', 'Action'],
+      tableHeaders: ['Item Name', 'Action', 'Quantity Changed', 'Performed By', 'Duration', 'Details', 'Date & Time'],
       tableRows,
       footer: `Total records shown: ${filteredLogs.length}`,
     })
@@ -397,6 +396,7 @@ const History = () => {
       </div>
 
       {/* Consumption Report */}
+      <div className="rounded-2xl border border-slate-200 bg-white p-4 space-y-4 transition-colors duration-300 dark:bg-slate-800 dark:border-slate-700">
         <div className="print-report-controls flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="print-report-note">
             <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Consumption Report by Batch</h3>
@@ -410,7 +410,7 @@ const History = () => {
             disabled={isReportLoading || consumptionReport.records.length === 0}
             className="print-report-button inline-flex items-center justify-center rounded-lg bg-[var(--brand-primary)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[var(--brand-primary-strong)] disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Print Report
+            Print Batch Report
           </button>
         </div>
 
@@ -595,7 +595,7 @@ const History = () => {
 
       {/* Print Button */}
       <div className="flex justify-end print:hidden">
-        <Button type="button" onClick={handlePrintAllRecords}>Print All Records</Button>
+        <Button type="button" onClick={handlePrintAllRecords}>Print All Logs</Button>
       </div>
 
       {/* Logs Table */}
