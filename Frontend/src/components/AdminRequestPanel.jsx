@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { CheckCircle, XCircle, Clock, X, Image as ImageIcon } from "lucide-react"
 import Button from "./Button"
 import { useToast } from "../context/ToastContext"
@@ -18,7 +18,7 @@ const AdminRequestPanel = ({ isOpen, onClose }) => {
   const [previewImage, setPreviewImage] = useState(null)
 
   // Fetch pending requests
-  const fetchRequests = async (page = 1, tab = activeTab) => {
+  const fetchRequests = useCallback(async (page = 1, tab = activeTab) => {
     setLoading(true)
     try {
       const response = tab === 'history'
@@ -37,13 +37,13 @@ const AdminRequestPanel = ({ isOpen, onClose }) => {
     } finally {
       setLoading(false)
     }
-  }
+  }, [activeTab, showError])
 
   useEffect(() => {
     if (isOpen) {
       fetchRequests(1, activeTab)
     }
-  }, [isOpen, activeTab])
+  }, [isOpen, activeTab, fetchRequests])
 
   const handleApprove = async () => {
     if (!selectedRequest) return

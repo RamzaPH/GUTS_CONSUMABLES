@@ -50,11 +50,10 @@ const UserManagementModal = ({ isOpen, onClose }) => {
     setIsAddUserOpen(true)
   }
 
-  const handleAddUserSuccess = (fullName, role, action = 'User created') => {
+  const handleAddUserSuccess = (fullName, role) => {
     setTimeout(() => {
-      // Show success notification based on action
-      const action = editingUser ? 'User updated' : 'User created'
-      success(`${action} successfully!`)
+      const actionText = editingUser ? 'User updated' : 'User created'
+      success(`${actionText} successfully!`)
       fetchUsers()
     }, 500)
   }

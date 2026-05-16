@@ -36,9 +36,11 @@ const TrackHistory = ({ track, title, inventoryItems = [], logHeight }) => {
   }, [track, selectedItemId])
 
   useEffect(() => {
-    setSelectedItemId("")
-    setSelectedAction("All")
-  }, [track])
+    if (selectedItemId !== "" || selectedAction !== "All") {
+      setSelectedItemId("")
+      setSelectedAction("All")
+    }
+  }, [track, selectedItemId, selectedAction])
 
   const filteredLogs = useMemo(
     () =>

@@ -3,22 +3,16 @@ import { createContext, useContext, useState, useEffect } from "react"
 const AuthContext = createContext()
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null)
-  const [token, setToken] = useState(null)
-  const [isLoading, setIsLoading] = useState(true)
-
-  // Initialize from localStorage on mount
-  useEffect(() => {
-    const storedToken = localStorage.getItem("token")
-    const storedUser = localStorage.getItem("user")
-
-    if (storedToken && storedUser) {
-      setToken(storedToken)
-      setUser(JSON.parse(storedUser))
+  const [token, setToken] = useState(() => localStorage.getItem("token"))
+  const [user, setUser] = useState(() => {
+    try {
+      const s = localStorage.getItem("user")
+      return s ? JSON.parse(s) : null
+    } catch {
+      return null
     }
-
-    setIsLoading(false)
-  }, [])
+  })
+  const [isLoading, setIsLoading] = useState(false)
 
   const login = (userData, authToken) => {
     setUser(userData)

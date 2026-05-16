@@ -11,7 +11,7 @@ export const NotificationProvider = ({ children }) => {
   const { user, token } = useAuth();
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [socket, setSocket] = useState(null);
+  const socketRef = useRef(null);
   const onStockUpdateRef = useRef(null);
 
   const getApiBaseUrl = () => {
@@ -92,7 +92,7 @@ export const NotificationProvider = ({ children }) => {
       socketInstance.on('disconnect', () => {
       });
 
-      setSocket(socketInstance);
+      socketRef.current = socketInstance;
 
       return () => {
         socketInstance.disconnect();
@@ -102,22 +102,16 @@ export const NotificationProvider = ({ children }) => {
     }
   }, [user, token]);
 
-  const getApiUrl = () => {
-    return getApiBaseUrl();
-  };
-
   const markAsRead = useCallback(async (notificationId) => {
     try {
-      await fetch(`${getApiUrl()}/notifications/${notificationId}/read`, {
+      await fetch(`${getApiBaseUrl()}/notifications/${notificationId}/read`, {
         method: 'PUT',
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
       setNotifications((prev) =>
-        prev.map((notif) =>
-          notif.id === notificationId ? { ...notif, isRead: true } : notif
-        )
+        prev.map((notif) => (notif.id === notificationId ? { ...notif, isRead: true } : notif))
       );
       setUnreadCount((prev) => Math.max(0, prev - 1));
     } catch (err) {
@@ -127,7 +121,7 @@ export const NotificationProvider = ({ children }) => {
 
   const markAllAsRead = useCallback(async () => {
     try {
-      await fetch(`${getApiUrl()}/notifications/read/all`, {
+      await fetch(`${getApiBaseUrl()}/notifications/read/all`, {
         method: 'PUT',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -142,7 +136,7 @@ export const NotificationProvider = ({ children }) => {
 
   const deleteNotification = useCallback(async (notificationId) => {
     try {
-      await fetch(`${getApiUrl()}/notifications/${notificationId}`, {
+      await fetch(`${getApiBaseUrl()}/notifications/${notificationId}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${token}`,
