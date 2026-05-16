@@ -4,8 +4,8 @@ import { useAuth } from './AuthContext';
 
 const NotificationContext = createContext();
 
-const DEFAULT_API_BASE_URL = 'https://guts-inventory.onrender.com/api';
-const DEFAULT_SOCKET_URL = 'https://guts-inventory.onrender.com';
+const DEFAULT_API_BASE_URL = 'http://localhost:5000/api';
+const DEFAULT_SOCKET_URL = 'http://localhost:5000';
 
 export const NotificationProvider = ({ children }) => {
   const { user, token } = useAuth();

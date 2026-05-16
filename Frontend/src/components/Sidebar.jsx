@@ -19,6 +19,13 @@ const settingsItems = [
   { to: "/archive", label: "Archive Vault", icon: BoxArchive }
 ]
 
+const adminPanelItems = [
+  { label: "Manage Users", icon: Users, onClick: "users" },
+  { label: "Manage Trainers", icon: Wrench, onClick: "trainers" },
+  { label: "Manage Courses", icon: BookOpen, onClick: "courses" },
+  { label: "Pending Requests", icon: Inbox, onClick: "requests" }
+]
+
 const Sidebar = ({ isCollapsed = false, onToggleCollapse, isMobile = false, onNavigate }) => {
   const { user, logout } = useAuth()
   const { success } = useToast()
@@ -32,11 +39,7 @@ const Sidebar = ({ isCollapsed = false, onToggleCollapse, isMobile = false, onNa
   const [courseItems, setCourseItems] = useState([])
   const [isCoursesOpen, setIsCoursesOpen] = useState(true)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
-
-  // Fetch courses on mount
-  useEffect(() => {
-    fetchCourses()
-  }, [])
+  const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false)
 
   const handleLogout = () => {
     logout()
@@ -65,6 +68,11 @@ const Sidebar = ({ isCollapsed = false, onToggleCollapse, isMobile = false, onNa
     }
   }
 
+  // Fetch courses on mount
+  useEffect(() => {
+    fetchCourses()
+  }, [])
+
   useEffect(() => {
     const params = new URLSearchParams(location.search)
     const shouldOpenPending = params.get("openPendingRequests") === "1"
@@ -80,33 +88,34 @@ const Sidebar = ({ isCollapsed = false, onToggleCollapse, isMobile = false, onNa
   }, [location.pathname, location.search, navigate, user?.role])
 
   return (
-    <div className={`flex h-screen flex-col ${isMobile ? "pb-4" : ""}`}>
-      <div className={`border-b border-slate-600/80 pb-4 pt-5 transition-all duration-300 ${isCollapsed ? "px-3" : "px-6"}`}>
+    <div className={`flex min-h-0 flex-col overflow-hidden ${isMobile ? "h-[100dvh] pb-0" : "h-full"}`}>
+      <div className={`shrink-0 border-b border-slate-600/80 py-3 transition-all duration-300 ${isCollapsed ? "px-3" : "px-5"}`}>
         {!isMobile ? (
           <button
             type="button"
             onClick={onToggleCollapse}
             aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-            className={`mb-3 inline-flex items-center justify-center rounded-lg border border-slate-600/80 bg-slate-700/50 p-2 text-slate-200 transition hover:bg-slate-700 ${isCollapsed ? "w-full" : "ml-auto"}`}
+            className={`mb-2 inline-flex items-center justify-center rounded-lg border border-slate-600/80 bg-slate-700/50 p-2 text-slate-200 transition hover:bg-slate-700 ${isCollapsed ? "w-full" : "ml-auto"}`}
           >
             <ChevronLeft className={`h-4 w-4 transition-transform duration-300 ${isCollapsed ? "rotate-180" : "rotate-0"}`} />
           </button>
         ) : null}
 
-        <div className={`mx-auto flex justify-center rounded-xl bg-slate-800/50 transition-all duration-300 ${isCollapsed ? "w-12 p-2" : "w-full max-w-[170px] p-3"}`}>
+        <div className={`mx-auto flex justify-center rounded-xl bg-slate-800/50 transition-all duration-300 ${isCollapsed ? "w-12 p-2" : "w-full max-w-[150px] p-2.5"}`}>
           <img
             src="/guts-logo.png"
             alt="GUTS TESDA logo"
-            className={`object-contain transition-all duration-300 ${isCollapsed ? "h-10 w-10" : "h-24 w-full"}`}
+            className={`object-contain transition-all duration-300 ${isCollapsed ? "h-10 w-10" : "h-[72px] w-full"}`}
           />
         </div>
-        <p className={`mt-4 text-center text-xs font-semibold uppercase tracking-[0.24em] text-slate-300 transition-all duration-300 ${isCollapsed ? "max-h-0 opacity-0" : "max-h-10 opacity-100"}`}>
+        <p className={`mt-2 text-center text-[9px] font-semibold uppercase tracking-[0.22em] text-slate-300 transition-all duration-300 ${isCollapsed ? "max-h-0 opacity-0" : "max-h-10 opacity-100"}`}>
           GUTS CONSUMABLE MONITORING SYSTEM
         </p>
       </div>
 
-      <div className="flex-1 overflow-y-auto sidebar-scroll" tabIndex={0} aria-label="Sidebar navigation" role="navigation">
-        <nav className={`mt-6 space-y-3 py-3 transition-all duration-300 ${isCollapsed ? "px-2" : "px-4"}`}>
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+        <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain sidebar-scroll" tabIndex={0} aria-label="Sidebar navigation" role="navigation">
+          <nav className={`mt-6 space-y-3 py-3 transition-all duration-300 ${isCollapsed ? "px-2" : "px-4"}`}>
         {/* Dashboard */}
         {navItems.map((item) => {
           const Icon = item.icon
@@ -203,11 +212,11 @@ const Sidebar = ({ isCollapsed = false, onToggleCollapse, isMobile = false, onNa
             </div>
           )}
         </div>
-        </nav>
+          </nav>
 
-        <div className={`mt-8 border-t border-slate-600/80 py-4 transition-all duration-300 ${isCollapsed ? "px-2" : "px-4"}`}>
-        {/* Settings Dropdown */}
-        <div className="relative">
+          <div className={`mt-8 border-t border-slate-600/80 py-4 transition-all duration-300 ${isCollapsed ? "px-2" : "px-4"}`}>
+          {/* Settings Dropdown */}
+          <div className="relative">
           <button
             type="button"
             onClick={(e) => {
@@ -274,50 +283,70 @@ const Sidebar = ({ isCollapsed = false, onToggleCollapse, isMobile = false, onNa
             </div>
           )}
         </div>
+
+          {/* Admin Panel Dropdown */}
+          {user?.role === "admin" && (
+            <div className="relative mt-6">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation()
+                setIsAdminPanelOpen(!isAdminPanelOpen)
+              }}
+              title={isCollapsed ? "Admin Panel" : undefined}
+              className={`group flex min-h-11 w-full items-center rounded-r-xl border-l-4 py-3 text-sm font-semibold transition-all duration-300 border-transparent text-slate-200 hover:bg-slate-700/70 hover:text-white ${isCollapsed ? "justify-center px-2" : "gap-3 px-5"}`}
+            >
+              <ShieldCheck className="h-4 w-4 shrink-0" />
+              <span
+                className={`overflow-hidden whitespace-nowrap transition-all duration-300 ${isCollapsed ? "max-w-0 opacity-0" : "max-w-[120px] opacity-100"}`}
+              >
+                Admin Panel
+              </span>
+              {!isCollapsed && (
+                <ChevronDown
+                  className={`h-4 w-4 transition-transform duration-300 ${isAdminPanelOpen ? "rotate-180" : "rotate-0"}`}
+                />
+              )}
+            </button>
+
+            {isAdminPanelOpen && (
+              <div
+                className={`space-y-2 transition-all duration-300 ${
+                  isCollapsed
+                    ? "absolute left-full top-0 ml-3 w-56 rounded-xl border border-slate-600/80 bg-slate-800 p-2 shadow-xl z-50"
+                    : "mt-2 pl-2"
+                }`}
+              >
+                {adminPanelItems.map((item) => {
+                  const Icon = item.icon
+                  return (
+                    <button
+                      key={item.label}
+                      type="button"
+                      onClick={() => {
+                        if (item.onClick === "users") setIsUserManagementOpen(true)
+                        if (item.onClick === "trainers") setIsTrainerManagementOpen(true)
+                        if (item.onClick === "courses") setIsCourseManagementOpen(true)
+                        if (item.onClick === "requests") setIsRequestPanelOpen(true)
+                        if (isCollapsed) setIsAdminPanelOpen(false)
+                      }}
+                      className="group flex min-h-10 w-full items-center gap-3 rounded-lg border-l-4 border-transparent bg-slate-700/50 px-3 py-2 text-xs font-semibold text-slate-200 transition-all duration-300 hover:bg-slate-700 hover:text-white"
+                    >
+                      <Icon className="h-4 w-4 shrink-0" />
+                      <span className="whitespace-nowrap">{item.label}</span>
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+            </div>
+          )}
+          </div>
         </div>
       </div>
 
       {/* User Profile Section - Fixed at bottom */}
-      <div className={`border-t border-slate-600/80 py-4 transition-all duration-300 ${isCollapsed ? "px-2" : "px-4"}`}>
-        {/* Admin Management Section */}
-        {user?.role === "admin" && !isCollapsed && (
-          <div className="mb-4 space-y-2">
-            <div className="text-xs font-semibold text-slate-400 uppercase tracking-wider px-2">Admin Panel</div>
-            <button
-              type="button"
-              onClick={() => setIsUserManagementOpen(true)}
-              className="w-full flex items-center gap-3 rounded-lg py-2 px-3 bg-slate-700/50 hover:bg-slate-700 text-slate-200 text-sm font-semibold transition-colors"
-            >
-              <Users className="h-4 w-4 shrink-0" />
-              Manage Users
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsTrainerManagementOpen(true)}
-              className="w-full flex items-center gap-3 rounded-lg py-2 px-3 bg-slate-700/50 hover:bg-slate-700 text-slate-200 text-sm font-semibold transition-colors"
-            >
-              <BookOpen className="h-4 w-4 shrink-0" />
-              Manage Trainers
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsCourseManagementOpen(true)}
-              className="w-full flex items-center gap-3 rounded-lg py-2 px-3 bg-slate-700/50 hover:bg-slate-700 text-slate-200 text-sm font-semibold transition-colors"
-            >
-              <BookOpen className="h-4 w-4 shrink-0" />
-              Manage Courses
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsRequestPanelOpen(true)}
-              className="w-full flex items-center gap-3 rounded-lg py-2 px-3 bg-slate-700/50 hover:bg-slate-700 text-slate-200 text-sm font-semibold transition-colors"
-            >
-              <Inbox className="h-4 w-4 shrink-0" />
-              Pending Requests
-            </button>
-          </div>
-        )}
-
+      <div className={`mt-auto shrink-0 border-t border-slate-600/80 py-4 transition-all duration-300 ${isCollapsed ? "px-2" : "px-4"}`}>
         {/* Profile Card */}
         <button
           type="button"
