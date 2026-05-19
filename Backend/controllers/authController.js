@@ -48,8 +48,11 @@ const login = async (req, res) => {
       },
     });
   } catch (err) {
-    console.error('[login]', err);
-    return res.status(500).json({ error: 'Login failed.' });
+    // Log full stack to help debugging in deployed environments
+    console.error('[login]', err && err.stack ? err.stack : err);
+    // Return a short message but include the error message in a debug field
+    // (temporary — remove once issue is resolved)
+    return res.status(500).json({ error: 'Login failed.', debug: err.message });
   }
 };
 
