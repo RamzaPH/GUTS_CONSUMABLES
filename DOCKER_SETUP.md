@@ -13,7 +13,7 @@ cd path/to/Guts-Inventory
 
 ### 2. I-build at i-run ang containers
 ```bash
-docker-compose up --build
+docker compose up --build
 ```
 
 Hintayin hanggang makita mo:
@@ -30,29 +30,29 @@ Hintayin hanggang makita mo:
 
 ### Build containers
 ```bash
-docker-compose build
+docker compose build
 ```
 
 ### Run in background
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 ### Stop containers
 ```bash
-docker-compose down
+docker compose down
 ```
 
 ### View logs
 ```bash
-docker-compose logs -f
+docker compose logs -f
 ```
 
 ### View specific service logs
 ```bash
-docker-compose logs -f backend
-docker-compose logs -f frontend
-docker-compose logs -f mysql
+docker compose logs -f backend
+docker compose logs -f frontend
+docker compose logs -f mysql
 ```
 
 ### Access MySQL
@@ -86,20 +86,20 @@ docker exec -it guts_backend npm run seed
 ### Database connection error
 ```bash
 # Make sure MySQL service is healthy
-docker-compose ps
+docker compose ps
 
 # Restart services
-docker-compose restart
+docker compose restart
 ```
 
 ### Changes not reflected
 ```bash
 # Rebuild lang
-docker-compose up --build
+docker compose up --build
 ```
 
 ## Production Notes
 - Baguhin ang passwords sa `docker-compose.yml`
-- Set `CORS_ORIGIN` sa actual domain mo
+- Set `CORS_ORIGIN` sa actual domain mo kapag maglalagay ka na ng custom domain
 - Use volume mounting para sa data persistence
 - Add logging configuration

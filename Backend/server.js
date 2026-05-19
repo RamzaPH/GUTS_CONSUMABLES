@@ -23,9 +23,13 @@ const ConsumableRequest = require('./models/ConsumableRequest');
 
 const app = express();
 const server = http.createServer(app);
+const allowedOrigins = (process.env.CORS_ORIGIN || '*')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
 const io = socketIO(server, {
   cors: {
-    origin: '*',
+    origin: allowedOrigins.length === 1 && allowedOrigins[0] === '*' ? '*' : allowedOrigins,
     methods: ['GET', 'POST'],
     credentials: false,
   },
@@ -90,7 +94,7 @@ app.locals.userSockets = userSockets;
 
 // ─── Middleware ────────────────────────────────────────────────────────────────
 app.use(cors({
-  origin: '*',
+  origin: allowedOrigins.length === 1 && allowedOrigins[0] === '*' ? '*' : allowedOrigins,
   optionsSuccessStatus: 200,
   credentials: false,
 }));

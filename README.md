@@ -34,10 +34,10 @@ git clone <your-repo-url>
 cd Guts-Inventory
 
 # Start all services
-docker-compose up -d
+docker compose up -d
 
-# Initialize default users (admin/admin123, staff/staff123)
-docker-compose exec backend npm run init-auth
+# Initialize default users (admin/admin123456, staff/staff123456)
+docker compose exec backend npm run init-auth
 
 # Access the application
 # Frontend: http://localhost
@@ -46,8 +46,8 @@ docker-compose exec backend npm run init-auth
 
 ## Default Credentials
 
-- **Admin**: `admin` / `admin123`
-- **Staff**: `staff` / `staff123`
+- **Admin**: `admin` / `admin123456`
+- **Staff**: `staff` / `staff123456`
 
 ⚠️ **Change passwords after first login!**
 

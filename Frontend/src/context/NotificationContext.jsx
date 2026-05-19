@@ -4,8 +4,7 @@ import { useAuth } from './AuthContext';
 
 const NotificationContext = createContext();
 
-const DEFAULT_API_BASE_URL = 'http://localhost:5000/api';
-const DEFAULT_SOCKET_URL = 'http://localhost:5000';
+const DEFAULT_API_BASE_URL = '/api';
 
 export const NotificationProvider = ({ children }) => {
   const { user, token } = useAuth();
@@ -24,10 +23,10 @@ export const NotificationProvider = ({ children }) => {
     }
 
     if (typeof window !== 'undefined' && window.location?.origin) {
-      return DEFAULT_SOCKET_URL;
+      return window.location.origin;
     }
 
-    return DEFAULT_SOCKET_URL;
+    return '';
   };
 
   useEffect(() => {
@@ -158,7 +157,7 @@ export const NotificationProvider = ({ children }) => {
       value={{
         notifications,
         unreadCount,
-        socket,
+        socket: socketRef.current,
         markAsRead,
         markAllAsRead,
         deleteNotification,
