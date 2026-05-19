@@ -338,16 +338,16 @@ const ItemDetailPage = () => {
       )}
 
       {/* History Section */}
-      <div className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
         {/* Clickable History Header */}
         <button
           onClick={() => navigate(`/history/${track}/${itemId}`)}
           className="w-full border-b border-slate-200 bg-slate-50 px-4 py-4 text-left transition hover:bg-slate-100 sm:px-6"
         >
-          <h2 className="text-lg font-semibold text-[#800000] cursor-pointer hover:underline">
+          <h2 className="cursor-pointer text-lg font-semibold text-[#800000] hover:underline">
             History ({allHistory.length}) 
           </h2>
-          <p className="text-xs text-slate-500 mt-1">Click to view full history with pagination</p>
+          <p className="mt-1 text-xs text-slate-500">Click to view full history with pagination</p>
         </button>
 
         {/* History Table - Limited to 5 rows */}
@@ -357,7 +357,7 @@ const ItemDetailPage = () => {
               <p>No history available</p>
             </div>
           ) : (
-            <table className="w-full text-sm pointer-events-none select-none">
+            <table className="min-w-[1100px] w-full pointer-events-none select-none text-sm">
               <thead className="bg-[#f8eef0]">
                 <tr>
                   <th className="px-4 py-3 text-left font-semibold text-[#800000]">Inventory Date</th>

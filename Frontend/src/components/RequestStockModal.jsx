@@ -200,10 +200,10 @@ const RequestStockModal = ({
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 p-3 sm:items-center sm:p-4">
-      <div className="max-h-[92vh] w-full max-w-md overflow-y-auto rounded-2xl border border-slate-200 bg-white p-4 shadow-lg sm:p-6">
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-3 sm:items-center sm:p-4">
+      <div className="max-h-[92vh] w-full max-w-md overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-lg sm:p-6">
         {/* Header */}
-        <div className="mb-4 flex items-center justify-between gap-3">
+        <div className="mb-4 flex items-start justify-between gap-3">
           <h2 className="font-title text-xl font-bold text-[#800000] sm:text-2xl">
             {requestType === "Stock Out" ? "Request Stock Deduction" : "Request Stock Addition"}
           </h2>
@@ -227,7 +227,7 @@ const RequestStockModal = ({
         )}
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="max-h-[calc(92vh-96px)] space-y-4 overflow-y-auto pr-1">
           {/* Quantity */}
           <div>
             <label className="block text-sm font-semibold text-slate-700">
@@ -317,7 +317,7 @@ const RequestStockModal = ({
               Verification Images (Optional)
             </label>
             <div className="mt-1 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 p-4">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex items-start gap-3">
                   <div className="rounded-lg bg-[#800000]/10 p-2 text-[#800000]">
                     <Upload size={18} />
@@ -327,7 +327,7 @@ const RequestStockModal = ({
                     <p className="text-xs text-slate-500">Up to {MAX_VERIFICATION_IMAGES} images, 2MB each.</p>
                   </div>
                 </div>
-                <label className="inline-flex cursor-pointer items-center justify-center rounded-lg bg-white px-4 py-2 text-sm font-semibold text-[#800000] ring-1 ring-inset ring-[#800000]/20 transition hover:bg-[#fff7f8]">
+                <label className="inline-flex min-h-11 cursor-pointer items-center justify-center rounded-lg bg-white px-4 py-2 text-sm font-semibold text-[#800000] ring-1 ring-inset ring-[#800000]/20 transition hover:bg-[#fff7f8]">
                   Choose Images
                   <input
                     type="file"

@@ -66,8 +66,8 @@ const ItemDetailsModal = ({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center bg-slate-900/50 p-3 sm:items-center sm:p-4">
-      <div className="max-h-[92vh] w-full max-w-2xl overflow-y-auto rounded-2xl border border-[var(--brand-secondary-soft)] bg-white shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-900/50 p-3 sm:items-center sm:p-4">
+      <div className="max-h-[92vh] w-full max-w-2xl overflow-hidden rounded-2xl border border-[var(--brand-secondary-soft)] bg-white shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-[var(--brand-secondary-soft)] px-4 py-4 sm:px-6 sm:py-5">
           <div>
@@ -84,7 +84,7 @@ const ItemDetailsModal = ({
           </button>
         </div>
 
-        <div className="p-4 sm:p-6">
+        <div className="max-h-[calc(92vh-72px)] overflow-y-auto p-4 sm:p-6">
           {/* Item Details Card */}
           <div className="mb-6 rounded-xl border border-[var(--brand-secondary-soft)] bg-gradient-to-r from-[#f8eef0] to-slate-50 p-4 sm:p-5">
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -134,7 +134,7 @@ const ItemDetailsModal = ({
                   <button
                     type="button"
                     onClick={() => setActiveAction("purchase")}
-                    className="group flex items-center justify-center gap-3 rounded-xl border-2 border-emerald-200 bg-emerald-50 px-4 py-4 transition hover:border-emerald-400 hover:bg-emerald-100 sm:px-5"
+                    className="group flex min-h-20 items-center justify-center gap-3 rounded-xl border-2 border-emerald-200 bg-emerald-50 px-4 py-4 transition hover:border-emerald-400 hover:bg-emerald-100 sm:px-5"
                   >
                     <TrendingUp className="h-5 w-5 text-emerald-600 group-hover:scale-110 transition" />
                     <div className="text-left">
@@ -146,7 +146,7 @@ const ItemDetailsModal = ({
                   <button
                     type="button"
                     onClick={() => setActiveAction("consumption")}
-                    className="group flex items-center justify-center gap-3 rounded-xl border-2 border-red-200 bg-red-50 px-4 py-4 transition hover:border-red-400 hover:bg-red-100 sm:px-5"
+                    className="group flex min-h-20 items-center justify-center gap-3 rounded-xl border-2 border-red-200 bg-red-50 px-4 py-4 transition hover:border-red-400 hover:bg-red-100 sm:px-5"
                   >
                     <TrendingDown className="h-5 w-5 text-red-600 group-hover:scale-110 transition" />
                     <div className="text-left">
@@ -165,7 +165,7 @@ const ItemDetailsModal = ({
               e.preventDefault()
               handleSubmit(activeAction)
             }} className="space-y-4 border-t border-slate-200 pt-6">
-              <div className={`rounded-lg px-4 py-3 flex items-center gap-2 ${
+              <div className={`flex items-center gap-2 rounded-lg px-4 py-3 ${
                 activeAction === "purchase"
                   ? "bg-emerald-50 border border-emerald-200"
                   : "bg-red-50 border border-red-200"

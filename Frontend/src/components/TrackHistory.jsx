@@ -64,7 +64,7 @@ const TrackHistory = ({ track, title, inventoryItems = [], logHeight }) => {
           <button
             type="button"
             onClick={() => window.print()}
-            className="inline-flex w-fit items-center gap-2 rounded-xl bg-[var(--brand-primary)] px-3 py-2 text-xs font-semibold text-white transition hover:bg-[var(--brand-primary-strong)] sm:px-4 sm:text-sm"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--brand-primary)] px-3 py-2 text-xs font-semibold text-white transition hover:bg-[var(--brand-primary-strong)] sm:w-fit sm:px-4 sm:text-sm"
           >
             <Printer className="h-4 w-4" />
             Print Report
@@ -76,7 +76,7 @@ const TrackHistory = ({ track, title, inventoryItems = [], logHeight }) => {
         <div className="space-y-4 p-4 print:pt-2 sm:p-6">
           {/* Filter bar */}
           <div className="flex flex-col gap-3 print:hidden lg:flex-row lg:items-start lg:justify-between">
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
               {/* Date selector */}
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                 <input
@@ -102,7 +102,7 @@ const TrackHistory = ({ track, title, inventoryItems = [], logHeight }) => {
               <select
                 value={selectedItemId}
                 onChange={(e) => setSelectedItemId(e.target.value)}
-                className={`rounded-xl border px-3 py-2 text-sm text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] ${
+                className={`w-full rounded-xl border px-3 py-2 text-sm text-slate-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)] sm:w-auto $\{
                   selectedItemId ? "border-[var(--brand-primary)] bg-[#fff6f7]" : "border-slate-200 bg-white"
                 }`}
               >
@@ -115,7 +115,7 @@ const TrackHistory = ({ track, title, inventoryItems = [], logHeight }) => {
               </select>
 
               {/* Action type pill filters */}
-              <div className="flex flex-wrap gap-1">
+              <div className="flex flex-wrap gap-1 overflow-x-auto pb-1 sm:pb-0">
                 {ACTION_TYPES.map((action) => (
                   <button
                     key={action}
@@ -193,8 +193,7 @@ const TrackHistory = ({ track, title, inventoryItems = [], logHeight }) => {
             </div>
           ) : (
             <div className="overflow-x-auto rounded-2xl border border-slate-200">
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-slate-200 text-left text-sm">
+              <table className="min-w-[1100px] w-full divide-y divide-slate-200 text-left text-sm">
                   <thead className="bg-[#f8eef0]">
                     <tr>
                       <th className="px-4 py-4 font-semibold text-[var(--brand-primary)] sm:px-5">Item</th>
@@ -242,7 +241,6 @@ const TrackHistory = ({ track, title, inventoryItems = [], logHeight }) => {
                     ))}
                   </tbody>
                 </table>
-              </div>
             </div>
           )}
         </div>

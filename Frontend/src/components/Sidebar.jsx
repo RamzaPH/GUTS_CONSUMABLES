@@ -1,4 +1,4 @@
-import { Archive as BoxArchive, ChevronLeft, ChevronDown, Clock, LayoutDashboard, PackageOpen, ShieldCheck, Wrench, LogOut, User, Users, BookOpen, Settings, Inbox } from "lucide-react"
+import { Archive as BoxArchive, ChevronLeft, ChevronDown, Clock, LayoutDashboard, PackageOpen, ShieldCheck, Wrench, LogOut, User, Users, BookOpen, Settings, Inbox, X } from "lucide-react"
 import { NavLink, useLocation, useNavigate } from "react-router-dom"
 import { useState, useEffect } from "react"
 import { useAuth } from "../context/AuthContext"
@@ -90,6 +90,21 @@ const Sidebar = ({ isCollapsed = false, onToggleCollapse, isMobile = false, onNa
   return (
     <div className={`flex min-h-0 flex-col overflow-hidden ${isMobile ? "h-[100dvh] pb-0" : "h-full"}`}>
       <div className={`shrink-0 border-b border-slate-600/80 py-3 transition-all duration-300 ${isCollapsed ? "px-3" : "px-5"}`}>
+        {isMobile && (
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-300">
+              Menu
+            </p>
+            <button
+              type="button"
+              onClick={onClose}
+              className="inline-flex items-center justify-center rounded-lg border border-slate-600/80 bg-slate-700/50 p-2 text-slate-200 transition hover:bg-slate-700"
+              aria-label="Close navigation menu"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        )}
         {!isMobile ? (
           <button
             type="button"
@@ -101,14 +116,14 @@ const Sidebar = ({ isCollapsed = false, onToggleCollapse, isMobile = false, onNa
           </button>
         ) : null}
 
-        <div className={`mx-auto flex justify-center rounded-xl bg-slate-800/50 transition-all duration-300 ${isCollapsed ? "w-12 p-2" : "w-full max-w-[150px] p-2.5"}`}>
+        <div className={`mx-auto flex justify-center rounded-xl bg-slate-800/50 transition-all duration-300 ${isMobile ? "w-full max-w-[150px] p-2.5" : isCollapsed ? "w-12 p-2" : "w-full max-w-[150px] p-2.5"}`}>
           <img
             src="/guts-logo.png"
             alt="GUTS TESDA logo"
-            className={`object-contain transition-all duration-300 ${isCollapsed ? "h-10 w-10" : "h-[72px] w-full"}`}
+            className={`object-contain transition-all duration-300 ${isMobile ? "h-[72px] w-full" : isCollapsed ? "h-10 w-10" : "h-[72px] w-full"}`}
           />
         </div>
-        <p className={`mt-2 text-center text-[9px] font-semibold uppercase tracking-[0.22em] text-slate-300 transition-all duration-300 ${isCollapsed ? "max-h-0 opacity-0" : "max-h-10 opacity-100"}`}>
+        <p className={`mt-2 text-center text-[9px] font-semibold uppercase tracking-[0.22em] text-slate-300 transition-all duration-300 ${isMobile ? "max-h-10 opacity-100" : isCollapsed ? "max-h-0 opacity-0" : "max-h-10 opacity-100"}`}>
           GUTS CONSUMABLE MONITORING SYSTEM
         </p>
       </div>

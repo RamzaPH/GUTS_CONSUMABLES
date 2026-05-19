@@ -114,7 +114,7 @@ const AdminRequestPanel = ({ isOpen, onClose }) => {
         </div>
 
         <div className="border-b border-slate-200 px-4 pt-3 sm:px-6">
-          <div className="inline-flex rounded-xl bg-slate-100 p-1">
+          <div className="inline-flex w-full flex-wrap rounded-xl bg-slate-100 p-1 sm:w-auto">
             <button
               type="button"
               onClick={() => {
@@ -166,8 +166,8 @@ const AdminRequestPanel = ({ isOpen, onClose }) => {
           ) : (
             <>
               {/* Requests Table */}
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
+              <div className="overflow-x-auto rounded-2xl border border-slate-200">
+                <table className="min-w-[1100px] w-full text-sm">
                   <thead className="bg-slate-50">
                     <tr>
                       <th className="px-4 py-3 text-left font-semibold text-slate-700">Item</th>
@@ -273,7 +273,7 @@ const AdminRequestPanel = ({ isOpen, onClose }) => {
 
               {/* Pagination */}
               {totalPages > 1 && (
-                <div className="mt-6 flex items-center justify-center gap-2">
+                <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
                   <button
                     onClick={() => fetchRequests(1)}
                     disabled={currentPage === 1}
@@ -313,7 +313,7 @@ const AdminRequestPanel = ({ isOpen, onClose }) => {
 
         {/* Review Modal (when selectedRequest is set) */}
         {selectedRequest && (
-          <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/50 p-3 sm:p-4">
+          <div className="fixed inset-0 z-60 flex items-start justify-center overflow-y-auto bg-black/50 p-3 sm:items-center sm:p-4">
             <div className="w-full max-w-md max-h-[90vh] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-lg">
               {/* Header */}
               <div className="border-b border-slate-200 p-4 sm:p-6">
@@ -323,8 +323,8 @@ const AdminRequestPanel = ({ isOpen, onClose }) => {
               </div>
 
               {/* Content */}
-              <div className="max-h-[calc(90vh-88px)] overflow-y-auto p-4 space-y-4 sm:p-6">
-                <div className="rounded-lg bg-slate-50 p-4 space-y-3">
+              <div className="max-h-[calc(90vh-88px)] space-y-4 overflow-y-auto p-4 sm:p-6">
+                    <div className="space-y-3 rounded-lg bg-slate-50 p-4">
                   <div>
                     <p className="text-xs font-semibold text-slate-500 uppercase">Item</p>
                     <p className="font-semibold text-slate-800">

@@ -1,5 +1,4 @@
 import { useState } from "react"
-import { Menu } from "lucide-react"
 import { Outlet, useLocation } from "react-router-dom"
 import Navbar from "../components/Navbar"
 import Sidebar from "../components/Sidebar"
@@ -41,12 +40,16 @@ const MainLayout = () => {
             }`}
             onClick={(event) => event.stopPropagation()}
           >
-            <Sidebar isMobile onNavigate={() => setIsSidebarOpen(false)} />
+            <Sidebar
+              isMobile
+              onNavigate={() => setIsSidebarOpen(false)}
+              onClose={() => setIsSidebarOpen(false)}
+            />
           </aside>
         </div>
 
         <div className="sticky top-0 z-30">
-          <Navbar />
+            <Navbar onMenuClick={() => setIsSidebarOpen(true)} />
         </div>
 
         <main className="flex-1 p-3 transition-all duration-300 sm:p-4 md:p-6 lg:p-8">

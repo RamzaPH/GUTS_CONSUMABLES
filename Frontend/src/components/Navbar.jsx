@@ -1,10 +1,11 @@
-import { Search } from "lucide-react"
+import { Menu, Search } from "lucide-react"
 import { useLocation } from "react-router-dom"
 import { useSearch } from "../context/SearchContext"
 import { useInventoryLocation } from "../context/InventoryLocationContext"
 import NotificationBell from "./NotificationBell"
+import Button from "./Button"
 
-const Navbar = () => {
+const Navbar = ({ onMenuClick }) => {
   const { searchQuery, setSearchQuery } = useSearch()
   const { selectedInventory, handleInventoryChange } = useInventoryLocation()
   const location = useLocation()
@@ -20,14 +21,27 @@ const Navbar = () => {
   return (
     <>
       <header className="flex flex-col gap-2 border-b border-slate-200 bg-white px-3 py-3 sm:px-4 md:flex-row md:items-center md:justify-between md:px-6 print:hidden">
-        <div className="min-w-0">
-          <h1 className="font-title text-lg font-semibold text-slate-800 sm:text-xl">
-            Consumables Management Dashboard
-          </h1>
+        <div className="flex items-start gap-3 min-w-0">
+          {onMenuClick && (
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={onMenuClick}
+              className="md:hidden min-h-11 min-w-11 px-3"
+              aria-label="Open navigation menu"
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+          )}
+          <div className="min-w-0">
+            <h1 className="font-title text-lg font-semibold text-slate-800 sm:text-xl">
+              Consumables Management Dashboard
+            </h1>
+          </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 md:gap-3">
-          <label className="flex w-full min-w-0 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-500 shadow-sm sm:w-auto sm:min-w-[12rem]">
+        <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-3">
+          <label className="flex w-full min-w-0 items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-500 shadow-sm sm:min-w-[12rem] md:w-auto">
             <Search className="h-4 w-4" />
             <input
               value={searchQuery}
@@ -36,10 +50,12 @@ const Navbar = () => {
               className="w-full min-w-0 bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400 sm:w-44"
             />
           </label>
-          <NotificationBell />
-          <p className="rounded-xl bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-600 sm:text-xs">
-            {dateText}
-          </p>
+          <div className="flex items-center gap-2 md:gap-3">
+            <NotificationBell />
+            <p className="rounded-xl bg-slate-100 px-3 py-2 text-xs font-semibold text-slate-600 sm:text-xs">
+              {dateText}
+            </p>
+          </div>
         </div>
       </header>
 

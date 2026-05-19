@@ -128,7 +128,7 @@ const ComprehensiveItemModal = ({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center bg-slate-900/50 p-3 sm:items-center sm:p-4">
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-slate-900/50 p-3 sm:items-center sm:p-4">
       <div className="flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-[var(--brand-secondary-soft)] bg-white shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between gap-3 border-b border-[var(--brand-secondary-soft)] px-4 py-4 sm:px-6">
@@ -212,7 +212,7 @@ const ComprehensiveItemModal = ({
                     <button
                       type="button"
                       onClick={() => setActiveAction("add")}
-                      className="group flex items-center justify-center gap-3 rounded-xl border-2 border-emerald-200 bg-emerald-50 px-4 py-4 transition hover:border-emerald-400 hover:bg-emerald-100 sm:px-5"
+                      className="group flex min-h-20 items-center justify-center gap-3 rounded-xl border-2 border-emerald-200 bg-emerald-50 px-4 py-4 transition hover:border-emerald-400 hover:bg-emerald-100 sm:px-5"
                     >
                       <TrendingUp className="h-5 w-5 text-emerald-600 transition group-hover:scale-110" />
                       <div className="text-left">
@@ -224,7 +224,7 @@ const ComprehensiveItemModal = ({
                     <button
                       type="button"
                       onClick={() => setActiveAction("deduct")}
-                      className="group flex items-center justify-center gap-3 rounded-xl border-2 border-red-200 bg-red-50 px-4 py-4 transition hover:border-red-400 hover:bg-red-100 sm:px-5"
+                      className="group flex min-h-20 items-center justify-center gap-3 rounded-xl border-2 border-red-200 bg-red-50 px-4 py-4 transition hover:border-red-400 hover:bg-red-100 sm:px-5"
                     >
                       <TrendingDown className="h-5 w-5 text-red-600 transition group-hover:scale-110" />
                       <div className="text-left">
@@ -244,7 +244,7 @@ const ComprehensiveItemModal = ({
                   ? "border-emerald-200 bg-emerald-50"
                   : "border-red-200 bg-red-50"
               }`}>
-                <div className="mb-4 flex items-center justify-between">
+                <div className="mb-4 flex items-start justify-between gap-3">
                   <h3 className="font-title text-lg font-bold text-slate-800">
                     {activeAction === "add" ? "Add Stock" : "Deduct Stock"}
                   </h3>
