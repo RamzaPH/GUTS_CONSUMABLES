@@ -26,7 +26,7 @@ const adminPanelItems = [
   { label: "Pending Requests", icon: Inbox, onClick: "requests" }
 ]
 
-const Sidebar = ({ isCollapsed = false, onToggleCollapse, isMobile = false, onNavigate }) => {
+const Sidebar = ({ isCollapsed = false, onToggleCollapse, isMobile = false, onNavigate, onClose }) => {
   const { user, logout } = useAuth()
   const { success } = useToast()
   const navigate = useNavigate()
