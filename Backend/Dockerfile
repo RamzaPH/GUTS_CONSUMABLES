@@ -1,15 +1,20 @@
+FROM node:20-alpine AS deps
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci --omit=dev
+
 FROM node:20-alpine
 
 WORKDIR /app
 
-RUN apk add --no-cache netcat-openbsd
+ENV NODE_ENV=production
 
-COPY package*.json ./
-RUN npm install
-
+COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN chmod +x /app/wait-for-it.sh
 
 EXPOSE 5000
 
-CMD ["sh", "-c", "/app/wait-for-it.sh mysql:3306 -- npm start"]
+CMD ["sh", "-c", "./wait-for-it.sh db:3306 -- npm start"]
