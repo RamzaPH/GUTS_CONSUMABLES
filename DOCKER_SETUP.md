@@ -103,3 +103,13 @@ docker compose up --build
 - Set `CORS_ORIGIN` sa actual domain mo kapag maglalagay ka na ng custom domain
 - Use volume mounting para sa data persistence
 - Add logging configuration
+
+## Tailscale Deployment
+1. Install Tailscale on the host machine and authenticate it into your tailnet.
+2. Start the Docker stack with `docker compose up -d --build`.
+3. Verify Tailscale is running with `tailscale status`.
+4. Access the app locally at `http://localhost`.
+5. From another tailnet device, open `http://<host-tailscale-ip>/`.
+6. If desired, expose the service through Tailscale using `tailscale serve http://localhost:80`.
+
+> Note: Docker is already binding the frontend to port 80, so the host Tailscale IP can serve the app directly.

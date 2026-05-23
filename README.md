@@ -44,6 +44,16 @@ docker compose exec backend npm run init-auth
 # Backend API: http://localhost:5000/api
 ```
 
+## Tailscale Deployment
+If you want to access the app from another device on your tailnet, install Tailscale on the host machine and authenticate.
+
+1. Run the Docker stack: `docker compose up -d --build`
+2. Confirm Tailscale is active with `tailscale status`
+3. Open the frontend from another tailnet device using `http://<host-tailscale-ip>/`
+4. Optionally publish the service with `tailscale serve http://localhost:80`.
+
+> The frontend already proxies `/api` and `/socket.io` to the backend, so the app works over Tailscale without extra Docker changes.
+
 ## Default Credentials
 
 - **Admin**: `admin` / `admin123456`
