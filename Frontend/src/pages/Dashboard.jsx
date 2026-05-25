@@ -36,8 +36,9 @@ const Dashboard = () => {
 
   const loadDashboard = async () => {
     setIsLoading(true)
+    const location = selectedInventory || 'main'
     try {
-      const inventoryByTrack = await getDashboardInventory(selectedInventory)
+      const inventoryByTrack = await getDashboardInventory(location)
       const combinedItems = [
         ...(inventoryByTrack.eim || []),
         ...(inventoryByTrack.smaw || []),
@@ -49,7 +50,7 @@ const Dashboard = () => {
       // Load all history
       const logs = await getHistoryLogs()
       const filtered = (logs || [])
-        .filter(h => h.location === selectedInventory)
+        .filter(h => h.location === location)
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
       setAllHistory(filtered)
     } finally {
@@ -77,8 +78,9 @@ const Dashboard = () => {
     // Refresh history logs to show latest activity
     try {
       const logs = await getHistoryLogs()
+      const location = selectedInventory || 'main'
       const filtered = (logs || [])
-        .filter(h => h.location === selectedInventory)
+        .filter(h => h.location === location)
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
       setAllHistory(filtered)
     } catch (error) {
