@@ -35,6 +35,8 @@ const HistoryPage = () => {
   const [selectedEvidenceImage, setSelectedEvidenceImage] = useState(null)
   const printRef = useRef(null)
 
+  const getRecordInventoryDate = (record) => record.startDate || record.createdAt
+
   useEffect(() => {
     const loadData = async () => {
       setIsLoading(true)
@@ -49,7 +51,7 @@ const HistoryPage = () => {
         const logs = await getHistoryLogs({ itemId })
         const filtered = (logs || [])
           .filter(h => h.location === selectedInventory)
-          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+          .sort((a, b) => new Date(b.startDate || b.createdAt) - new Date(a.startDate || a.createdAt))
         setAllHistory(filtered)
         setCurrentPage(1)
       } catch (error) {
@@ -71,7 +73,7 @@ const HistoryPage = () => {
       // Date range filter
       let matchesDateRange = true
       if (startDate || endDate) {
-        const recordDate = new Date(h.createdAt).toLocaleDateString('en-CA')
+        const recordDate = new Date(getRecordInventoryDate(h)).toLocaleDateString('en-CA')
         if (startDate && recordDate < startDate) matchesDateRange = false
         if (endDate && recordDate > endDate) matchesDateRange = false
       }
@@ -79,8 +81,8 @@ const HistoryPage = () => {
       return matchesPurpose && matchesUsername && matchesDateRange
     })
     .sort((a, b) => {
-      const dateA = new Date(a.createdAt)
-      const dateB = new Date(b.createdAt)
+      const dateA = new Date(getRecordInventoryDate(a))
+      const dateB = new Date(getRecordInventoryDate(b))
       return sortDate === 'DESC' ? dateB - dateA : dateA - dateB
     })
   
@@ -162,7 +164,7 @@ const HistoryPage = () => {
           const logs = await getHistoryLogs({ itemId })
           const filtered = (logs || [])
             .filter(h => h.location === selectedInventory)
-            .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+            .sort((a, b) => new Date(b.startDate || b.createdAt) - new Date(a.startDate || a.createdAt))
           setAllHistory(filtered)
           setCurrentPage(1)
         } catch (reloadErr) {
@@ -521,7 +523,7 @@ const HistoryPage = () => {
                 {currentRecords.map((record) => (
                   <tr key={record.id} className="hover:bg-slate-50">
                     <td className="px-4 py-3 whitespace-nowrap text-slate-600">
-                      {new Date(record.createdAt).toLocaleDateString("en-PH")}
+                      {new Date(getRecordInventoryDate(record)).toLocaleDateString("en-PH")}
                     </td>
                     <td className="px-4 py-3 text-center font-semibold text-slate-600">
                       {record.beginningInventory || "—"}
@@ -646,7 +648,7 @@ const HistoryPage = () => {
             {filteredHistory.map((record) => (
               <tr key={record.id} className="hover:bg-slate-50">
                 <td className="px-4 py-3 text-slate-600 whitespace-nowrap">
-                  {new Date(record.createdAt).toLocaleDateString("en-PH")}
+                  {new Date(getRecordInventoryDate(record)).toLocaleDateString("en-PH")}
                 </td>
                 <td className="px-4 py-3 text-center font-semibold text-slate-600">
                   {record.beginningInventory || "—"}
@@ -688,7 +690,7 @@ const HistoryPage = () => {
               <div>
                 <h3 className="font-semibold text-slate-900">Verification Images</h3>
                 <p className="text-xs text-slate-500">
-                  {new Date(selectedEvidenceRecord.createdAt).toLocaleDateString("en-PH")}
+                  {new Date(getRecordInventoryDate(selectedEvidenceRecord)).toLocaleDateString("en-PH")}
                 </p>
               </div>
               <button
@@ -774,7 +776,7 @@ const HistoryPage = () => {
             <div className="space-y-4 px-6 py-4">
               <div>
                 <label className="block text-sm font-semibold text-slate-700 mb-2">Date</label>
-                <p className="text-sm text-slate-600 bg-slate-50 px-3 py-2 rounded-lg">{new Date(editingRecord.createdAt).toLocaleDateString("en-PH")}</p>
+                <p className="text-sm text-slate-600 bg-slate-50 px-3 py-2 rounded-lg">{new Date(getRecordInventoryDate(editingRecord)).toLocaleDateString("en-PH")}</p>
               </div>
               
               <div>

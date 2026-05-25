@@ -304,6 +304,9 @@ const addConsumable = async (req, res) => {
 
     console.log(`[addConsumable] Item created successfully:`, { id: item.id, itemName: item.itemName, category: item.category });
 
+    const providedStart = req.body.startDate ? new Date(req.body.startDate) : null;
+    const providedEnd = req.body.endDate ? new Date(req.body.endDate) : null;
+
     await logHistory({
       consumableId: item.id,
       actionType: 'Stock In',
@@ -312,8 +315,8 @@ const addConsumable = async (req, res) => {
       performedBy: req.body.performedBy || requesterName,
       performedById: req.user?.id || null,
       location: requestedLocation,
-      startDate: null,
-      endDate: null,
+      startDate: providedStart,
+      endDate: providedEnd,
     });
 
     // Send notification to admins

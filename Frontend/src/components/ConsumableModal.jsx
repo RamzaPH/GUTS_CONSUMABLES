@@ -8,7 +8,8 @@ const emptyForm = {
   category: "",
   quantity: 0,
   unit: "pcs",
-  reorderLevel: 10
+  reorderLevel: 10,
+  date: ''
 }
 
 const ConsumableModal = ({
@@ -65,7 +66,8 @@ const ConsumableModal = ({
         category: formData.category,
         quantity: Number(formData.quantity),
         unit: formData.unit.trim(),
-        reorderLevel: Number(formData.reorderLevel)
+        reorderLevel: Number(formData.reorderLevel),
+        startDate: formData.date || null,
       })
     } finally {
       setIsSubmitting(false)
@@ -141,6 +143,17 @@ const ConsumableModal = ({
                 type="number"
                 value={formData.quantity}
                 onChange={(event) => handleChange("quantity", event.target.value)}
+                disabled={isSubmitting}
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-[var(--brand-primary)]"
+              />
+            </label>
+
+            <label className="space-y-1">
+              <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">Date</span>
+              <input
+                type="date"
+                value={formData.date || ''}
+                onChange={(event) => handleChange('date', event.target.value)}
                 disabled={isSubmitting}
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-[var(--brand-primary)]"
               />

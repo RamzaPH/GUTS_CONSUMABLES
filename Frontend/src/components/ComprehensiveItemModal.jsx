@@ -29,8 +29,7 @@ const ComprehensiveItemModal = ({
     batch: "",
     notes: "",
     purpose: "Training",
-    startDate: "",
-    endDate: "",
+    date: "",
   })
   const [trainers, setTrainers] = useState([])
   const [loadingTrainers, setLoadingTrainers] = useState(false)
@@ -74,8 +73,7 @@ const ComprehensiveItemModal = ({
         batch: "",
         notes: "",
         purpose: "Training",
-        startDate: today,
-        endDate: today,
+        date: today,
       })
     }
   }, [isOpen, action])
@@ -96,8 +94,7 @@ const ComprehensiveItemModal = ({
       batch: "",
       notes: "",
       purpose: "Training",
-      startDate: today,
-      endDate: today,
+      date: today,
     })
   }
 
@@ -356,6 +353,21 @@ const ComprehensiveItemModal = ({
                         </option>
                       ))}
                     </select>
+                  </div>
+
+                  {/* Date */}
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700">
+                      Date
+                    </label>
+                    <input
+                      type="date"
+                      value={formData.date}
+                      onChange={(e) => handleChange("date", e.target.value)}
+                      disabled={isSubmitting}
+                      className="mt-1 w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-[var(--brand-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]/20"
+                    />
+                    <p className="mt-2 text-xs text-slate-500">You may select a past date for this stock transaction.</p>
                   </div>
 
                   {/* Batch */}

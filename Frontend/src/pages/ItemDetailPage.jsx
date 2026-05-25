@@ -71,8 +71,8 @@ const ItemDetailPage = () => {
         batch: formData.batch,
         purpose: formData.purpose,
         location: selectedInventory,
-        startDate: formData.startDate || null,
-        endDate: formData.endDate || null,
+        startDate: formData.date || null,
+        endDate: formData.date || null,
       })
       
       // Reload item details
@@ -105,8 +105,8 @@ const ItemDetailPage = () => {
         batch: formData.batch,
         purpose: formData.purpose,
         location: selectedInventory,
-        startDate: formData.startDate || null,
-        endDate: formData.endDate || null,
+        startDate: formData.date || null,
+        endDate: formData.date || null,
       })
       
       // Reload item details
@@ -204,7 +204,10 @@ const ItemDetailPage = () => {
   const consumptionHistory = itemHistory?.filter(h => 
     h.actionType === "Stock Out" && h.location === selectedInventory
   ) || []
-  const allHistory = [...itemHistory].filter(h => h.location === selectedInventory).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+  const allHistory = [...itemHistory]
+    .filter(h => h.location === selectedInventory)
+    .sort((a, b) => new Date(b.startDate || b.createdAt) - new Date(a.startDate || a.createdAt))
+
   const filteredByAction = allHistory
   const filteredByPurpose = purposeFilter === 'All'
     ? filteredByAction
@@ -407,7 +410,7 @@ const ItemDetailPage = () => {
                 {recentHistory.map((record) => (
                   <tr key={record.id} className="bg-slate-50">
                     <td className="px-4 py-3 text-slate-600 whitespace-nowrap">
-                      {new Date(record.createdAt).toLocaleDateString("en-PH")}
+                      {new Date(record.startDate || record.createdAt).toLocaleDateString("en-PH")}
                     </td>
                     <td className="px-4 py-3 text-center font-semibold text-slate-600">
                       {record.beginningInventory || "—"}
