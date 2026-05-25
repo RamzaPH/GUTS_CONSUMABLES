@@ -124,15 +124,18 @@ const formatItem = (instance, location = 'main') => {
   };
 };
 
-const parsePayload = ({ itemName, category, quantity, unit, reorderLevel }) => ({
-  itemName: String(itemName).trim(),
-  category: String(category).toUpperCase(),
-  quantity: quantity !== undefined ? parseInt(quantity, 10) : 0,
-  quantityMain: quantity !== undefined ? parseInt(quantity, 10) : 0,
-  quantityAnnex: 0,
-  unit: String(unit).trim(),
-  reorderLevel: reorderLevel !== undefined ? parseInt(reorderLevel, 10) : 10,
-});
+const parsePayload = ({ itemName, category, quantity, unit, reorderLevel, location = 'main' }) => {
+  const parsedQty = quantity !== undefined ? parseInt(quantity, 10) : 0;
+  return {
+    itemName: String(itemName).trim(),
+    category: String(category).toUpperCase(),
+    quantity: parsedQty,
+    quantityMain: location === 'annex' ? 0 : parsedQty,
+    quantityAnnex: location === 'annex' ? parsedQty : 0,
+    unit: String(unit).trim(),
+    reorderLevel: reorderLevel !== undefined ? parseInt(reorderLevel, 10) : 10,
+  };
+};
 
 const logHistory = async ({ consumableId, actionType, quantityChanged, description, performedBy, performedById, beginningInventory, endingInventory, course, trainer, batch, purpose, location, startDate, endDate }) => {
   await InventoryHistory.create({
@@ -300,6 +303,7 @@ const addConsumable = async (req, res) => {
       quantity,
       unit,
       reorderLevel,
+      location: requestedLocation,
     }));
 
     console.log(`[addConsumable] Item created successfully:`, { id: item.id, itemName: item.itemName, category: item.category });
