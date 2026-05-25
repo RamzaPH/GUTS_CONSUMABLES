@@ -3,7 +3,7 @@ import { createContext, useContext, useState } from 'react'
 const InventoryLocationContext = createContext()
 
 export const InventoryLocationProvider = ({ children }) => {
-  const [selectedInventory, setSelectedInventory] = useState(null)
+  const [selectedInventory, setSelectedInventory] = useState('main')
 
   const handleInventoryChange = (inventory) => {
     setSelectedInventory(inventory)
