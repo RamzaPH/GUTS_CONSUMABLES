@@ -57,8 +57,17 @@ const Sidebar = ({ isCollapsed = false, onToggleCollapse, isMobile = false, onNa
   const fetchCourses = async () => {
     try {
       const data = await getActiveCourses()
+      const determineTrackPath = (course) => {
+        const code = String(course.code || '').toLowerCase()
+        const name = String(course.name || '').toLowerCase()
+        if (code.includes('eim') || name.includes('eim')) return '/eim'
+        if (code.includes('smaw') || name.includes('smaw')) return '/smaw'
+        if (code.includes('css') || name.includes('css')) return '/css'
+        return `/${String(course.code || '').split(/\s+/)[0].toLowerCase()}`
+      }
+
       const courses = (data.courses || []).map(course => ({
-        to: `/${course.code.split(/\s+/)[0].toLowerCase()}`,
+        to: determineTrackPath(course),
         label: course.name,
         icon: PackageOpen,
       }))
