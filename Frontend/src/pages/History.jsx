@@ -5,6 +5,7 @@ import { useSearch } from "../context/SearchContext"
 import { getConsumptionReport, getHistoryLogs } from "../api/historyApi"
 
 const ITEMS_PER_PAGE = 10
+const CONSUMPTION_ITEMS_PER_PAGE = 10
 
 const ACTION_TYPES = {
   'Check In': { color: 'bg-green-100', textColor: 'text-green-700', badge: 'bg-green-500' },
@@ -222,6 +223,7 @@ const History = () => {
   const [searchUsername, setSearchUsername] = useState('')
   const [sortDate, setSortDate] = useState('DESC') // DESC or ASC
   const [currentPage, setCurrentPage] = useState(1)
+  const [consumptionPage, setConsumptionPage] = useState(1)
   const [editingLog, setEditingLog] = useState(null)
   const [editDescription, setEditDescription] = useState('')
   const { searchQuery } = useSearch()
@@ -274,6 +276,10 @@ const History = () => {
     loadConsumptionReport()
   }, [selectedCourse, selectedBatchKey])
 
+  useEffect(() => {
+    setConsumptionPage(1)
+  }, [selectedCourse, selectedBatchKey])
+
   const uniqueActions = useMemo(
     () => [...new Set(logs.map((log) => log.actionType))],
     [logs]
@@ -317,6 +323,11 @@ const History = () => {
   const endIndex = startIndex + ITEMS_PER_PAGE
   const paginatedLogs = filteredLogs.slice(startIndex, endIndex)
   const recordsToDisplay = paginatedLogs
+
+  const totalConsumptionPages = Math.ceil(consumptionReport.records.length / CONSUMPTION_ITEMS_PER_PAGE)
+  const consumptionStartIndex = (consumptionPage - 1) * CONSUMPTION_ITEMS_PER_PAGE
+  const consumptionEndIndex = consumptionStartIndex + CONSUMPTION_ITEMS_PER_PAGE
+  const paginatedConsumptionRecords = consumptionReport.records.slice(consumptionStartIndex, consumptionEndIndex)
 
   const handleEditClick = (log) => {
     setEditingLog(log)
@@ -522,7 +533,7 @@ const History = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 bg-white dark:divide-slate-800 dark:bg-slate-800">
-                  {consumptionReport.records.map((record) => (
+                  {paginatedConsumptionRecords.map((record) => (
                     <tr key={record.id} className="hover:bg-slate-50/70 dark:hover:bg-slate-700/60 transition">
                       <td className="px-4 py-3 font-medium text-slate-800 dark:text-slate-100 whitespace-normal break-words">{record.itemName}</td>
                       <td className="px-4 py-3 text-slate-600 dark:text-slate-300 whitespace-normal break-words">{record.course || '-'}</td>
@@ -543,6 +554,34 @@ const History = () => {
                 </tbody>
               </table>
             </div>
+
+            {totalConsumptionPages > 1 && (
+              <div className="flex flex-col gap-3 border-t border-slate-200 bg-slate-50 px-4 py-4 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-700/50 print:hidden">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <span>
+                    Page <span className="font-semibold text-slate-900 dark:text-white">{consumptionPage}</span> of <span className="font-semibold text-slate-900 dark:text-white">{totalConsumptionPages}</span>
+                  </span>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setConsumptionPage((prev) => Math.max(1, prev - 1))}
+                      disabled={consumptionPage === 1}
+                      className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 transition dark:border-slate-600 dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-slate-200"
+                    >
+                      Previous
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setConsumptionPage((prev) => Math.min(totalConsumptionPages, prev + 1))}
+                      disabled={consumptionPage === totalConsumptionPages}
+                      className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 transition dark:border-slate-600 dark:bg-slate-700 dark:hover:bg-slate-600 dark:text-slate-200"
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
