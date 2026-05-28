@@ -324,10 +324,11 @@ const History = () => {
   const paginatedLogs = filteredLogs.slice(startIndex, endIndex)
   const recordsToDisplay = paginatedLogs
 
-  const totalConsumptionPages = Math.ceil(consumptionReport.records.length / CONSUMPTION_ITEMS_PER_PAGE)
+  const consumptionRecords = consumptionReport.records || []
+  const totalConsumptionPages = Math.ceil(consumptionRecords.length / CONSUMPTION_ITEMS_PER_PAGE)
   const consumptionStartIndex = (consumptionPage - 1) * CONSUMPTION_ITEMS_PER_PAGE
   const consumptionEndIndex = consumptionStartIndex + CONSUMPTION_ITEMS_PER_PAGE
-  const paginatedConsumptionRecords = consumptionReport.records.slice(consumptionStartIndex, consumptionEndIndex)
+  const paginatedConsumptionRecords = consumptionRecords.slice(consumptionStartIndex, consumptionEndIndex)
 
   const handleEditClick = (log) => {
     setEditingLog(log)
