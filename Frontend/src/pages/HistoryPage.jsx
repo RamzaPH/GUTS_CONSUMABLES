@@ -220,14 +220,14 @@ const HistoryPage = () => {
               print-color-adjust: exact;
             }
             .print-header {
-              margin-bottom: 20px;
+              margin-bottom: 12px;
               text-align: center;
               border-bottom: 3px solid #800000;
-              padding-bottom: 18px;
+              padding-bottom: 10px;
             }
             .print-header h1 {
               color: #800000;
-              margin-bottom: 6px;
+              margin-bottom: 4px;
               font-size: 28px;
               line-height: 1.1;
             }
@@ -235,18 +235,18 @@ const HistoryPage = () => {
               color: #666;
               font-size: 18px;
               font-weight: 600;
-              margin-bottom: 12px;
+              margin-bottom: 8px;
             }
             .print-header p {
               color: #666;
-              margin: 4px 0;
-              font-size: 15px;
-              line-height: 1.4;
+              margin: 2px 0;
+              font-size: 14px;
+              line-height: 1.3;
             }
             table {
               width: 100%;
               border-collapse: collapse;
-              margin-top: 18px;
+              margin-top: 14px;
               background-color: white;
               font-size: 14px;
               table-layout: auto;
@@ -297,14 +297,8 @@ const HistoryPage = () => {
               body {
                 padding: 0;
               }
-              table {
-                page-break-inside: avoid;
-              }
               thead {
                 display: table-header-group;
-              }
-              tr {
-                page-break-inside: avoid;
               }
             }
           </style>
