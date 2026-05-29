@@ -22,6 +22,11 @@ const getActionColor = (actionType) => {
   return ACTION_TYPES[actionType] || { color: 'bg-slate-100', textColor: 'text-slate-700', badge: 'bg-slate-500' }
 }
 
+const getLocationLabel = (location) => {
+  if (!location) return 'Unknown Location'
+  return location === 'annex' ? 'Training Inventory' : 'Main Inventory'
+}
+
 const escapeHtml = (value) => String(value ?? '').replace(/[&<>'"]/g, (char) => ({
   '&': '&amp;',
   '<': '&lt;',
@@ -226,6 +231,7 @@ const History = () => {
   const [consumptionPage, setConsumptionPage] = useState(1)
   const [editingLog, setEditingLog] = useState(null)
   const [editDescription, setEditDescription] = useState('')
+  const [selectedLogDetail, setSelectedLogDetail] = useState(null)
   const { searchQuery } = useSearch()
 
   useEffect(() => {
@@ -333,6 +339,10 @@ const History = () => {
   const handleEditClick = (log) => {
     setEditingLog(log)
     setEditDescription(log.description || '')
+  }
+
+  const handleDetailClick = (log) => {
+    setSelectedLogDetail(log)
   }
 
   const handleSaveEdit = () => {
@@ -743,7 +753,14 @@ const History = () => {
                           second: '2-digit'
                         })}
                       </td>
-                      <td className="px-5 py-4 text-center">
+                      <td className="px-5 py-4 text-center space-y-2">
+                        <button
+                          onClick={() => handleDetailClick(log)}
+                          className="inline-flex items-center gap-1 rounded-lg bg-slate-100 px-3 py-2 text-xs font-medium text-slate-800 hover:bg-slate-200 transition"
+                          title="View action details"
+                        >
+                          <span className="text-[10px] font-semibold uppercase">Details</span>
+                        </button>
                         <button
                           onClick={() => handleEditClick(log)}
                           className="inline-flex items-center gap-1 rounded-lg bg-blue-100 px-3 py-2 text-xs font-medium text-blue-700 hover:bg-blue-200 transition"
@@ -851,6 +868,95 @@ const History = () => {
                   Save Changes
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {selectedLogDetail && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-lg rounded-2xl bg-white shadow-xl">
+            <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+              <div>
+                <h3 className="font-semibold text-slate-900">Action Details</h3>
+                <p className="text-sm text-slate-500">Details for the selected history entry.</p>
+              </div>
+              <button
+                onClick={() => setSelectedLogDetail(null)}
+                className="text-slate-400 hover:text-slate-600"
+                type="button"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4 px-6 py-4">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Item</p>
+                  <p className="mt-1 text-sm font-medium text-slate-900">{selectedLogDetail.itemName}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Action</p>
+                  <p className="mt-1 text-sm font-medium text-slate-900">{selectedLogDetail.actionType}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Location</p>
+                  <p className="mt-1 text-sm font-medium text-slate-900">{getLocationLabel(selectedLogDetail.location)}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Performed By</p>
+                  <p className="mt-1 text-sm font-medium text-slate-900">{selectedLogDetail.performedBy || 'System'}</p>
+                </div>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Quantity Changed</p>
+                  <p className={`mt-1 text-sm font-medium ${selectedLogDetail.quantityChanged > 0 ? 'text-green-600' : selectedLogDetail.quantityChanged < 0 ? 'text-red-600' : 'text-slate-900'}`}>
+                    {selectedLogDetail.quantityChanged > 0 ? '+' : ''}{selectedLogDetail.quantityChanged}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Date & Time</p>
+                  <p className="mt-1 text-sm font-medium text-slate-900">
+                    {new Date(selectedLogDetail.createdAt).toLocaleString('en-PH', {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      second: '2-digit'
+                    })}
+                  </p>
+                </div>
+              </div>
+
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Details / Notes</p>
+                <p className="mt-1 whitespace-pre-line rounded-2xl bg-slate-50 p-4 text-sm text-slate-700">{selectedLogDetail.description || 'No additional details provided.'}</p>
+              </div>
+
+              {(selectedLogDetail.startDate || selectedLogDetail.endDate) && (
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Duration</p>
+                  <p className="mt-1 text-sm font-medium text-slate-900">
+                    {selectedLogDetail.startDate && selectedLogDetail.endDate
+                      ? `${new Date(selectedLogDetail.startDate).toLocaleDateString('en-PH')} - ${new Date(selectedLogDetail.endDate).toLocaleDateString('en-PH')}`
+                      : 'No range available.'}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end border-t border-slate-200 px-6 py-4">
+              <button
+                onClick={() => setSelectedLogDetail(null)}
+                className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 transition"
+                type="button"
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>
