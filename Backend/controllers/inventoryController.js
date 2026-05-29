@@ -430,11 +430,18 @@ const updateStock = async (req, res) => {
     }
 
     const currentLocation = req.body.location || 'main';
+    const deductMode = req.body.deductMode || 'training';
     
     // Role-based access control: Staff can only modify training inventory
     if (req.user?.role === 'staff' && currentLocation === 'main') {
       return res.status(403).json({ 
         error: 'Staff members can only modify training inventory. Contact an administrator to modify main inventory.' 
+      });
+    }
+
+    if (type === 'out' && currentLocation === 'main' && deductMode === 'stock_out' && !req.body.description?.trim()) {
+      return res.status(400).json({
+        error: 'Remarks are required for Stock Out.',
       });
     }
     
@@ -478,7 +485,7 @@ const updateStock = async (req, res) => {
     });
 
     // TRANSFER LOGIC: If deducting from MAIN, transfer to TRAINING
-    if (type === 'out' && currentLocation === 'main') {
+    if (type === 'out' && currentLocation === 'main' && deductMode !== 'stock_out') {
       const oppositeBeginningQty = item[oppositeQuantityField];
       item[oppositeQuantityField] = oppositeBeginningQty + parsedAmount;
       

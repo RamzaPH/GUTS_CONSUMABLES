@@ -99,11 +99,12 @@ const ItemDetailPage = () => {
       await updateStock(item.id, {
         type: "out",
         amount: parseInt(formData.quantity, 10),
-        description: formData.notes,
+        description: formData.remarks?.trim() || formData.notes,
         course: formData.course,
         trainer: formData.trainer,
         batch: formData.batch,
         purpose: formData.purpose,
+        deductMode: formData.deductMode || "training",
         location: selectedInventory,
         startDate: formData.date || null,
         endDate: formData.date || null,

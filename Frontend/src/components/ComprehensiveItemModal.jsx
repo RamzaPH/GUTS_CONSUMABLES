@@ -28,9 +28,11 @@ const ComprehensiveItemModal = ({
     course: "",
     batch: "",
     notes: "",
+    remarks: "",
     purpose: "Training",
     date: "",
   })
+  const [deductMode, setDeductMode] = useState("training")
   const [trainers, setTrainers] = useState([])
   const [loadingTrainers, setLoadingTrainers] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -72,9 +74,11 @@ const ComprehensiveItemModal = ({
         course: "",
         batch: "",
         notes: "",
+        remarks: "",
         purpose: "Training",
         date: today,
       })
+      setDeductMode("training")
     }
   }, [isOpen, action])
 
@@ -93,9 +97,11 @@ const ComprehensiveItemModal = ({
       course: "",
       batch: "",
       notes: "",
+      remarks: "",
       purpose: "Training",
       date: today,
     })
+    setDeductMode("training")
   }
 
   const handleSubmit = (type) => {
@@ -103,6 +109,16 @@ const ComprehensiveItemModal = ({
 
     if (!formData.quantity) {
       warning('Please fill in Quantity field')
+      return
+    }
+
+    if (
+      type === "deduct" &&
+      selectedInventory === 'main' &&
+      deductMode === 'stock_out' &&
+      !formData.remarks.trim()
+    ) {
+      warning('Please add remarks before deducting stock out.')
       return
     }
 
@@ -117,6 +133,7 @@ const ComprehensiveItemModal = ({
         : onDeductStock({
             ...formData,
             quantity: parseInt(formData.quantity, 10),
+            deductMode,
           })
     )).finally(() => {
       handleReset()
@@ -313,6 +330,41 @@ const ComprehensiveItemModal = ({
                     </div>
                   )}
 
+                  {activeAction === "deduct" && selectedInventory === 'main' && (
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700">
+                        Deduction Type
+                      </label>
+                      <select
+                        value={deductMode}
+                        onChange={(e) => setDeductMode(e.target.value)}
+                        className="mt-1 w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-[var(--brand-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]/20"
+                      >
+                        <option value="training">Training Inventory</option>
+                        <option value="stock_out">Stock Out</option>
+                      </select>
+                      <p className="mt-2 text-xs text-slate-500">
+                        Training Inventory moves stock from main to annex. Stock Out deducts from main only and requires remarks.
+                      </p>
+                    </div>
+                  )}
+
+                  {activeAction === "deduct" && selectedInventory === 'main' && deductMode === 'stock_out' && (
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700">
+                        Remarks *
+                      </label>
+                      <textarea
+                        value={formData.remarks}
+                        onChange={(e) => handleChange("remarks", e.target.value)}
+                        disabled={isSubmitting}
+                        placeholder="Enter remarks for stock out"
+                        rows="3"
+                        className="mt-1 w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-[var(--brand-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]/20"
+                      />
+                    </div>
+                  )}
+
                   {/* Trainer */}
                   <div>
                     <label className="block text-sm font-semibold text-slate-700">
@@ -406,7 +458,7 @@ const ComprehensiveItemModal = ({
                   <div className="flex flex-col-reverse gap-2 pt-2 sm:flex-row sm:gap-3">
                     <Button
                       type="submit"
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || (activeAction === "deduct" && selectedInventory === 'main' && deductMode === 'stock_out' && !formData.remarks.trim())}
                       className={`w-full sm:flex-1 ${
                         activeAction === "add"
                           ? "bg-emerald-600 hover:bg-emerald-700"
