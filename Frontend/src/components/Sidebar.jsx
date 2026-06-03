@@ -60,10 +60,20 @@ const Sidebar = ({ isCollapsed = false, onToggleCollapse, isMobile = false, onNa
       const determineTrackPath = (course) => {
         const code = String(course.code || '').toLowerCase()
         const name = String(course.name || '').toLowerCase()
+
+        const slugify = (value) =>
+          String(value)
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/(^-|-$)/g, '')
+
         if (code.includes('eim') || name.includes('eim')) return '/eim'
         if (code.includes('smaw') || name.includes('smaw')) return '/smaw'
         if (code.includes('css') || name.includes('css')) return '/css'
-        return `/${String(course.code || '').split(/\s+/)[0].toLowerCase()}`
+        if (code.includes('driving') || name.includes('driving')) return '/driving'
+
+        return `/${slugify(name || code)}`
       }
 
       const courses = (data.courses || []).map(course => ({

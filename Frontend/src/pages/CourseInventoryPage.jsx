@@ -11,6 +11,7 @@ const CourseInventoryPage = () => {
   if (lower.includes('eim')) track = 'eim'
   else if (lower.includes('smaw')) track = 'smaw'
   else if (lower.includes('css')) track = 'css'
+  else if (lower.includes('driving')) track = 'driving'
 
   // Create title/description from the raw course code (uppercased)
   const title = `${raw?.toUpperCase()} Inventory`
