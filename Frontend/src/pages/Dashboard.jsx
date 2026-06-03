@@ -34,7 +34,7 @@ const Dashboard = () => {
   const { searchQuery } = useSearch()
   const { setOnStockUpdate } = useNotifications()
 
-  const loadDashboard = async () => {
+  const loadDashboard = useCallback(async () => {
     setIsLoading(true)
     const location = selectedInventory || 'main'
     try {
@@ -56,37 +56,21 @@ const Dashboard = () => {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [selectedInventory])
 
   useEffect(() => {
     loadDashboard()
-  }, [selectedInventory])
+  }, [loadDashboard])
 
   // Create stable callback for stock updates
   const handleStockUpdate = useCallback(async (data) => {
-    setAllItems(prevItems =>
-      prevItems.map(item =>
-        item.id === data.id ? { ...item, quantity: data.quantity } : item
-      )
-    )
-    // Update summary totals
-    setSummary(prevSummary => ({
-      ...prevSummary,
-      grandTotal: prevSummary.grandTotal
-    }))
-    
-    // Refresh history logs to show latest activity
+    // Reload dashboard data whenever stock changes so item statuses and totals stay accurate.
     try {
-      const logs = await getHistoryLogs()
-      const location = selectedInventory || 'main'
-      const filtered = (logs || [])
-        .filter(h => h.location === location)
-        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-      setAllHistory(filtered)
+      await loadDashboard()
     } catch (error) {
-      console.error('Error refreshing history logs:', error)
+      console.error('Error reloading dashboard on stock update:', error)
     }
-  }, [selectedInventory])
+  }, [loadDashboard])
 
   // Register stock update listener
   useEffect(() => {
