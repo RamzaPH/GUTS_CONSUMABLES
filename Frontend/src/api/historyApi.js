@@ -1,12 +1,18 @@
 import api from "./axios"
 
-export const getHistoryLogs = async ({ category, itemId, all } = {}) => {
+export const getHistoryLogs = async ({ category, itemId, all, archived } = {}) => {
   const params = {}
   if (category) params.category = category
   if (itemId) params.itemId = itemId
   if (all) params.all = true
+  if (archived) params.archived = true
   const response = await api.get("/history", { params })
   return response.data?.logs || []
+}
+
+export const archiveHistoryRecord = async (id) => {
+  const response = await api.patch(`/history/${id}/archive`)
+  return response.data
 }
 
 export const getConsumptionReport = async ({ course, batchKey } = {}) => {

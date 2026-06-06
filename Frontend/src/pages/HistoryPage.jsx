@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { ChevronLeft, Printer, ArrowUpDown, Edit2, X, Image as ImageIcon, Trash2 } from "lucide-react"
 import { getInventoryByTrack } from "../api/inventoryApi"
-import { getHistoryLogs, updateHistoryRecord, deleteHistoryRecord } from "../api/historyApi"
+import { getHistoryLogs, updateHistoryRecord, deleteHistoryRecord, archiveHistoryRecord } from "../api/historyApi"
 import { useInventoryLocation } from "../context/InventoryLocationContext"
 import { useAuth } from "../context/AuthContext"
 import { useToast } from "../context/ToastContext"
@@ -33,7 +33,12 @@ const HistoryPage = () => {
   const [editError, setEditError] = useState(null)
   const [selectedEvidenceRecord, setSelectedEvidenceRecord] = useState(null)
   const [selectedEvidenceImage, setSelectedEvidenceImage] = useState(null)
-  const [recordToDelete, setRecordToDelete] = useState(null)
+  const [recordToArchive, setRecordToArchive] = useState(null)
+  const [isArchiving, setIsArchiving] = useState(false)
+  const [showArchivedModal, setShowArchivedModal] = useState(false)
+  const [archivedLogs, setArchivedLogs] = useState([])
+  const [isLoadingArchived, setIsLoadingArchived] = useState(false)
+  const [selectedPermanentDelete, setSelectedPermanentDelete] = useState(null)
   const [isDeleting, setIsDeleting] = useState(false)
   const printRef = useRef(null)
 
@@ -186,33 +191,68 @@ const HistoryPage = () => {
     }
   }
 
-  const handleDeleteRecord = async () => {
-    if (recordToDelete) {
-      setIsDeleting(true)
+  const handleArchiveRecord = async () => {
+    if (!recordToArchive) {
+      return
+    }
+
+    setIsArchiving(true)
+    try {
+      await archiveHistoryRecord(recordToArchive.id)
+
+      // Reload current history list after archiving
       try {
-        await deleteHistoryRecord(recordToDelete.id)
-
-        // Reload all history data to remove deleted record
-        try {
-          const logs = await getHistoryLogs({ itemId })
-          const filtered = (logs || [])
-            .filter(h => h.location === selectedInventory)
-            .sort((a, b) => new Date(b.startDate || b.createdAt) - new Date(a.startDate || a.createdAt))
-          setAllHistory(filtered)
-          setCurrentPage(1)
-        } catch (reloadErr) {
-          console.warn('Failed to reload history after deletion:', reloadErr)
-        }
-
-        setRecordToDelete(null)
-        success('✓ History record permanently deleted and inventory recalculated!')
-      } catch (error) {
-        console.error('Failed to delete record:', error)
-        const errorMsg = error.response?.data?.error || 'Failed to delete record. Please try again.'
-        alert(errorMsg)
-      } finally {
-        setIsDeleting(false)
+        const logs = await getHistoryLogs({ itemId })
+        const filtered = (logs || [])
+          .filter(h => h.location === selectedInventory)
+          .sort((a, b) => new Date(b.startDate || b.createdAt) - new Date(a.startDate || a.createdAt))
+        setAllHistory(filtered)
+        setCurrentPage(1)
+      } catch (reloadErr) {
+        console.warn('Failed to reload history after archiving:', reloadErr)
       }
+
+      setRecordToArchive(null)
+      success('✓ History record archived successfully')
+    } catch (error) {
+      console.error('Failed to archive record:', error)
+      const errorMsg = error.response?.data?.error || 'Failed to archive record. Please try again.'
+      alert(errorMsg)
+    } finally {
+      setIsArchiving(false)
+    }
+  }
+
+  const loadArchivedLogs = async () => {
+    setIsLoadingArchived(true)
+    try {
+      const logs = await getHistoryLogs({ archived: true, all: true })
+      setArchivedLogs(logs || [])
+    } catch (error) {
+      console.error('Failed to load archived logs:', error)
+      setArchivedLogs([])
+    } finally {
+      setIsLoadingArchived(false)
+    }
+  }
+
+  const handlePermanentDelete = async () => {
+    if (!selectedPermanentDelete) {
+      return
+    }
+
+    setIsDeleting(true)
+    try {
+      await deleteHistoryRecord(selectedPermanentDelete.id)
+      await loadArchivedLogs()
+      setSelectedPermanentDelete(null)
+      success('✓ Archived log permanently deleted')
+    } catch (error) {
+      console.error('Failed to permanently delete archived record:', error)
+      const errorMsg = error.response?.data?.error || 'Failed to permanently delete record. Please try again.'
+      alert(errorMsg)
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -385,13 +425,24 @@ const HistoryPage = () => {
           Back
         </button>
         <h1 className="text-2xl font-bold text-[#800000] sm:text-3xl">Full History Report</h1>
-        <button
-          onClick={handlePrint}
-          className="inline-flex items-center gap-2 rounded-lg bg-[#800000] px-4 py-2 font-semibold text-white transition hover:bg-[#660000] sm:px-6"
-        >
-          <Printer size={20} />
-          Print Report
-        </button>
+        <div className="flex flex-wrap items-center gap-3 justify-end">
+          <button
+            onClick={() => {
+              setShowArchivedModal(true)
+              loadArchivedLogs()
+            }}
+            className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-slate-700 transition hover:bg-slate-50 sm:px-6"
+          >
+            View Archived Logs
+          </button>
+          <button
+            onClick={handlePrint}
+            className="inline-flex items-center gap-2 rounded-lg bg-[#800000] px-4 py-2 font-semibold text-white transition hover:bg-[#660000] sm:px-6"
+          >
+            <Printer size={20} />
+            Print Report
+          </button>
+        </div>
       </div>
 
       {/* Item Info Card */}
@@ -603,7 +654,7 @@ const HistoryPage = () => {
                             Edit
                           </button>
                           <button
-                            onClick={() => setRecordToDelete(record)}
+                            onClick={() => setRecordToArchive(record)}
                             className="inline-flex items-center gap-1 rounded-lg bg-red-100 px-3 py-2 text-xs font-medium text-red-700 hover:bg-red-200 transition"
                             title="Archive this record"
                           >
@@ -894,14 +945,14 @@ const HistoryPage = () => {
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
-      {recordToDelete && (
+      {/* Archive Confirmation Modal */}
+      {recordToArchive && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-md rounded-2xl bg-white shadow-xl">
             <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
               <h3 className="font-semibold text-slate-900">Archive History Record</h3>
               <button
-                onClick={() => setRecordToDelete(null)}
+                onClick={() => setRecordToArchive(null)}
                 className="text-slate-400 hover:text-slate-600"
                 type="button"
               >
@@ -915,15 +966,131 @@ const HistoryPage = () => {
               </p>
               
               <div className="bg-slate-50 rounded-lg p-3 text-xs space-y-2">
-                <div><span className="font-semibold text-slate-700">Date:</span> {new Date(getRecordInventoryDate(recordToDelete)).toLocaleDateString("en-PH")}</div>
-                <div><span className="font-semibold text-slate-700">Item:</span> {recordToDelete.itemName}</div>
-                <div><span className="font-semibold text-slate-700">Quantity Changed:</span> {recordToDelete.quantityChanged > 0 ? '+' : ''}{recordToDelete.quantityChanged}</div>
-                <div><span className="font-semibold text-slate-700">Performed By:</span> {recordToDelete.performedBy || 'System'}</div>
+                <div><span className="font-semibold text-slate-700">Date:</span> {new Date(getRecordInventoryDate(recordToArchive)).toLocaleDateString("en-PH")}</div>
+                <div><span className="font-semibold text-slate-700">Item:</span> {recordToArchive.itemName}</div>
+                <div><span className="font-semibold text-slate-700">Quantity Changed:</span> {recordToArchive.quantityChanged > 0 ? '+' : ''}{recordToArchive.quantityChanged}</div>
+                <div><span className="font-semibold text-slate-700">Performed By:</span> {recordToArchive.performedBy || 'System'}</div>
               </div>
 
               <div className="flex gap-3 justify-end pt-4">
                 <button
-                  onClick={() => setRecordToDelete(null)}
+                  onClick={() => setRecordToArchive(null)}
+                  className="px-4 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 font-medium transition disabled:opacity-50"
+                  type="button"
+                  disabled={isArchiving}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleArchiveRecord}
+                  className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  type="button"
+                  disabled={isArchiving}
+                >
+                  {isArchiving ? 'Archiving...' : 'Archive'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Archived Logs Modal */}
+      {showArchivedModal && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4">
+          <div className="w-full max-w-6xl rounded-3xl bg-white shadow-2xl">
+            <div className="flex flex-col gap-3 border-b border-slate-200 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900">Archived Logs</h3>
+                <p className="text-sm text-slate-500">These logs were archived and are hidden from the full history report.</p>
+              </div>
+              <button
+                onClick={() => setShowArchivedModal(false)}
+                className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                type="button"
+              >
+                Close
+              </button>
+            </div>
+
+            <div className="p-4 sm:p-6">
+              {isLoadingArchived ? (
+                <div className="flex items-center justify-center py-12 text-slate-500">Loading archived logs...</div>
+              ) : archivedLogs.length === 0 ? (
+                <div className="flex items-center justify-center py-12 text-slate-500">No archived logs found.</div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full text-sm">
+                    <thead className="bg-[#f8eef0] text-left text-xs uppercase tracking-wide text-[#800000]">
+                      <tr>
+                        <th className="px-4 py-3">Date</th>
+                        <th className="px-4 py-3">Item</th>
+                        <th className="px-4 py-3">Action</th>
+                        <th className="px-4 py-3">Performed By</th>
+                        <th className="px-4 py-3">Purpose</th>
+                        <th className="px-4 py-3">Remarks</th>
+                        <th className="px-4 py-3 text-center">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {archivedLogs.map((record) => (
+                        <tr key={record.id} className="hover:bg-slate-50">
+                          <td className="px-4 py-3 whitespace-nowrap text-slate-600">{new Date(getRecordInventoryDate(record)).toLocaleDateString('en-PH')}</td>
+                          <td className="px-4 py-3 text-slate-600">{record.itemName || '—'}</td>
+                          <td className="px-4 py-3 text-slate-600">{record.actionType || '—'}</td>
+                          <td className="px-4 py-3 text-slate-600">{record.performedBy || 'System'}</td>
+                          <td className="px-4 py-3 text-slate-600">{record.purpose || '—'}</td>
+                          <td className="px-4 py-3 text-slate-600">{record.description || '—'}</td>
+                          <td className="px-4 py-3 text-center">
+                            <button
+                              onClick={() => setSelectedPermanentDelete(record)}
+                              className="inline-flex items-center justify-center rounded-lg bg-red-100 px-3 py-2 text-xs font-medium text-red-700 hover:bg-red-200 transition"
+                              type="button"
+                            >
+                              Permanently Delete
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Permanently Delete Confirmation Modal */}
+      {selectedPermanentDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-2xl bg-white shadow-xl">
+            <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+              <h3 className="font-semibold text-slate-900">Permanently Delete Archived Log</h3>
+              <button
+                onClick={() => setSelectedPermanentDelete(null)}
+                className="text-slate-400 hover:text-slate-600"
+                type="button"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4 px-6 py-4">
+              <p className="text-sm text-slate-700">
+                This action is irreversible. Are you sure you want to permanently delete this archived log?
+              </p>
+
+              <div className="bg-slate-50 rounded-lg p-3 text-xs space-y-2">
+                <div><span className="font-semibold text-slate-700">Date:</span> {new Date(getRecordInventoryDate(selectedPermanentDelete)).toLocaleDateString('en-PH')}</div>
+                <div><span className="font-semibold text-slate-700">Item:</span> {selectedPermanentDelete.itemName}</div>
+                <div><span className="font-semibold text-slate-700">Action:</span> {selectedPermanentDelete.actionType || '—'}</div>
+                <div><span className="font-semibold text-slate-700">Performed By:</span> {selectedPermanentDelete.performedBy || 'System'}</div>
+              </div>
+
+              <div className="flex gap-3 justify-end pt-4">
+                <button
+                  onClick={() => setSelectedPermanentDelete(null)}
                   className="px-4 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 font-medium transition disabled:opacity-50"
                   type="button"
                   disabled={isDeleting}
@@ -931,7 +1098,7 @@ const HistoryPage = () => {
                   Cancel
                 </button>
                 <button
-                  onClick={handleDeleteRecord}
+                  onClick={handlePermanentDelete}
                   className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
                   type="button"
                   disabled={isDeleting}

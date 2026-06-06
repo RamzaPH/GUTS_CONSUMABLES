@@ -30,10 +30,13 @@ const buildBatchLabel = (row) => {
 
 const getHistory = async (req, res) => {
   try {
-    const { category, itemId, all } = req.query;
+    const { category, itemId, all, archived } = req.query;
     const fetchAll = String(all) === 'true';
+    const archivedOnly = String(archived) === 'true';
 
-    let historyWhere = {};
+    let historyWhere = {
+      isArchived: archivedOnly,
+    };
 
     if (itemId) {
       const parsed = parseInt(itemId, 10);
@@ -662,10 +665,36 @@ const deleteHistory = async (req, res) => {
   }
 };
 
+const archiveHistory = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const record = await InventoryHistory.findByPk(id);
+    if (!record) {
+      return res.status(404).json({ error: 'History record not found' });
+    }
+
+    if (record.isArchived) {
+      return res.status(400).json({ error: 'History record is already archived' });
+    }
+
+    await record.update({ isArchived: true });
+
+    return res.json({
+      success: true,
+      message: 'History record archived successfully',
+      data: { id }
+    });
+  } catch (err) {
+    console.error('[archiveHistory]', err);
+    return res.status(500).json({ error: 'Failed to archive history record.' });
+  }
+};
+
 module.exports = {
   getHistory,
   getConsumptionReport,
   updateInventoryHistory,
   recalculateAndSyncInventory,
   deleteHistory,
+  archiveHistory,
 };

@@ -62,6 +62,11 @@ const InventoryHistory = sequelize.define('InventoryHistory', {
     allowNull: false,
     defaultValue: 'System',
   },
+  isArchived: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
+  },
   performedById: {
     type: DataTypes.INTEGER.UNSIGNED,
     allowNull: true,
