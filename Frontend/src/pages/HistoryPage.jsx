@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { ChevronLeft, Printer, ArrowUpDown, Edit2, X, Image as ImageIcon, Trash2 } from "lucide-react"
 import { getInventoryByTrack } from "../api/inventoryApi"
-import { getHistoryLogs, updateHistoryRecord, deleteHistoryRecord, archiveHistoryRecord } from "../api/historyApi"
+import { getHistoryLogs, updateHistoryRecord, deleteHistoryRecord, archiveHistoryRecord, restoreHistoryRecord } from "../api/historyApi"
 import { useInventoryLocation } from "../context/InventoryLocationContext"
 import { useAuth } from "../context/AuthContext"
 import { useToast } from "../context/ToastContext"
@@ -233,6 +233,33 @@ const HistoryPage = () => {
       setArchivedLogs([])
     } finally {
       setIsLoadingArchived(false)
+    }
+  }
+
+  const handleRestoreRecord = async (record) => {
+    if (!record) {
+      return
+    }
+
+    setIsDeleting(true)
+    try {
+      await restoreHistoryRecord(record.id)
+      await loadArchivedLogs()
+
+      const logs = await getHistoryLogs({ itemId })
+      const filtered = (logs || [])
+        .filter(h => h.location === selectedInventory)
+        .sort((a, b) => new Date(b.startDate || b.createdAt) - new Date(a.startDate || a.createdAt))
+      setAllHistory(filtered)
+      setCurrentPage(1)
+
+      success('✓ Archived log restored successfully')
+    } catch (error) {
+      console.error('Failed to restore archived record:', error)
+      const errorMsg = error.response?.data?.error || 'Failed to restore record. Please try again.'
+      alert(errorMsg)
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -1042,13 +1069,22 @@ const HistoryPage = () => {
                           <td className="px-4 py-3 text-slate-600">{record.purpose || '—'}</td>
                           <td className="px-4 py-3 text-slate-600">{record.description || '—'}</td>
                           <td className="px-4 py-3 text-center">
-                            <button
-                              onClick={() => setSelectedPermanentDelete(record)}
-                              className="inline-flex items-center justify-center rounded-lg bg-red-100 px-3 py-2 text-xs font-medium text-red-700 hover:bg-red-200 transition"
-                              type="button"
-                            >
-                              Permanently Delete
-                            </button>
+                            <div className="flex flex-col gap-2 items-center justify-center sm:flex-row sm:justify-center">
+                              <button
+                                onClick={() => handleRestoreRecord(record)}
+                                className="inline-flex items-center justify-center rounded-lg bg-emerald-100 px-3 py-2 text-xs font-medium text-emerald-700 hover:bg-emerald-200 transition"
+                                type="button"
+                              >
+                                Restore
+                              </button>
+                              <button
+                                onClick={() => setSelectedPermanentDelete(record)}
+                                className="inline-flex items-center justify-center rounded-lg bg-red-100 px-3 py-2 text-xs font-medium text-red-700 hover:bg-red-200 transition"
+                                type="button"
+                              >
+                                Permanently Delete
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))}

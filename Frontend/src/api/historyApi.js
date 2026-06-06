@@ -15,6 +15,11 @@ export const archiveHistoryRecord = async (id) => {
   return response.data
 }
 
+export const restoreHistoryRecord = async (id) => {
+  const response = await api.put(`/history/${id}/restore`)
+  return response.data
+}
+
 export const getConsumptionReport = async ({ course, batchKey } = {}) => {
   const params = {}
   if (course) params.course = course

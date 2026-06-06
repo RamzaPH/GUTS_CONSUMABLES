@@ -690,6 +690,31 @@ const archiveHistory = async (req, res) => {
   }
 };
 
+const restoreHistory = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const record = await InventoryHistory.findByPk(id);
+    if (!record) {
+      return res.status(404).json({ error: 'History record not found' });
+    }
+
+    if (!record.isArchived) {
+      return res.status(400).json({ error: 'History record is not archived' });
+    }
+
+    await record.update({ isArchived: false });
+
+    return res.json({
+      success: true,
+      message: 'History record restored successfully',
+      data: { id }
+    });
+  } catch (err) {
+    console.error('[restoreHistory]', err);
+    return res.status(500).json({ error: 'Failed to restore history record.' });
+  }
+};
+
 module.exports = {
   getHistory,
   getConsumptionReport,
@@ -697,4 +722,5 @@ module.exports = {
   recalculateAndSyncInventory,
   deleteHistory,
   archiveHistory,
+  restoreHistory,
 };
