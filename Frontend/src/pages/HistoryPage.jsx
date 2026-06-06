@@ -1167,6 +1167,7 @@ const HistoryPage = () => {
                     </tbody>
                   </table>
                 </div>
+              </>
               )}
             </div>
           </div>
