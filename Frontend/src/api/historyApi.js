@@ -23,6 +23,11 @@ export const updateHistoryRecord = async (id, data) => {
   return response.data
 }
 
+export const deleteHistoryRecord = async (id) => {
+  const response = await api.delete(`/history/${id}`)
+  return response.data
+}
+
 export const recalculateInventoryHistory = async (consumableId, location = 'main') => {
   const response = await api.post(`/history/${consumableId}/recalculate`, {}, {
     params: { location }

@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
-import { ChevronLeft, Printer, ArrowUpDown, Edit2, X, Image as ImageIcon } from "lucide-react"
+import { ChevronLeft, Printer, ArrowUpDown, Edit2, X, Image as ImageIcon, Trash2 } from "lucide-react"
 import { getInventoryByTrack } from "../api/inventoryApi"
-import { getHistoryLogs, updateHistoryRecord } from "../api/historyApi"
+import { getHistoryLogs, updateHistoryRecord, deleteHistoryRecord } from "../api/historyApi"
 import { useInventoryLocation } from "../context/InventoryLocationContext"
 import { useAuth } from "../context/AuthContext"
 import { useToast } from "../context/ToastContext"
@@ -33,6 +33,8 @@ const HistoryPage = () => {
   const [editError, setEditError] = useState(null)
   const [selectedEvidenceRecord, setSelectedEvidenceRecord] = useState(null)
   const [selectedEvidenceImage, setSelectedEvidenceImage] = useState(null)
+  const [recordToDelete, setRecordToDelete] = useState(null)
+  const [isDeleting, setIsDeleting] = useState(false)
   const printRef = useRef(null)
 
   const getRecordInventoryDate = (record) => record.startDate || record.createdAt
@@ -180,6 +182,36 @@ const HistoryPage = () => {
         setEditError(errorMsg + detailsMsg)
       } finally {
         setIsEditLoading(false)
+      }
+    }
+  }
+
+  const handleDeleteRecord = async () => {
+    if (recordToDelete) {
+      setIsDeleting(true)
+      try {
+        await deleteHistoryRecord(recordToDelete.id)
+
+        // Reload all history data to remove deleted record
+        try {
+          const logs = await getHistoryLogs({ itemId })
+          const filtered = (logs || [])
+            .filter(h => h.location === selectedInventory)
+            .sort((a, b) => new Date(b.startDate || b.createdAt) - new Date(a.startDate || a.createdAt))
+          setAllHistory(filtered)
+          setCurrentPage(1)
+        } catch (reloadErr) {
+          console.warn('Failed to reload history after deletion:', reloadErr)
+        }
+
+        setRecordToDelete(null)
+        success('✓ History record permanently deleted and inventory recalculated!')
+      } catch (error) {
+        console.error('Failed to delete record:', error)
+        const errorMsg = error.response?.data?.error || 'Failed to delete record. Please try again.'
+        alert(errorMsg)
+      } finally {
+        setIsDeleting(false)
       }
     }
   }
@@ -561,14 +593,24 @@ const HistoryPage = () => {
                     </td>
                     {user?.role === 'admin' && (
                       <td className="px-4 py-3 text-center">
-                        <button
-                          onClick={() => handleEditClick(record)}
-                          className="inline-flex items-center gap-1 rounded-lg bg-blue-100 px-3 py-2 text-xs font-medium text-blue-700 hover:bg-blue-200 transition"
-                          title="Edit this record"
-                        >
-                          <Edit2 className="h-3 w-3" />
-                          Edit
-                        </button>
+                        <div className="flex gap-2 justify-center items-center">
+                          <button
+                            onClick={() => handleEditClick(record)}
+                            className="inline-flex items-center gap-1 rounded-lg bg-blue-100 px-3 py-2 text-xs font-medium text-blue-700 hover:bg-blue-200 transition"
+                            title="Edit this record"
+                          >
+                            <Edit2 className="h-3 w-3" />
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => setRecordToDelete(record)}
+                            className="inline-flex items-center gap-1 rounded-lg bg-red-100 px-3 py-2 text-xs font-medium text-red-700 hover:bg-red-200 transition"
+                            title="Archive this record"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                            Archive
+                          </button>
+                        </div>
                       </td>
                     )}
                   </tr>
@@ -845,6 +887,56 @@ const HistoryPage = () => {
                   disabled={isEditLoading}
                 >
                   {isEditLoading ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {recordToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="w-full max-w-md rounded-2xl bg-white shadow-xl">
+            <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+              <h3 className="font-semibold text-slate-900">Archive History Record</h3>
+              <button
+                onClick={() => setRecordToDelete(null)}
+                className="text-slate-400 hover:text-slate-600"
+                type="button"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            
+            <div className="space-y-4 px-6 py-4">
+              <p className="text-sm text-slate-700">
+                Are you sure you want to archive this log? <span className="font-semibold text-red-600">This action is permanent.</span>
+              </p>
+              
+              <div className="bg-slate-50 rounded-lg p-3 text-xs space-y-2">
+                <div><span className="font-semibold text-slate-700">Date:</span> {new Date(getRecordInventoryDate(recordToDelete)).toLocaleDateString("en-PH")}</div>
+                <div><span className="font-semibold text-slate-700">Item:</span> {recordToDelete.itemName}</div>
+                <div><span className="font-semibold text-slate-700">Quantity Changed:</span> {recordToDelete.quantityChanged > 0 ? '+' : ''}{recordToDelete.quantityChanged}</div>
+                <div><span className="font-semibold text-slate-700">Performed By:</span> {recordToDelete.performedBy || 'System'}</div>
+              </div>
+
+              <div className="flex gap-3 justify-end pt-4">
+                <button
+                  onClick={() => setRecordToDelete(null)}
+                  className="px-4 py-2 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 font-medium transition disabled:opacity-50"
+                  type="button"
+                  disabled={isDeleting}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeleteRecord}
+                  className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  type="button"
+                  disabled={isDeleting}
+                >
+                  {isDeleting ? 'Deleting...' : 'Permanently Delete'}
                 </button>
               </div>
             </div>

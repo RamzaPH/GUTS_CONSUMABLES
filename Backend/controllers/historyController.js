@@ -566,9 +566,106 @@ const recalculateAndSyncInventory = async (req, res) => {
   }
 };
 
+const deleteHistory = async (req, res) => {
+  const t = await InventoryHistory.sequelize.transaction();
+  try {
+    const { id } = req.params;
+
+    // Find the record to delete
+    const record = await InventoryHistory.findByPk(id, { transaction: t });
+    if (!record) {
+      await t.rollback();
+      return res.status(404).json({ error: 'History record not found' });
+    }
+
+    // Store info before deletion for logging
+    const consumableId = record.consumableId;
+    const recordDate = record.createdAt;
+    const quantityChanged = record.quantityChanged;
+
+    // Delete the record
+    await record.destroy({ transaction: t });
+
+    // Get all history records for this consumable after deletion, sorted by date
+    const historyRecords = await InventoryHistory.findAll({
+      where: { 
+        consumableId,
+        location: record.location || 'main',
+      },
+      order: [['createdAt', 'ASC']],
+      transaction: t,
+    });
+
+    // Recalculate and update beginning/ending inventory for all remaining records
+    let lastEndingInventory = 0;
+    for (const h of historyRecords) {
+      const beginningInventory = lastEndingInventory;
+      const endingInventory = beginningInventory + h.quantityChanged;
+
+      await h.update({
+        beginningInventory: beginningInventory,
+        endingInventory: Math.max(0, endingInventory),
+      }, { transaction: t });
+
+      lastEndingInventory = Math.max(0, endingInventory);
+    }
+
+    // Update consumable quantity to final ending inventory
+    const consumable = await Consumable.findByPk(consumableId, { transaction: t });
+    if (consumable) {
+      const finalQuantity = lastEndingInventory;
+      const updateData = { quantity: finalQuantity };
+      
+      if ((record.location || 'main') === 'main') {
+        updateData.quantityMain = finalQuantity;
+      } else {
+        updateData.quantityAnnex = finalQuantity;
+      }
+      
+      await consumable.update(updateData, { transaction: t });
+    }
+
+    // Commit transaction
+    await t.commit();
+
+    // Broadcast deletion via Socket.IO
+    const io = req.app?.locals?.io;
+    if (io && consumable) {
+      io.emit('stock_updated', {
+        id: consumable.id,
+        itemName: consumable.itemName,
+        quantity: lastEndingInventory,
+        category: consumable.category,
+      });
+      io.emit('history_deleted', {
+        recordId: id,
+        consumableId,
+        finalQuantity: lastEndingInventory,
+      });
+    }
+
+    console.log(`[deleteHistory] Deleted history record ID ${id} for consumable ${consumableId}. Final quantity: ${lastEndingInventory}`);
+
+    return res.json({
+      success: true,
+      message: 'History record permanently deleted',
+      data: {
+        id,
+        consumableId,
+        finalQuantity: lastEndingInventory,
+      }
+    });
+  } catch (err) {
+    await t.rollback();
+    console.error('[deleteHistory]', err);
+    return res.status(500).json({ error: 'Failed to delete history record.' });
+  }
+};
+
 module.exports = {
   getHistory,
   getConsumptionReport,
   updateInventoryHistory,
   recalculateAndSyncInventory,
+  deleteHistory,
 };
