@@ -10,6 +10,20 @@ import { normalizeItems } from "../utils/inventory"
 
 const ROWS_PER_PAGE = 20
 
+// Helper function to format current date and time for print
+const getFormattedPrintDate = () => {
+  const now = new Date()
+  const options = { 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    meridiem: 'short'
+  }
+  return now.toLocaleDateString('en-US', options).replace(/,/, ' ')
+}
+
 const HistoryPage = () => {
   const { track, itemId } = useParams()
   const navigate = useNavigate()
@@ -443,6 +457,7 @@ const HistoryPage = () => {
             <p><strong>Category:</strong> ${item?.category || "—"} | <strong>Unit:</strong> ${item?.unit || "—"} | <strong>Location:</strong> ${selectedInventory === 'main' ? 'Main Inventory' : 'Training Inventory'}</p>
             <p><strong>Filter:</strong> ${purposeFilter !== 'All' ? 'Purpose = ' + purposeFilter : 'None (All Records)'}</p>
             <p><strong>Generated:</strong> ${new Date().toLocaleDateString('en-PH')} at ${new Date().toLocaleTimeString('en-PH')}</p>
+            <p style="text-align: right; font-size: 13px; color: #666; margin-top: 8px;"><strong>Date Printed:</strong> ${getFormattedPrintDate()}</p>
           </div>
           ${printContent}
           <div class="print-footer">
@@ -475,6 +490,13 @@ const HistoryPage = () => {
 
   return (
     <div className="space-y-4 p-4 sm:space-y-6 sm:p-6">
+      {/* Hidden on web, visible when printing - Date Printed section */}
+      <div className="hidden print:block print:fixed print:top-6 print:right-6 print:z-50">
+        <p className="text-sm font-semibold text-gray-700 text-right">
+          <strong>Date Printed:</strong> {getFormattedPrintDate()}
+        </p>
+      </div>
+
       {/* Header and Navigation */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <button
