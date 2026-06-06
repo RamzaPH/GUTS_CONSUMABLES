@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { ChevronLeft, Printer, ArrowUpDown, Edit2, X, Image as ImageIcon, Trash2 } from "lucide-react"
 import { getInventoryByTrack } from "../api/inventoryApi"
@@ -38,6 +38,9 @@ const HistoryPage = () => {
   const [showArchivedModal, setShowArchivedModal] = useState(false)
   const [archivedLogs, setArchivedLogs] = useState([])
   const [isLoadingArchived, setIsLoadingArchived] = useState(false)
+  const [archivedCourseFilter, setArchivedCourseFilter] = useState('All')
+  const [archivedSearchTerm, setArchivedSearchTerm] = useState('')
+  const [archivedSortOrder, setArchivedSortOrder] = useState('item_asc')
   const [selectedPermanentDelete, setSelectedPermanentDelete] = useState(null)
   const [isDeleting, setIsDeleting] = useState(false)
   const printRef = useRef(null)
@@ -235,6 +238,36 @@ const HistoryPage = () => {
       setIsLoadingArchived(false)
     }
   }
+
+  const filteredArchivedLogs = useMemo(() => {
+    const term = archivedSearchTerm.trim().toLowerCase()
+
+    return archivedLogs
+      .filter((record) => {
+        const courseValue = (record.course || '').toLowerCase()
+        const matchesCourse = archivedCourseFilter === 'All'
+          ? true
+          : courseValue.includes(archivedCourseFilter.toLowerCase())
+        const itemValue = (record.itemName || '').toLowerCase()
+        const matchesSearch = !term || itemValue.includes(term)
+        return matchesCourse && matchesSearch
+      })
+      .sort((a, b) => {
+        if (archivedSortOrder === 'item_asc') {
+          return (a.itemName || '').localeCompare(b.itemName || '')
+        }
+        if (archivedSortOrder === 'item_desc') {
+          return (b.itemName || '').localeCompare(a.itemName || '')
+        }
+
+        const dateA = new Date(a.startDate || a.createdAt)
+        const dateB = new Date(b.startDate || b.createdAt)
+        if (archivedSortOrder === 'date_asc') {
+          return dateA - dateB
+        }
+        return dateB - dateA
+      })
+  }, [archivedLogs, archivedCourseFilter, archivedSearchTerm, archivedSortOrder])
 
   const handleRestoreRecord = async (record) => {
     if (!record) {
@@ -1046,8 +1079,51 @@ const HistoryPage = () => {
               ) : archivedLogs.length === 0 ? (
                 <div className="flex items-center justify-center py-12 text-slate-500">No archived logs found.</div>
               ) : (
-                <div className="overflow-x-auto">
-                  <table className="min-w-full text-sm">
+                <>
+                  <div className="mb-4 flex flex-col gap-3 rounded-2xl border border-slate-200 bg-slate-50 p-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                      <label className="sr-only" htmlFor="archived-course-filter">Filter by Course</label>
+                      <select
+                        id="archived-course-filter"
+                        value={archivedCourseFilter}
+                        onChange={(e) => setArchivedCourseFilter(e.target.value)}
+                        className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm focus:border-[#800000] focus:outline-none focus:ring-2 focus:ring-[#800000]/20"
+                      >
+                        <option>All</option>
+                        <option>SMAW</option>
+                        <option>EIM</option>
+                        <option>CSS</option>
+                        <option>Driving</option>
+                      </select>
+
+                      <label className="sr-only" htmlFor="archived-item-search">Search archived item</label>
+                      <input
+                        id="archived-item-search"
+                        type="text"
+                        value={archivedSearchTerm}
+                        onChange={(e) => setArchivedSearchTerm(e.target.value)}
+                        placeholder="Search item name..."
+                        className="w-full min-w-[220px] rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm focus:border-[#800000] focus:outline-none focus:ring-2 focus:ring-[#800000]/20"
+                      />
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <label className="text-sm font-medium text-slate-600">Sort:</label>
+                      <select
+                        value={archivedSortOrder}
+                        onChange={(e) => setArchivedSortOrder(e.target.value)}
+                        className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm focus:border-[#800000] focus:outline-none focus:ring-2 focus:ring-[#800000]/20"
+                      >
+                        <option value="item_asc">Item A-Z</option>
+                        <option value="item_desc">Item Z-A</option>
+                        <option value="date_desc">Date Newest</option>
+                        <option value="date_asc">Date Oldest</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full text-sm">
                     <thead className="bg-[#f8eef0] text-left text-xs uppercase tracking-wide text-[#800000]">
                       <tr>
                         <th className="px-4 py-3">Date</th>
@@ -1060,7 +1136,7 @@ const HistoryPage = () => {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
-                      {archivedLogs.map((record) => (
+                      {filteredArchivedLogs.map((record) => (
                         <tr key={record.id} className="hover:bg-slate-50">
                           <td className="px-4 py-3 whitespace-nowrap text-slate-600">{new Date(getRecordInventoryDate(record)).toLocaleDateString('en-PH')}</td>
                           <td className="px-4 py-3 text-slate-600">{record.itemName || '—'}</td>
