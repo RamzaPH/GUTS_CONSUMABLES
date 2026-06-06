@@ -7,6 +7,20 @@ import { getConsumptionReport, getHistoryLogs } from "../api/historyApi"
 const ITEMS_PER_PAGE = 10
 const CONSUMPTION_ITEMS_PER_PAGE = 10
 
+// Helper function to format current date and time for print
+const getFormattedPrintDate = () => {
+  const now = new Date()
+  const options = { 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    meridiem: 'short'
+  }
+  return now.toLocaleDateString('en-US', options).replace(/,/, ' ')
+}
+
 const ACTION_TYPES = {
   'Check In': { color: 'bg-green-100', textColor: 'text-green-700', badge: 'bg-green-500' },
   'Check Out': { color: 'bg-blue-100', textColor: 'text-blue-700', badge: 'bg-blue-500' },
@@ -110,6 +124,19 @@ const buildPrintFrame = async ({ title, subtitle, summaryItems, tableHeaders, ta
           border-bottom: 3px solid #800000;
           padding-bottom: 14px;
           margin-bottom: 16px;
+          position: relative;
+        }
+        .header-content {
+          flex: 1;
+        }
+        .date-printed {
+          position: absolute;
+          top: 0;
+          right: 0;
+          font-size: 12px;
+          color: #666;
+          font-weight: 600;
+          white-space: nowrap;
         }
         .title {
           font-size: 26px;
@@ -170,10 +197,11 @@ const buildPrintFrame = async ({ title, subtitle, summaryItems, tableHeaders, ta
       <div class="page">
         <div class="header">
           <div>${logoHtml}</div>
-          <div>
+          <div class="header-content">
             <h1 class="title">${escapeHtml(title)}</h1>
             <p class="subtitle">${escapeHtml(subtitle)}</p>
           </div>
+          <div class="date-printed"><strong>Date Printed:</strong> ${getFormattedPrintDate()}</div>
         </div>
         <div class="summary">${summaryHtml}</div>
         <table>
@@ -452,6 +480,13 @@ const History = () => {
 
   return (
     <section className="space-y-6">
+      {/* Hidden on web, visible when printing - Date Printed section */}
+      <div className="hidden print:block print:fixed print:top-6 print:right-6 print:z-50">
+        <p className="text-sm font-semibold text-gray-700 text-right">
+          <strong>Date Printed:</strong> {getFormattedPrintDate()}
+        </p>
+      </div>
+
       <div className="print:hidden">
         <h2 className="font-title text-3xl font-bold text-[var(--brand-primary)] dark:text-red-400 transition-colors duration-300">Activity Logs</h2>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400 transition-colors duration-300">Complete system activity history including all item movements, updates, and actions.</p>
