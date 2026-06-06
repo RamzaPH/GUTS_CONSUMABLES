@@ -357,7 +357,8 @@ const History = () => {
   }
 
   const handlePrintAllRecords = async () => {
-    const tableRows = filteredLogs.map((log) => [
+    const visibleLogs = recordsToDisplay
+    const tableRows = visibleLogs.map((log) => [
       `<strong>${escapeHtml(log.itemName)}</strong>`,
       `<span style="display:inline-block;padding:4px 8px;border-radius:999px;background:${log.actionType === 'Stock Out' ? '#fee2e2' : log.actionType === 'Stock In' ? '#dcfce7' : '#e2e8f0'};color:${log.actionType === 'Stock Out' ? '#b91c1c' : log.actionType === 'Stock In' ? '#15803d' : '#475569'};font-weight:700;font-size:11px;">${escapeHtml(log.actionType)}</span>`,
       `<span style="font-weight:700;${log.quantityChanged > 0 ? 'color:#15803d' : log.quantityChanged < 0 ? 'color:#dc2626' : 'color:#475569'}">${log.quantityChanged > 0 ? '+' : ''}${escapeHtml(log.quantityChanged)}</span>`,
@@ -369,15 +370,15 @@ const History = () => {
 
     await buildPrintFrame({
       title: 'Activity Logs Report',
-      subtitle: 'All activity logs with the current filters applied',
+      subtitle: 'Current visible activity logs on this page',
       summaryItems: [
-        { label: 'Scope', value: 'All Activity Logs' },
+        { label: 'Scope', value: 'Visible Activity Logs' },
         { label: 'Filters', value: [selectedAction !== 'All' ? `Action: ${selectedAction}` : null, selectedDate ? `Date: ${selectedDate}` : null, searchUsername ? `User: ${searchUsername}` : null].filter(Boolean).join(' • ') || 'None' },
-        { label: 'Total Records', value: `${filteredLogs.length}` },
+        { label: 'Total Records', value: `${visibleLogs.length}` },
       ],
       tableHeaders: ['Item Name', 'Action', 'Quantity Changed', 'Performed By', 'Duration', 'Details', 'Date & Time'],
       tableRows,
-      footer: `Total records shown: ${filteredLogs.length}`,
+      footer: `Total records shown: ${visibleLogs.length}`,
     })
   }
 
