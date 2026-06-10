@@ -89,7 +89,8 @@ const Dashboard = () => {
             item.status === "Low Stock" &&
             item.itemName.toLowerCase().includes(searchQuery.toLowerCase())
         )
-        .sort((a, b) => a.quantity - b.quantity),
+        .sort((a, b) => a.quantity - b.quantity)
+        .slice(0, 5),
     [allItems, searchQuery]
   )
 
@@ -102,7 +103,7 @@ const Dashboard = () => {
             item.itemName.toLowerCase().includes(searchQuery.toLowerCase())
         )
         .sort((a, b) => b.quantity - a.quantity)
-        .slice(0, 10),
+        .slice(0, 5),
     [allItems, searchQuery]
   )
 
@@ -246,7 +247,7 @@ const Dashboard = () => {
                 <span className="h-5 w-1 rounded-full bg-emerald-500" />
                 High Stock Inventory
                 <span className="ml-1 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700">
-                  Top {highStockItems.length}
+                  Top 5
                 </span>
               </h3>
               {highStockItems.length > 0 ? (
