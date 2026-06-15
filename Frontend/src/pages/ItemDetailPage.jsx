@@ -62,9 +62,14 @@ const ItemDetailPage = () => {
     if (!item) return
     
     try {
+      // Convert user-entered quantity to base units (inches) when unit is 'ft'
+      const userUnit = String(formData.unit || item.unit || '').toLowerCase()
+      const raw = Number.parseFloat(formData.quantity)
+      const finalAmount = userUnit === 'ft' ? Math.round(raw * 12) : Math.round(raw)
+
       await updateStock(item.id, {
         type: "in",
-        amount: parseInt(formData.quantity, 10),
+        amount: finalAmount,
         description: formData.notes,
         course: formData.course,
         trainer: formData.trainer,
@@ -96,9 +101,13 @@ const ItemDetailPage = () => {
     if (!item) return
     
     try {
+      const userUnit = String(formData.unit || item.unit || '').toLowerCase()
+      const raw = Number.parseFloat(formData.quantity)
+      const finalAmount = userUnit === 'ft' ? Math.round(raw * 12) : Math.round(raw)
+
       await updateStock(item.id, {
         type: "out",
-        amount: parseInt(formData.quantity, 10),
+        amount: finalAmount,
         description: formData.remarks?.trim() || formData.notes,
         course: formData.course,
         trainer: formData.trainer,
@@ -240,7 +249,7 @@ const ItemDetailPage = () => {
           </div>
           <div>
             <p className="text-xs font-semibold uppercase text-slate-500">Current Stock</p>
-            <p className="mt-2 font-title text-xl font-bold text-[#800000] sm:text-2xl">{item.quantity}</p>
+            <p className="mt-2 font-title text-xl font-bold text-[#800000] sm:text-2xl">{item.quantityFormatted || String(item.quantity)}</p>
           </div>
           <div>
             <p className="text-xs font-semibold uppercase text-slate-500">Reorder Level</p>

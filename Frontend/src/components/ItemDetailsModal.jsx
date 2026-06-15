@@ -90,7 +90,7 @@ const ItemDetailsModal = ({
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Current Stock</p>
-                <p className="mt-2 font-title text-xl font-bold text-slate-800 sm:text-2xl">{item.quantity}</p>
+                <p className="mt-2 font-title text-xl font-bold text-slate-800 sm:text-2xl">{item.quantityFormatted || String(item.quantity)}</p>
                 <p className="text-xs text-slate-600 mt-1">{item.unit}</p>
               </div>
               <div>

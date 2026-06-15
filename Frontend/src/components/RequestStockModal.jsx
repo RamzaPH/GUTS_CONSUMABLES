@@ -29,6 +29,7 @@ const RequestStockModal = ({
     reason: "",
     course: "",
     trainer: "",
+    unit: item?.unit || 'pcs/m',
     purpose: getDefaultPurpose(requestType),
   })
   const [trainers, setTrainers] = useState([])
@@ -64,6 +65,7 @@ const RequestStockModal = ({
         reason: "",
         course: "",
         trainer: "",
+        unit: item?.unit || 'pcs/m',
         purpose: getDefaultPurpose(requestType),
       })
       setSubmitError("")
@@ -168,6 +170,7 @@ const RequestStockModal = ({
         consumableId: item.id,
         requestType,
         quantity: parseInt(formData.quantity, 10),
+        unit: formData.unit,
         reason: formData.reason || null,
         course: formData.course || null,
         trainer: formData.trainer || null,
@@ -221,7 +224,7 @@ const RequestStockModal = ({
             <p className="text-sm text-slate-600">Item</p>
             <p className="font-semibold text-slate-800">{item.itemName}</p>
             <p className="text-xs text-slate-500 mt-1">
-              Current Stock: <span className="font-semibold text-[#800000]">{item.quantityMain} {item.unit}</span>
+              Current Stock: <span className="font-semibold text-[#800000]">{item.quantityFormatted || String(item.quantity)} {item.unit}</span>
             </p>
           </div>
         )}
@@ -233,15 +236,22 @@ const RequestStockModal = ({
             <label className="block text-sm font-semibold text-slate-700">
               Quantity Requested *
             </label>
-            <input
-              type="number"
-              min="1"
-              value={formData.quantity}
-              onChange={(e) => handleChange("quantity", e.target.value)}
-              placeholder={requestType === "Stock Out" ? "Enter quantity to deduct" : "Enter quantity to add"}
-              className="mt-1 w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-[var(--brand-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]/20"
-              required
-            />
+            <div className="mt-1 flex items-center gap-2">
+              <input
+                type="number"
+                min="1"
+                value={formData.quantity}
+                onChange={(e) => handleChange("quantity", e.target.value)}
+                placeholder={requestType === "Stock Out" ? "Enter quantity to deduct" : "Enter quantity to add"}
+                className="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-[var(--brand-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]/20"
+                required
+              />
+              <select value={formData.unit} onChange={(e) => handleChange('unit', e.target.value)} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm">
+                <option value="pcs/m">pcs/m</option>
+                <option value="ft">ft</option>
+                <option value="in">in</option>
+              </select>
+            </div>
           </div>
 
           {/* Reason */}

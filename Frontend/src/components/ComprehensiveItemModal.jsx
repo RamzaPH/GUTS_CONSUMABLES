@@ -24,6 +24,7 @@ const ComprehensiveItemModal = ({
   const [activeAction, setActiveAction] = useState(action || null)
   const [formData, setFormData] = useState({
     quantity: "",
+    unit: item?.unit || 'pcs/m',
     trainer: "",
     course: "",
     batch: "",
@@ -70,6 +71,7 @@ const ComprehensiveItemModal = ({
       setActiveAction(action || null)
       setFormData({
         quantity: "",
+        unit: item?.unit || 'pcs/m',
         trainer: "",
         course: "",
         batch: "",
@@ -128,11 +130,11 @@ const ComprehensiveItemModal = ({
       type === "add"
         ? onAddStock({
             ...formData,
-            quantity: parseInt(formData.quantity, 10),
+            quantity: formData.quantity,
           })
         : onDeductStock({
             ...formData,
-            quantity: parseInt(formData.quantity, 10),
+            quantity: formData.quantity,
             deductMode,
           })
     )).finally(() => {
@@ -168,7 +170,7 @@ const ComprehensiveItemModal = ({
                     Current Stock
                   </p>
                   <p className="mt-2 font-title text-xl font-bold text-slate-800 sm:text-2xl">
-                    {item.quantity}
+                    {item.quantityFormatted || String(item.quantity)}
                   </p>
                   <p className="text-xs text-slate-600">{item.unit}</p>
                 </div>
@@ -283,16 +285,28 @@ const ComprehensiveItemModal = ({
                     <label className="block text-sm font-semibold text-slate-700">
                       Quantity *
                     </label>
-                    <input
-                      type="number"
-                      min="1"
-                      value={formData.quantity}
-                      onChange={(e) => handleChange("quantity", e.target.value)}
-                      disabled={isSubmitting}
-                      placeholder="Enter quantity"
-                      className="mt-1 w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-[var(--brand-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]/20"
-                      required
-                    />
+                    <div className="mt-1 flex items-center gap-2">
+                      <input
+                        type="number"
+                        min="0.01"
+                        step="0.01"
+                        value={formData.quantity}
+                        onChange={(e) => handleChange("quantity", e.target.value)}
+                        disabled={isSubmitting}
+                        placeholder="Enter quantity"
+                        className="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-[var(--brand-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]/20"
+                        required
+                      />
+                      <select
+                        value={formData.unit}
+                        onChange={(e) => handleChange('unit', e.target.value)}
+                        className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+                      >
+                        <option value="pcs/m">pcs/m</option>
+                        <option value="ft">ft</option>
+                        <option value="in">in</option>
+                      </select>
+                    </div>
                   </div>
 
 

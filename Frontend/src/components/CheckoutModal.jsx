@@ -9,6 +9,7 @@ const CheckoutModal = ({
 }) => {
   const [form, setForm] = useState({
     quantity: 1,
+    unit: item?.unit || 'pcs/m',
     destination: "",
     notes: ""
   })
@@ -23,7 +24,8 @@ const CheckoutModal = ({
     e.preventDefault()
     onSubmit({
       ...form,
-      quantity: Number(form.quantity)
+      quantity: Number(form.quantity),
+      unit: form.unit
     })
   }
 
@@ -50,11 +52,18 @@ const CheckoutModal = ({
             </div>
             <div>
               <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">Available</span>
-              <div className="rounded bg-slate-100 px-3 py-2 text-sm">{item.quantity}</div>
+              <div className="rounded bg-slate-100 px-3 py-2 text-sm">{item.quantityFormatted || String(item.quantity)}</div>
             </div>
-            <label className="space-y-1">
+              <label className="space-y-1">
               <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">Quantity</span>
-              <input required min="1" max={item.quantity} type="number" value={form.quantity} onChange={e => handleChange("quantity", e.target.value)} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-[var(--brand-primary)]" />
+              <div className="flex items-center gap-2">
+                <input required min="1" max={item.quantity} type="number" value={form.quantity} onChange={e => handleChange("quantity", e.target.value)} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-[var(--brand-primary)]" />
+                <select value={form.unit} onChange={e => handleChange('unit', e.target.value)} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm">
+                  <option value="pcs/m">pcs/m</option>
+                  <option value="ft">ft</option>
+                  <option value="in">in</option>
+                </select>
+              </div>
             </label>
             <label className="space-y-1">
               <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">Destination</span>

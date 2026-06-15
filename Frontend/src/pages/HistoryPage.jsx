@@ -542,7 +542,7 @@ const HistoryPage = () => {
             </div>
             <div>
               <p className="text-xs font-semibold uppercase text-slate-500">Current Stock</p>
-              <p className="mt-1 font-semibold text-[#800000] text-lg">{item.quantity}</p>
+              <p className="mt-1 font-semibold text-[#800000] text-lg">{item.quantityFormatted || String(item.quantity)}</p>
             </div>
             <div>
               <p className="text-xs font-semibold uppercase text-slate-500">Total Records</p>

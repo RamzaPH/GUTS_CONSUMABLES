@@ -83,7 +83,7 @@ const Archive = () => {
                   <tr key={item.id} className="hover:bg-slate-50/70">
                     <td className="px-4 py-4 font-medium text-slate-700 sm:px-5">{item.itemName}</td>
                     <td className="px-4 py-4 text-slate-700 sm:px-5">{item.category}</td>
-                    <td className="px-4 py-4 text-slate-700 sm:px-5">{item.quantity}</td>
+                    <td className="px-4 py-4 text-slate-700 sm:px-5">{item.quantityFormatted || String(item.quantity)}</td>
                     <td className="px-4 py-4 text-slate-600 sm:px-5">{item.unit}</td>
                     <td className="px-4 py-4 sm:px-5">
                       <button

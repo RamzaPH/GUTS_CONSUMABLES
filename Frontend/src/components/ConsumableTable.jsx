@@ -42,7 +42,7 @@ const ConsumableTable = ({ items, onEdit, onArchive, onRowClick, showActions = t
               >
                 <td className="px-3 py-2 font-medium text-slate-700 transition-colors duration-300 dark:text-slate-200">{item.itemName}</td>
                 <td className="px-3 py-2 text-slate-700 transition-colors duration-300 dark:text-slate-300">{getCourseDisplay(item)}</td>
-                <td className="px-3 py-2 whitespace-nowrap text-slate-700 transition-colors duration-300 dark:text-slate-300">{item.quantity}</td>
+                <td className="px-3 py-2 whitespace-nowrap text-slate-700 transition-colors duration-300 dark:text-slate-300">{item.quantityFormatted || String(item.quantity)}</td>
                 <td className="px-3 py-2 whitespace-nowrap text-slate-600 transition-colors duration-300 dark:text-slate-400">{item.unit}</td>
                 <td className="px-3 py-2">
                   <span

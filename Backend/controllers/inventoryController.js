@@ -1,12 +1,19 @@
 // ─── POST /api/inventory/:id/checkout ───────────────────────────────────────
-// Body: { quantity, destination, notes }
+// Body: { quantity, unit?, destination, notes }
 // User is automatically extracted from authenticated request (req.user)
 const checkoutConsumable = async (req, res) => {
   const id = isNaN(req.params.id) ? req.params.id : parseInt(req.params.id, 10);
-  const { quantity, destination, notes } = req.body;
-  const parsedQty = parseInt(quantity, 10);
-  if (isNaN(parsedQty) || parsedQty <= 0) {
-    return res.status(400).json({ error: 'quantity must be a positive integer.' });
+  const { quantity, unit, destination, notes } = req.body;
+  // Allow decimal input for length units (e.g., 2.5 ft)
+  const rawQty = Number.parseFloat(quantity);
+  if (Number.isNaN(rawQty) || rawQty <= 0) {
+    return res.status(400).json({ error: 'quantity must be a positive number.' });
+  }
+  // Convert to base unit (inches) when unit is 'ft'
+  const userUnit = String(unit || '').toLowerCase();
+  const finalQty = userUnit === 'ft' ? Math.round(rawQty * 12) : Math.round(rawQty);
+  if (finalQty <= 0) {
+    return res.status(400).json({ error: 'quantity after conversion must be at least 1.' });
   }
   if (!destination) {
     return res.status(400).json({ error: 'destination is required.' });
@@ -20,17 +27,17 @@ const checkoutConsumable = async (req, res) => {
     if (!item) {
       return res.status(404).json({ error: 'Consumable not found.' });
     }
-    if (item.quantity < parsedQty) {
+    if (item.quantity < finalQty) {
       return res.status(400).json({ error: `Insufficient stock. Only ${item.quantity} available.` });
     }
-    item.quantity -= parsedQty;
+    item.quantity -= finalQty;
     await item.save();
 
     const performedByUser = req.user?.fullName || req.user?.username || 'System';
     await logHistory({
       consumableId: item.id,
       actionType: 'Checkout',
-      quantityChanged: -parsedQty,
+      quantityChanged: -finalQty,
       description: `Destination: ${destination}${notes ? ' | Notes: ' + notes : ''}`,
       performedBy: performedByUser,
       performedById: req.user?.id || null,
@@ -46,6 +53,7 @@ const checkoutConsumable = async (req, res) => {
         itemName: item.itemName,
         quantity: item.quantity,
         category: item.category,
+        unit: item.unit,
       });
     }
 
@@ -416,16 +424,18 @@ const updateConsumable = async (req, res) => {
 // Returns the updated consumable.
 const updateStock = async (req, res) => {
   const id = isNaN(req.params.id) ? req.params.id : parseInt(req.params.id, 10);
-  const { type, amount } = req.body;
+  const { type, amount, unit } = req.body;
 
   if (!['in', 'out'].includes(type)) {
     return res.status(400).json({ error: "type must be 'in' or 'out'." });
   }
-
-  const parsedAmount = parseInt(amount, 10);
-  if (isNaN(parsedAmount) || parsedAmount <= 0) {
-    return res.status(400).json({ error: 'amount must be a positive integer.' });
+  // Allow decimal entry for length units (ft). Convert to base unit (inches) before applying.
+  const rawAmount = Number.parseFloat(amount)
+  if (Number.isNaN(rawAmount) || rawAmount <= 0) {
+    return res.status(400).json({ error: 'amount must be a positive number.' });
   }
+  const userUnit = String(unit || '').toLowerCase()
+  const parsedAmount = userUnit === 'ft' ? Math.round(rawAmount * 12) : Math.round(rawAmount)
 
   try {
     const item = await Consumable.findOne({ where: { id, ...ACTIVE_WHERE } });
