@@ -460,13 +460,13 @@ const updateStock = async (req, res) => {
     }
     parsedAmount = pieceCount * pieceInches;
   } else {
-    // Allow decimal entry for length units (ft). Convert to base unit (inches) before applying.
+    // Amount is already converted by frontend to base unit (inches for length items).
+    // No further conversion needed.
     const rawAmount = Number.parseFloat(amount)
     if (Number.isNaN(rawAmount) || rawAmount <= 0) {
       return res.status(400).json({ error: 'amount must be a positive number.' });
     }
-    const userUnit = String(unit || '').toLowerCase()
-    parsedAmount = userUnit === 'ft' ? Math.round(rawAmount * 12) : Math.round(rawAmount)
+    parsedAmount = rawAmount;
   }
 
   try {

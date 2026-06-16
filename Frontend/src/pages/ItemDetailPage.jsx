@@ -87,7 +87,7 @@ const ItemDetailPage = () => {
         const userUnit = String(formData.unit || item.unit || '').toLowerCase()
         const raw = Number.parseFloat(formData.quantity)
         finalAmount = userUnit === 'ft' ? Math.round(raw * 12) : Math.round(raw)
-        payload.unit = formData.unit
+        // Don't send unit field; amount is already converted to base unit (inches for length items)
       }
 
       await updateStock(item.id, { type: 'in', amount: finalAmount, ...payload })
@@ -138,7 +138,7 @@ const ItemDetailPage = () => {
         const userUnit = String(formData.unit || item.unit || '').toLowerCase()
         const raw = Number.parseFloat(formData.quantity)
         finalAmount = userUnit === 'ft' ? Math.round(raw * 12) : Math.round(raw)
-        payload.unit = formData.unit
+        // Don't send unit field; amount is already converted to base unit (inches for length items)
       }
 
       await updateStock(item.id, { type: 'out', amount: finalAmount, ...payload })
