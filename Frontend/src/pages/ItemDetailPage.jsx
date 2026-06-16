@@ -62,7 +62,6 @@ const ItemDetailPage = () => {
     if (!item) return
     
     try {
-      let finalAmount = 0
       const payload = {
         description: formData.notes,
         course: formData.course,
@@ -80,17 +79,19 @@ const ItemDetailPage = () => {
         const pieceInches = parseLengthLabelToInches(formData.lengthLabel === '__other' ? formData.lengthLabelCustom || '' : formData.lengthLabel)
         const pieces = parseInt(formData.pieces, 10)
         if (Number.isNaN(pieces) || pieces <= 0 || !pieceInches) throw new Error('Invalid pieces or length label')
-        finalAmount = pieces * pieceInches
+        payload.quantity = pieces * pieceInches
+        payload.unit = 'in'
         payload.lengthLabel = formData.lengthLabel === '__other' ? formData.lengthLabelCustom || '' : formData.lengthLabel
         payload.pieces = pieces
       } else {
         const userUnit = String(formData.unit || item.unit || '').toLowerCase()
         const raw = Number.parseFloat(formData.quantity)
-        finalAmount = userUnit === 'ft' ? Math.round(raw * 12) : Math.round(raw)
-        // Don't send unit field; amount is already converted to base unit (inches for length items)
+        if (Number.isNaN(raw) || raw <= 0) throw new Error('Invalid quantity')
+        payload.quantity = raw
+        payload.unit = userUnit === 'ft' ? 'ft' : 'in'
       }
 
-      await updateStock(item.id, { type: 'in', amount: finalAmount, ...payload })
+      await updateStock(item.id, { type: 'in', ...payload })
       
       // Reload item details
       const inventory = await getInventoryByTrack(track, selectedInventory)
@@ -113,7 +114,6 @@ const ItemDetailPage = () => {
     if (!item) return
     
     try {
-      let finalAmount = 0
       const payload = {
         description: formData.remarks?.trim() || formData.notes,
         course: formData.course,
@@ -131,17 +131,19 @@ const ItemDetailPage = () => {
         const pieceInches = parseLengthLabelToInches(formData.lengthLabel === '__other' ? formData.lengthLabelCustom || '' : formData.lengthLabel)
         const pieces = parseInt(formData.pieces, 10)
         if (Number.isNaN(pieces) || pieces <= 0 || !pieceInches) throw new Error('Invalid pieces or length label')
-        finalAmount = pieces * pieceInches
+        payload.quantity = pieces * pieceInches
+        payload.unit = 'in'
         payload.lengthLabel = formData.lengthLabel === '__other' ? formData.lengthLabelCustom || '' : formData.lengthLabel
         payload.pieces = pieces
       } else {
         const userUnit = String(formData.unit || item.unit || '').toLowerCase()
         const raw = Number.parseFloat(formData.quantity)
-        finalAmount = userUnit === 'ft' ? Math.round(raw * 12) : Math.round(raw)
-        // Don't send unit field; amount is already converted to base unit (inches for length items)
+        if (Number.isNaN(raw) || raw <= 0) throw new Error('Invalid quantity')
+        payload.quantity = raw
+        payload.unit = userUnit === 'ft' ? 'ft' : 'in'
       }
 
-      await updateStock(item.id, { type: 'out', amount: finalAmount, ...payload })
+      await updateStock(item.id, { type: 'out', ...payload })
       
       // Reload item details
       const inventory = await getInventoryByTrack(track, selectedInventory)

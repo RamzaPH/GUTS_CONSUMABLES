@@ -108,7 +108,8 @@ const ComprehensiveItemModal = ({
   const handleSubmit = (type) => {
     if (isSubmitting) return
 
-    if (!formData.quantity || Number.parseFloat(formData.quantity) <= 0) {
+    const parsedQuantity = Number.parseFloat(formData.quantity)
+    if (Number.isNaN(parsedQuantity) || parsedQuantity <= 0) {
       warning('Please enter a valid quantity.')
       return
     }
@@ -131,7 +132,7 @@ const ComprehensiveItemModal = ({
     setIsSubmitting(true)
 
     const payload = {
-      quantity: Number.parseFloat(formData.quantity),
+      quantity: parsedQuantity,
       unit: formData.unit,
       description: formData.notes,
       course: formData.course,
