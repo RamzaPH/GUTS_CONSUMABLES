@@ -440,113 +440,55 @@ const updateConsumable = async (req, res) => {
 // Returns the updated consumable.
 const updateStock = async (req, res) => {
   const id = isNaN(req.params.id) ? req.params.id : parseInt(req.params.id, 10);
-  const { type, amount, unit, lengthLabel, pieces } = req.body;
+  const { type, quantity, unit } = req.body;
 
   if (!['in', 'out'].includes(type)) {
     return res.status(400).json({ error: "type must be 'in' or 'out'." });
   }
-  // Determine the delta in base unit (inches).
-  let parsedAmount = 0
 
-  // If a lengthLabel is provided, the client intends to add/remove pieces of that fixed length.
-  if (lengthLabel) {
-    const pieceCount = Number.parseInt(pieces === undefined ? amount : pieces, 10);
-    if (Number.isNaN(pieceCount) || pieceCount <= 0) {
-      return res.status(400).json({ error: 'pieces must be a positive integer for length-labeled stock changes.' });
-    }
-    const pieceInches = parseLengthLabelToInches(lengthLabel);
-    if (pieceInches === null) {
-      return res.status(400).json({ error: 'Invalid lengthLabel format. Use formats like "10ft", "8 in".' });
-    }
-    parsedAmount = pieceCount * pieceInches;
+  const rawQuantity = Number.parseFloat(quantity);
+  if (Number.isNaN(rawQuantity) || rawQuantity <= 0) {
+    return res.status(400).json({ error: 'quantity must be a positive number.' });
+  }
+
+  const normalizedUnit = String(unit || '').toLowerCase();
+  let calculatedInches;
+
+  if (normalizedUnit === 'ft') {
+    calculatedInches = Math.round(rawQuantity * 12);
+  } else if (normalizedUnit === 'in') {
+    calculatedInches = Math.round(rawQuantity);
   } else {
-    // Amount is already converted by frontend to base unit (inches for length items).
-    // No further conversion needed.
-    const rawAmount = Number.parseFloat(amount)
-    if (Number.isNaN(rawAmount) || rawAmount <= 0) {
-      return res.status(400).json({ error: 'amount must be a positive number.' });
-    }
-    parsedAmount = rawAmount;
+    return res.status(400).json({ error: 'unit must be either "ft" or "in".' });
   }
 
   try {
     // If a lengthLabel is provided, enforce that this operation applies to the Annex (training inventory).
-    let currentLocation = req.body.location || 'main';
-    if (lengthLabel) currentLocation = 'annex';
-    const deductMode = req.body.deductMode || 'training';
+    const quantityField = 'quantityAnnex';
 
-    // Role-based access control: Staff can only modify training inventory
-    if (req.user?.role === 'staff' && currentLocation === 'main') {
-      return res.status(403).json({ 
-        error: 'Staff members can only modify training inventory. Contact an administrator to modify main inventory.' 
-      });
-    }
-
-    if (type === 'out' && currentLocation === 'main' && deductMode === 'stock_out' && !req.body.description?.trim()) {
-      return res.status(400).json({
-        error: 'Remarks are required for Stock Out.',
-      });
-    }
-
-    const quantityField = currentLocation === 'main' ? 'quantityMain' : 'quantityAnnex';
-
-    // Run the stock updates inside a transaction to ensure atomicity between Consumable and ConsumableItemStock
     const result = await sequelize.transaction(async (t) => {
       const item = await Consumable.findOne({ where: { id, ...ACTIVE_WHERE }, transaction: t });
       if (!item) {
         throw new Error('Consumable not found.');
       }
 
-      const beginningQty = item[quantityField];
-      const newQuantity = type === 'in' ? item[quantityField] + parsedAmount : item[quantityField] - parsedAmount;
+      const beginningQty = item[quantityField] || 0;
+      const newQuantity = type === 'in' ? beginningQty + calculatedInches : beginningQty - calculatedInches;
       if (newQuantity < 0) {
-        throw new Error(`Insufficient stock. Cannot deduct ${parsedAmount} from current quantity of ${item[quantityField]}.`);
+        throw new Error(`Insufficient stock. Cannot deduct ${calculatedInches} from current quantity of ${beginningQty}.`);
       }
 
-      // Update current location's quantity
       item[quantityField] = newQuantity;
-
-      // If length-labeled, update or create the stock row constrained to annex location
-      let stockRow = null;
-      let pieceCount = 0;
-      if (lengthLabel) {
-        pieceCount = Number.parseInt(pieces === undefined ? amount : pieces, 10);
-        if (Number.isNaN(pieceCount) || pieceCount <= 0) {
-          throw new Error('pieces must be a positive integer for length-labeled stock changes.');
-        }
-
-        stockRow = await ConsumableItemStock.findOne({ where: { consumableId: item.id, lengthLabel, location: 'annex' }, transaction: t });
-        if (!stockRow) {
-          if (type === 'out') {
-            throw new Error(`No stock row found for length ${lengthLabel}.`);
-          }
-          stockRow = await ConsumableItemStock.create({ consumableId: item.id, lengthLabel, quantity: 0, location: 'annex' }, { transaction: t });
-        }
-
-        const newPieces = type === 'in' ? stockRow.quantity + pieceCount : stockRow.quantity - pieceCount;
-        if (newPieces < 0) {
-          throw new Error(`Insufficient pieces of ${lengthLabel}. Only ${stockRow.quantity} available.`);
-        }
-        stockRow.quantity = newPieces;
-        await stockRow.save({ transaction: t });
-      }
-
       await item.save({ transaction: t });
 
-      return { itemId: item.id, beginningQty: item[quantityField] - (type === 'in' ? parsedAmount : -parsedAmount), newQuantity: item[quantityField], stockRow, pieceCount };
+      return { itemId: item.id, beginningQty, newQuantity };
     });
 
-    // If transaction returned an error message string, handle it
-    if (!result) {
-      return res.status(500).json({ error: 'Failed to update stock.' });
-    }
-
-    // After successful transaction, log histories (outside transaction)
     const performedByUser = req.user?.fullName || req.user?.username || 'System';
     await logHistory({
       consumableId: result.itemId,
       actionType: type === 'in' ? 'Stock In' : 'Stock Out',
-      quantityChanged: type === 'in' ? parsedAmount : -parsedAmount,
+      quantityChanged: type === 'in' ? calculatedInches : -calculatedInches,
       description: req.body.description || null,
       performedBy: performedByUser,
       performedById: req.user?.id || null,
@@ -556,66 +498,29 @@ const updateStock = async (req, res) => {
       trainer: req.body.trainer || null,
       batch: req.body.batch || null,
       purpose: req.body.purpose || null,
-      location: lengthLabel ? 'annex' : (req.body.location || 'main'),
+      location: 'annex',
       startDate: req.body.startDate || null,
       endDate: req.body.endDate || null,
     });
 
-    // If deducting from MAIN (transfer to annex) and not a stock_out, record that transfer as Stock In for annex
-    if (type === 'out' && req.body.location === 'main' && (req.body.deductMode || 'training') !== 'stock_out') {
-      const oppositeBeginningQty = 0; // not computed here; history already recorded above for source
-      await logHistory({
-        consumableId: result.itemId,
-        actionType: 'Stock In',
-        quantityChanged: parsedAmount,
-        description: req.body.description ? `Transfer from main: ${req.body.description}` : `Transfer from main`,
-        performedBy: performedByUser,
-        performedById: req.user?.id || null,
-        beginningInventory: oppositeBeginningQty,
-        endingInventory: oppositeBeginningQty + parsedAmount,
-        course: req.body.course || null,
-        trainer: req.body.trainer || null,
-        batch: req.body.batch || null,
-        purpose: req.body.purpose || null,
-        location: 'annex',
-        startDate: req.body.startDate || null,
-        endDate: req.body.endDate || null,
-      });
-    }
-
-    // Send notification to admins
-    const staffName = req.user?.fullName || req.user?.username || 'System';
-    const actionText = type === 'in' ? 'added' : 'deducted';
-    const trackName = (await Consumable.findByPk(result.itemId)).category.toLowerCase();
-    await sendNotificationToAdmins(
-      req,
-      type === 'in' ? 'stock_added' : 'stock_removed',
-      `${staffName} ${actionText} ${parsedAmount} units of item ID ${result.itemId}`,
-      staffName,
-      (await Consumable.findByPk(result.itemId)).itemName,
-      parsedAmount,
-      { itemId: result.itemId, type, parsedAmount }
-    );
-
-    // Broadcast updated item to clients
-    const updatedItem = await Consumable.findByPk(result.itemId, { include: [{ model: ConsumableItemStock, as: 'stocks' }] });
+    const updatedItem = await Consumable.findByPk(result.itemId);
     const io = req.app?.locals?.io;
     if (io) {
       io.emit('stock_updated', {
         id: updatedItem.id,
         itemName: updatedItem.itemName,
         category: updatedItem.category,
-        quantity: lengthLabel ? updatedItem.quantityAnnex : (req.body.location === 'main' ? updatedItem.quantityMain : updatedItem.quantityAnnex),
+        quantity: updatedItem.quantityAnnex,
         unit: updatedItem.unit,
         reorderLevel: updatedItem.reorderLevel,
         actionType: type === 'in' ? 'Stock In' : 'Stock Out',
-        staffName,
-        parsedAmount,
+        staffName: performedByUser,
+        parsedAmount: calculatedInches,
         timestamp: new Date().toISOString(),
       });
     }
 
-    return res.json(formatItem(updatedItem, lengthLabel ? 'annex' : (req.body.location || 'main')));
+    return res.json(formatItem(updatedItem, 'annex'));
   } catch (err) {
     console.error('[updateStock]', err);
     const msg = err.message || 'Failed to update stock.';

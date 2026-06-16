@@ -25,12 +25,9 @@ const ComprehensiveItemModal = ({
   const [activeAction, setActiveAction] = useState(action || null)
   const [formData, setFormData] = useState({
     quantity: "",
-    unit: item?.unit || 'pcs/m',
-    lengthLabel: "",
-    pieces: "",
+    unit: 'ft',
     trainer: "",
     course: "",
-    batch: "",
     notes: "",
     remarks: "",
     purpose: "Training",
@@ -74,12 +71,9 @@ const ComprehensiveItemModal = ({
       setActiveAction(action || null)
       setFormData({
         quantity: "",
-        unit: item?.unit || 'pcs/m',
-        lengthLabel: "",
-        pieces: "",
+        unit: 'ft',
         trainer: "",
         course: "",
-        batch: "",
         notes: "",
         remarks: "",
         purpose: "Training",
@@ -100,13 +94,9 @@ const ComprehensiveItemModal = ({
     setActiveAction(null)
     setFormData({
       quantity: "",
-      unit: item?.unit || 'pcs/m',
-      lengthLabel: "",
-      lengthLabelCustom: "",
-      pieces: "",
+      unit: 'ft',
       trainer: "",
       course: "",
-      batch: "",
       notes: "",
       remarks: "",
       purpose: "Training",
@@ -115,23 +105,17 @@ const ComprehensiveItemModal = ({
     setDeductMode("training")
   }
 
-  const batchOptions = Array.isArray(item?.stocks) && item.stocks.length > 0
-    ? item.stocks.map((stock) => stock.lengthLabel)
-    : ['10ft', '3ft', '8 inch', 'in']
-
   const handleSubmit = (type) => {
     if (isSubmitting) return
 
-    if (formData.lengthLabel) {
-      if (!formData.quantity || parseInt(formData.quantity, 10) <= 0) {
-        warning('Please enter the number of pieces for the selected batch/length.')
-        return
-      }
-    } else {
-      if (!formData.quantity) {
-        warning('Please fill in Quantity field')
-        return
-      }
+    if (!formData.quantity || Number.parseFloat(formData.quantity) <= 0) {
+      warning('Please enter a valid quantity.')
+      return
+    }
+
+    if (!['ft', 'in'].includes(formData.unit)) {
+      warning('Please select a valid unit.')
+      return
     }
 
     if (
@@ -146,16 +130,21 @@ const ComprehensiveItemModal = ({
 
     setIsSubmitting(true)
 
-    const payload = { ...formData }
-    if (payload.lengthLabel === '__other') payload.lengthLabel = payload.lengthLabelCustom || ''
-    if (payload.lengthLabel) {
-      payload.pieces = parseInt(payload.quantity, 10)
-      delete payload.unit
+    const payload = {
+      quantity: Number.parseFloat(formData.quantity),
+      unit: formData.unit,
+      description: formData.notes,
+      course: formData.course,
+      trainer: formData.trainer,
+      purpose: formData.purpose,
+      location: selectedInventory,
+      startDate: formData.date || null,
+      endDate: formData.date || null,
     }
 
     Promise.resolve().then(() => (
       type === "add"
-        ? onAddStock({ ...payload })
+        ? onAddStock(payload)
         : onDeductStock({ ...payload, deductMode })
     )).finally(() => {
       handleReset()
@@ -313,38 +302,23 @@ const ComprehensiveItemModal = ({
                         value={formData.quantity}
                         onChange={(e) => handleChange("quantity", e.target.value)}
                         disabled={isSubmitting}
-                        placeholder={formData.lengthLabel ? "Enter pieces" : "Enter quantity"}
+                        placeholder="Enter quantity"
                         className="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-[var(--brand-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]/20"
                         required
                       />
                     </div>
                     <div className="mt-3">
-                      <label className="block text-sm font-semibold text-slate-700">Select Batch / Length</label>
-                      <div className="mt-1">
+                      <label className="block text-sm font-semibold text-slate-700">Unit</label>
+                      <div className="mt-1 flex items-center gap-2">
                         <select
-                          value={formData.lengthLabel}
-                          onChange={(e) => handleChange('lengthLabel', e.target.value)}
+                          value={formData.unit}
+                          onChange={(e) => handleChange('unit', e.target.value)}
                           className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
                         >
-                          <option value="">-- Select batch/length --</option>
-                          {batchOptions.map((lengthLabel) => (
-                            <option key={lengthLabel} value={lengthLabel}>
-                              {lengthLabel}
-                            </option>
-                          ))}
-                          <option value="__other">Other (specify)</option>
+                          <option value="ft">ft</option>
+                          <option value="in">in</option>
                         </select>
                       </div>
-                      {formData.lengthLabel === '__other' && (
-                        <div className="mt-2">
-                          <input
-                            placeholder="e.g. 10ft"
-                            value={formData.lengthLabelCustom || ''}
-                            onChange={(e) => handleChange('lengthLabelCustom', e.target.value)}
-                            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                          />
-                        </div>
-                      )}
                     </div>
                   </div>
 
@@ -473,21 +447,6 @@ const ComprehensiveItemModal = ({
                       className="mt-1 w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-[var(--brand-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]/20"
                     />
                     <p className="mt-2 text-xs text-slate-500">You may select a past date for this stock transaction.</p>
-                  </div>
-
-                  {/* Batch */}
-                  <div>
-                    <label className="block text-sm font-semibold text-slate-700">
-                      Batch
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.batch}
-                      onChange={(e) => handleChange("batch", e.target.value)}
-                      disabled={isSubmitting}
-                      placeholder="Enter batch (optional)"
-                      className="mt-1 w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-[var(--brand-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]/20"
-                    />
                   </div>
 
 
