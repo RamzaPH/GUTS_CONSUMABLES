@@ -119,8 +119,8 @@ const ComprehensiveItemModal = ({
     if (isSubmitting) return
 
     if (formData.lengthLabel) {
-      if (!formData.pieces || parseInt(formData.pieces, 10) <= 0) {
-        warning('Please enter pieces for the selected length label')
+      if (!formData.quantity || parseInt(formData.quantity, 10) <= 0) {
+        warning('Please enter the number of pieces for the selected batch/length.')
         return
       }
     } else {
@@ -144,6 +144,10 @@ const ComprehensiveItemModal = ({
 
     const payload = { ...formData }
     if (payload.lengthLabel === '__other') payload.lengthLabel = payload.lengthLabelCustom || ''
+    if (payload.lengthLabel) {
+      payload.pieces = parseInt(payload.quantity, 10)
+      delete payload.unit
+    }
 
     Promise.resolve().then(() => (
       type === "add"
@@ -300,60 +304,41 @@ const ComprehensiveItemModal = ({
                     <div className="mt-1 flex items-center gap-2">
                       <input
                         type="number"
-                        min="0.01"
-                        step="0.01"
+                        min="1"
+                        step="1"
                         value={formData.quantity}
                         onChange={(e) => handleChange("quantity", e.target.value)}
                         disabled={isSubmitting}
-                        placeholder="Enter quantity"
+                        placeholder={formData.lengthLabel ? "Enter pieces" : "Enter quantity"}
                         className="w-full rounded-lg border border-slate-300 px-4 py-2 focus:border-[var(--brand-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--brand-primary)]/20"
                         required
                       />
-                      <select
-                        value={formData.unit}
-                        onChange={(e) => handleChange('unit', e.target.value)}
-                        className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
-                      >
-                        <option value="pcs/m">pcs/m</option>
-                        <option value="ft">ft</option>
-                        <option value="in">in</option>
-                      </select>
                     </div>
-                    {/* If this item has multiple predefined lengths, let user pick one */}
                     {Array.isArray(item.stocks) && item.stocks.length > 0 && (
                       <div className="mt-3">
-                        <label className="block text-sm font-semibold text-slate-700">Length / Batch (optional)</label>
-                        <div className="mt-1 flex items-center gap-2">
+                        <label className="block text-sm font-semibold text-slate-700">Select Batch / Length</label>
+                        <div className="mt-1">
                           <select
                             value={formData.lengthLabel}
                             onChange={(e) => handleChange('lengthLabel', e.target.value)}
                             className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
                           >
-                            <option value="">-- Select length (or leave blank) --</option>
-                            {item.stocks.map(s => (
-                              <option key={s.id} value={s.lengthLabel}>{s.lengthLabel} — {s.quantity} pcs</option>
+                            <option value="">-- Select batch/length --</option>
+                            {item.stocks.map((stock) => (
+                              <option key={stock.id} value={stock.lengthLabel}>
+                                {stock.lengthLabel}
+                              </option>
                             ))}
                             <option value="__other">Other (specify)</option>
                           </select>
-                          {formData.lengthLabel === '__other' && (
+                        </div>
+                        {formData.lengthLabel === '__other' && (
+                          <div className="mt-2">
                             <input
                               placeholder="e.g. 10ft"
-                              value={formData.lengthLabel === '__other' ? formData.lengthLabelCustom || '' : ''}
+                              value={formData.lengthLabelCustom || ''}
                               onChange={(e) => handleChange('lengthLabelCustom', e.target.value)}
-                              className="rounded-lg border border-slate-300 px-3 py-2 text-sm w-48"
-                            />
-                          )}
-                        </div>
-
-                        {formData.lengthLabel && (
-                          <div className="mt-2">
-                            <label className="block text-sm font-semibold text-slate-700">Pieces *</label>
-                            <input
-                              type="number"
-                              min="1"
-                              value={formData.pieces}
-                              onChange={(e) => handleChange('pieces', e.target.value)}
-                              className="mt-1 w-40 rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
                             />
                           </div>
                         )}
