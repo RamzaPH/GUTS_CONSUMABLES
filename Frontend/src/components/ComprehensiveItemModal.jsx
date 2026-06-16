@@ -115,6 +115,10 @@ const ComprehensiveItemModal = ({
     setDeductMode("training")
   }
 
+  const batchOptions = Array.isArray(item?.stocks) && item.stocks.length > 0
+    ? item.stocks.map((stock) => stock.lengthLabel)
+    : ['10ft', '3ft', '8 inch', 'in']
+
   const handleSubmit = (type) => {
     if (isSubmitting) return
 
@@ -314,36 +318,34 @@ const ComprehensiveItemModal = ({
                         required
                       />
                     </div>
-                    {Array.isArray(item.stocks) && item.stocks.length > 0 && (
-                      <div className="mt-3">
-                        <label className="block text-sm font-semibold text-slate-700">Select Batch / Length</label>
-                        <div className="mt-1">
-                          <select
-                            value={formData.lengthLabel}
-                            onChange={(e) => handleChange('lengthLabel', e.target.value)}
-                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
-                          >
-                            <option value="">-- Select batch/length --</option>
-                            {item.stocks.map((stock) => (
-                              <option key={stock.id} value={stock.lengthLabel}>
-                                {stock.lengthLabel}
-                              </option>
-                            ))}
-                            <option value="__other">Other (specify)</option>
-                          </select>
-                        </div>
-                        {formData.lengthLabel === '__other' && (
-                          <div className="mt-2">
-                            <input
-                              placeholder="e.g. 10ft"
-                              value={formData.lengthLabelCustom || ''}
-                              onChange={(e) => handleChange('lengthLabelCustom', e.target.value)}
-                              className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                            />
-                          </div>
-                        )}
+                    <div className="mt-3">
+                      <label className="block text-sm font-semibold text-slate-700">Select Batch / Length</label>
+                      <div className="mt-1">
+                        <select
+                          value={formData.lengthLabel}
+                          onChange={(e) => handleChange('lengthLabel', e.target.value)}
+                          className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+                        >
+                          <option value="">-- Select batch/length --</option>
+                          {batchOptions.map((lengthLabel) => (
+                            <option key={lengthLabel} value={lengthLabel}>
+                              {lengthLabel}
+                            </option>
+                          ))}
+                          <option value="__other">Other (specify)</option>
+                        </select>
                       </div>
-                    )}
+                      {formData.lengthLabel === '__other' && (
+                        <div className="mt-2">
+                          <input
+                            placeholder="e.g. 10ft"
+                            value={formData.lengthLabelCustom || ''}
+                            onChange={(e) => handleChange('lengthLabelCustom', e.target.value)}
+                            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                          />
+                        </div>
+                      )}
+                    </div>
                   </div>
 
 
