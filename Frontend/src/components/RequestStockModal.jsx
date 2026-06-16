@@ -3,6 +3,7 @@ import { X, Upload, Image as ImageIcon } from "lucide-react"
 import { useToast } from "../context/ToastContext"
 import { getTrainers } from "../api/authApi"
 import { submitRequest } from "../api/requestApi"
+import { formatLengthDisplay } from "../utils/inventory"
 const getDefaultPurpose = (type) => (type === "Stock In" ? "Replenishment" : "Training")
 
 const MAX_VERIFICATION_IMAGES = 5
@@ -224,7 +225,7 @@ const RequestStockModal = ({
             <p className="text-sm text-slate-600">Item</p>
             <p className="font-semibold text-slate-800">{item.itemName}</p>
             <p className="text-xs text-slate-500 mt-1">
-              Current Stock: <span className="font-semibold text-[#800000]">{item.quantityFormatted || String(item.quantity)} {item.unit}</span>
+              Current Stock: <span className="font-semibold text-[#800000]">{formatLengthDisplay(item.quantity, item.unit)}</span>
             </p>
           </div>
         )}

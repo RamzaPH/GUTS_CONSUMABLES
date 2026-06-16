@@ -8,19 +8,26 @@ const getThreshold = (item) =>
 export const getStockStatus = (quantity, reorderLevel = DEFAULT_LOW_STOCK_THRESHOLD) =>
   quantity <= reorderLevel ? "Low Stock" : "In Stock"
 
+const formatLength = (inches) => {
+  const n = Number.isFinite(Number(inches)) ? Number(inches) : 0
+  if (n <= 0) return '0'
+  if (n < 12) return `${n} in`
+  const ft = Math.floor(n / 12)
+  const rem = n % 12
+  return rem === 0 ? `${ft} ft` : `${ft} ft ${rem} in`
+}
+
+export const formatLengthDisplay = (quantity, unit) => {
+  const normalizedUnit = String(unit || '').toLowerCase()
+  if (!/ft|in/.test(normalizedUnit)) return String(quantity)
+  const formatted = formatLength(quantity)
+  return `${formatted} (${quantity} in)`
+}
+
 export const normalizeItems = (items = []) =>
   items.map((item) => {
     const unit = String(item.unit || '').toLowerCase()
     const isLength = /ft|in/.test(unit)
-
-    const formatLength = (inches) => {
-      const n = Number.isFinite(Number(inches)) ? Number(inches) : 0
-      if (n <= 0) return '0'
-      if (n < 12) return `${n} in`
-      const ft = Math.floor(n / 12)
-      const rem = n % 12
-      return rem === 0 ? `${ft} ft` : `${ft} ft ${rem} in`
-    }
 
     return {
       ...item,

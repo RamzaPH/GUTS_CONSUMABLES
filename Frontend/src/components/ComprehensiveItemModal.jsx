@@ -5,6 +5,7 @@ import { useToast } from "../context/ToastContext"
 import { useAuth } from "../context/AuthContext"
 import { useInventoryLocation } from "../context/InventoryLocationContext"
 import { getTrainers } from "../api/authApi"
+import { formatLengthDisplay } from "../utils/inventory"
 
 const ComprehensiveItemModal = ({
   isOpen,
@@ -170,7 +171,7 @@ const ComprehensiveItemModal = ({
                     Current Stock
                   </p>
                   <p className="mt-2 font-title text-xl font-bold text-slate-800 sm:text-2xl">
-                    {item.quantityFormatted || String(item.quantity)}
+                    {formatLengthDisplay(item.quantity, item.unit)}
                   </p>
                   <p className="text-xs text-slate-600">{item.unit}</p>
                 </div>
