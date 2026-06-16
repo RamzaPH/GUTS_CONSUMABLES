@@ -74,4 +74,14 @@ const Consumable = sequelize.define('Consumable', {
   underscored: true,
 });
 
+// Associate with ConsumableItemStock (one-to-many)
+try {
+  const ConsumableItemStock = require('./ConsumableItemStock');
+  Consumable.hasMany(ConsumableItemStock, { foreignKey: 'consumableId', as: 'stocks' });
+  ConsumableItemStock.belongsTo(Consumable, { foreignKey: 'consumableId', as: 'consumable' });
+} catch (err) {
+  // If the other model isn't available at load time, skip association setup — it's okay.
+  // Associations may be initialized later when both models are required.
+}
+
 module.exports = Consumable;

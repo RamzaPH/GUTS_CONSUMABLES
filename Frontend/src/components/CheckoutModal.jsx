@@ -15,19 +15,25 @@ const CheckoutModal = ({
     notes: ""
   })
 
+  const [lengthLabel, setLengthLabel] = useState("");
+  const [lengthLabelCustom, setLengthLabelCustom] = useState("");
+  const [pieces, setPieces] = useState("");
+
   if (!isOpen || !item) return null
 
   const handleChange = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }))
   }
 
+  const handleLengthLabelChange = (value) => {
+    setLengthLabel(value);
+  }
+
   const handleSubmit = (e) => {
     e.preventDefault()
-    onSubmit({
-      ...form,
-      quantity: Number(form.quantity),
-      unit: form.unit
-    })
+    const payload = { ...form, lengthLabel, lengthLabelCustom, pieces, quantity: Number(form.quantity), unit: form.unit }
+    if (payload.lengthLabel === '__other') payload.lengthLabel = payload.lengthLabelCustom || ''
+    onSubmit(payload)
   }
 
   return (
@@ -66,6 +72,29 @@ const CheckoutModal = ({
                 </select>
               </div>
             </label>
+            {Array.isArray(item?.stocks) && item.stocks.length > 0 && (
+              <div className="mt-3 sm:col-span-2">
+                <label className="block text-sm font-semibold text-slate-700">Length / Batch (optional)</label>
+                <div className="mt-1 flex items-center gap-2">
+                  <select value={lengthLabel} onChange={e => handleLengthLabelChange(e.target.value)} className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm">
+                    <option value="">-- Select length (or leave blank) --</option>
+                    {item.stocks.map(s => (
+                      <option key={s.id} value={s.lengthLabel}>{s.lengthLabel} — {s.quantity} pcs</option>
+                    ))}
+                    <option value="__other">Other (specify)</option>
+                  </select>
+                  {lengthLabel === '__other' && (
+                    <input placeholder="e.g. 10ft" value={lengthLabelCustom} onChange={e => setLengthLabelCustom(e.target.value)} className="rounded-lg border border-slate-300 px-3 py-2 text-sm w-48" />
+                  )}
+                </div>
+                {lengthLabel && (
+                  <div className="mt-2">
+                    <label className="block text-sm font-semibold text-slate-700">Pieces *</label>
+                    <input type="number" min="1" value={pieces} onChange={e => setPieces(e.target.value)} className="mt-1 w-40 rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+                  </div>
+                )}
+              </div>
+            )}
             <label className="space-y-1">
               <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">Destination</span>
               <input required value={form.destination} onChange={e => handleChange("destination", e.target.value)} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-[var(--brand-primary)]" placeholder="Where will this go?" />

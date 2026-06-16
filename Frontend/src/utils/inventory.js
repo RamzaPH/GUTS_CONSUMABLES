@@ -24,6 +24,16 @@ export const formatLengthDisplay = (quantity, unit) => {
   return `${formatted} (${quantity} in)`
 }
 
+export const parseLengthLabelToInches = (label) => {
+  if (!label) return null
+  const m = String(label).trim().toLowerCase().match(/^([0-9]*\.?[0-9]+)\s*(ft|feet|in|inch|inches)?$/i)
+  if (!m) return null
+  const value = Number.parseFloat(m[1])
+  const unit = (m[2] || '').toLowerCase()
+  if (unit.startsWith('ft')) return Math.round(value * 12)
+  return Math.round(value)
+}
+
 export const normalizeItems = (items = []) =>
   items.map((item) => {
     const unit = String(item.unit || '').toLowerCase()

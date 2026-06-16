@@ -62,14 +62,8 @@ const ItemDetailPage = () => {
     if (!item) return
     
     try {
-      // Convert user-entered quantity to base units (inches) when unit is 'ft'
-      const userUnit = String(formData.unit || item.unit || '').toLowerCase()
-      const raw = Number.parseFloat(formData.quantity)
-      const finalAmount = userUnit === 'ft' ? Math.round(raw * 12) : Math.round(raw)
-
-      await updateStock(item.id, {
-        type: "in",
-        amount: finalAmount,
+      let finalAmount = 0
+      const payload = {
         description: formData.notes,
         course: formData.course,
         trainer: formData.trainer,
@@ -78,7 +72,25 @@ const ItemDetailPage = () => {
         location: selectedInventory,
         startDate: formData.date || null,
         endDate: formData.date || null,
-      })
+      }
+
+      if (formData.lengthLabel) {
+        // pieces * length-in-inches
+        const { parseLengthLabelToInches } = await import('../utils/inventory')
+        const pieceInches = parseLengthLabelToInches(formData.lengthLabel === '__other' ? formData.lengthLabelCustom || '' : formData.lengthLabel)
+        const pieces = parseInt(formData.pieces, 10)
+        if (Number.isNaN(pieces) || pieces <= 0 || !pieceInches) throw new Error('Invalid pieces or length label')
+        finalAmount = pieces * pieceInches
+        payload.lengthLabel = formData.lengthLabel === '__other' ? formData.lengthLabelCustom || '' : formData.lengthLabel
+        payload.pieces = pieces
+      } else {
+        const userUnit = String(formData.unit || item.unit || '').toLowerCase()
+        const raw = Number.parseFloat(formData.quantity)
+        finalAmount = userUnit === 'ft' ? Math.round(raw * 12) : Math.round(raw)
+        payload.unit = formData.unit
+      }
+
+      await updateStock(item.id, { type: 'in', amount: finalAmount, ...payload })
       
       // Reload item details
       const inventory = await getInventoryByTrack(track, selectedInventory)
@@ -101,23 +113,35 @@ const ItemDetailPage = () => {
     if (!item) return
     
     try {
-      const userUnit = String(formData.unit || item.unit || '').toLowerCase()
-      const raw = Number.parseFloat(formData.quantity)
-      const finalAmount = userUnit === 'ft' ? Math.round(raw * 12) : Math.round(raw)
-
-      await updateStock(item.id, {
-        type: "out",
-        amount: finalAmount,
+      let finalAmount = 0
+      const payload = {
         description: formData.remarks?.trim() || formData.notes,
         course: formData.course,
         trainer: formData.trainer,
         batch: formData.batch,
         purpose: formData.purpose,
-        deductMode: formData.deductMode || "training",
+        deductMode: formData.deductMode || 'training',
         location: selectedInventory,
         startDate: formData.date || null,
         endDate: formData.date || null,
-      })
+      }
+
+      if (formData.lengthLabel) {
+        const { parseLengthLabelToInches } = await import('../utils/inventory')
+        const pieceInches = parseLengthLabelToInches(formData.lengthLabel === '__other' ? formData.lengthLabelCustom || '' : formData.lengthLabel)
+        const pieces = parseInt(formData.pieces, 10)
+        if (Number.isNaN(pieces) || pieces <= 0 || !pieceInches) throw new Error('Invalid pieces or length label')
+        finalAmount = pieces * pieceInches
+        payload.lengthLabel = formData.lengthLabel === '__other' ? formData.lengthLabelCustom || '' : formData.lengthLabel
+        payload.pieces = pieces
+      } else {
+        const userUnit = String(formData.unit || item.unit || '').toLowerCase()
+        const raw = Number.parseFloat(formData.quantity)
+        finalAmount = userUnit === 'ft' ? Math.round(raw * 12) : Math.round(raw)
+        payload.unit = formData.unit
+      }
+
+      await updateStock(item.id, { type: 'out', amount: finalAmount, ...payload })
       
       // Reload item details
       const inventory = await getInventoryByTrack(track, selectedInventory)

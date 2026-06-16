@@ -26,6 +26,8 @@ const ComprehensiveItemModal = ({
   const [formData, setFormData] = useState({
     quantity: "",
     unit: item?.unit || 'pcs/m',
+    lengthLabel: "",
+    pieces: "",
     trainer: "",
     course: "",
     batch: "",
@@ -73,6 +75,8 @@ const ComprehensiveItemModal = ({
       setFormData({
         quantity: "",
         unit: item?.unit || 'pcs/m',
+        lengthLabel: "",
+        pieces: "",
         trainer: "",
         course: "",
         batch: "",
@@ -96,6 +100,10 @@ const ComprehensiveItemModal = ({
     setActiveAction(null)
     setFormData({
       quantity: "",
+      unit: item?.unit || 'pcs/m',
+      lengthLabel: "",
+      lengthLabelCustom: "",
+      pieces: "",
       trainer: "",
       course: "",
       batch: "",
@@ -110,9 +118,16 @@ const ComprehensiveItemModal = ({
   const handleSubmit = (type) => {
     if (isSubmitting) return
 
-    if (!formData.quantity) {
-      warning('Please fill in Quantity field')
-      return
+    if (formData.lengthLabel) {
+      if (!formData.pieces || parseInt(formData.pieces, 10) <= 0) {
+        warning('Please enter pieces for the selected length label')
+        return
+      }
+    } else {
+      if (!formData.quantity) {
+        warning('Please fill in Quantity field')
+        return
+      }
     }
 
     if (
@@ -127,17 +142,13 @@ const ComprehensiveItemModal = ({
 
     setIsSubmitting(true)
 
+    const payload = { ...formData }
+    if (payload.lengthLabel === '__other') payload.lengthLabel = payload.lengthLabelCustom || ''
+
     Promise.resolve().then(() => (
       type === "add"
-        ? onAddStock({
-            ...formData,
-            quantity: formData.quantity,
-          })
-        : onDeductStock({
-            ...formData,
-            quantity: formData.quantity,
-            deductMode,
-          })
+        ? onAddStock({ ...payload })
+        : onDeductStock({ ...payload, deductMode })
     )).finally(() => {
       handleReset()
       setIsSubmitting(false)
@@ -308,6 +319,46 @@ const ComprehensiveItemModal = ({
                         <option value="in">in</option>
                       </select>
                     </div>
+                    {/* If this item has multiple predefined lengths, let user pick one */}
+                    {Array.isArray(item.stocks) && item.stocks.length > 0 && (
+                      <div className="mt-3">
+                        <label className="block text-sm font-semibold text-slate-700">Length / Batch (optional)</label>
+                        <div className="mt-1 flex items-center gap-2">
+                          <select
+                            value={formData.lengthLabel}
+                            onChange={(e) => handleChange('lengthLabel', e.target.value)}
+                            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm"
+                          >
+                            <option value="">-- Select length (or leave blank) --</option>
+                            {item.stocks.map(s => (
+                              <option key={s.id} value={s.lengthLabel}>{s.lengthLabel} — {s.quantity} pcs</option>
+                            ))}
+                            <option value="__other">Other (specify)</option>
+                          </select>
+                          {formData.lengthLabel === '__other' && (
+                            <input
+                              placeholder="e.g. 10ft"
+                              value={formData.lengthLabel === '__other' ? formData.lengthLabelCustom || '' : ''}
+                              onChange={(e) => handleChange('lengthLabelCustom', e.target.value)}
+                              className="rounded-lg border border-slate-300 px-3 py-2 text-sm w-48"
+                            />
+                          )}
+                        </div>
+
+                        {formData.lengthLabel && (
+                          <div className="mt-2">
+                            <label className="block text-sm font-semibold text-slate-700">Pieces *</label>
+                            <input
+                              type="number"
+                              min="1"
+                              value={formData.pieces}
+                              onChange={(e) => handleChange('pieces', e.target.value)}
+                              className="mt-1 w-40 rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
 
 
